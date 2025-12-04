@@ -1,23 +1,37 @@
-import { Link } from "react-router-dom";
+﻿import { NavLink } from "react-router-dom";
 
-// Aktuell so nur damit Routing funktioniert.
 function Navbar() {
+  const navLinkClass = ({ isActive }) =>
+    `f1-nav-link${isActive ? " is-active" : ""}`;
+
   return (
-    <nav style={{ padding: "1rem", background: "#111", color: "white" }}>
-      {/* Navigation zwischen verschiedenen Seiten */}
-      <Link to="/" style={{ marginRight: "1rem", color: "white" }}>
-        Home
-      </Link>
-      <Link to="/login" style={{ marginRight: "1rem", color: "white" }}>
-        Login
-      </Link>
-      <Link to="/player" style={{ marginRight: "1rem", color: "white" }}>
-        Player
-      </Link>
-      <Link to="/admin" style={{ marginRight: "1rem", color: "white" }}>
-        Admin
-      </Link>
-    </nav>
+    <>
+      <header className="f1-navbar">
+        <div className="f1-brand">
+          <span className="f1-brand-mark">F1</span>
+          <div className="f1-brand-text">
+            <span className="f1-brand-title">Championship</span>
+            <span className="f1-brand-subtitle">Race Center</span>
+          </div>
+        </div>
+
+        <nav className="f1-nav-links">
+          <NavLink to="/" end className={navLinkClass}>
+            Home
+          </NavLink>
+          <NavLink to="/login" className={navLinkClass}>
+            Login
+          </NavLink>
+          <NavLink to="/player" className={navLinkClass}>
+            Player
+          </NavLink>
+          <NavLink to="/admin" className={navLinkClass}>
+            Admin
+          </NavLink>
+        </nav>
+      </header>
+      <div className="f1-track-line" />
+    </>
   );
 }
 

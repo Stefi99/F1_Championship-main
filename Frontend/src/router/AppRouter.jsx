@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+﻿import { Routes, Route } from "react-router-dom";
 
 // Auth Pages
 import LoginPage from "../pages/auth/LoginPage.jsx";
@@ -27,109 +27,111 @@ import ProtectedRoute from "../components/layout/ProtectedRoute.jsx";
 
 function AppRouter() {
   return (
-    <>
+    <div className="f1-shell">
       {/* Globale Navigation*/}
       <Navbar />
 
-      {/* Alle Routen der Anwendung */}
-      <Routes>
-        {/* Home-Bereich*/}
-        <Route path="/" element={<HomePage />} />
+      <main className="f1-main">
+        {/* Alle Routen der Anwendung */}
+        <Routes>
+          {/* Home-Bereich*/}
+          <Route path="/" element={<HomePage />} />
 
-        {/* Authentifizierung */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+          {/* Authentifizierung */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        {/* Player-Bereich */}
-        <Route
-          path="/player"
-          element={
-            <ProtectedRoute>
-              <PlayerDashboardPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Player-Bereich */}
+          <Route
+            path="/player"
+            element={
+              <ProtectedRoute>
+                <PlayerDashboardPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/player/races"
-          element={
-            <ProtectedRoute>
-              <PlayerRaceListPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/player/races"
+            element={
+              <ProtectedRoute>
+                <PlayerRaceListPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/player/leaderboard"
-          element={
-            <ProtectedRoute>
-              <PlayerLeaderboardPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/player/leaderboard"
+            element={
+              <ProtectedRoute>
+                <PlayerLeaderboardPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/player/race/:raceId/tips"
-          element={
-            <ProtectedRoute>
-              <PlayerRaceTipsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/player/race/:raceId/tips"
+            element={
+              <ProtectedRoute>
+                <PlayerRaceTipsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Admin-Bereich */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboardPage />
-            </AdminRoute>
-          }
-        />
+          {/* Admin-Bereich */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboardPage />
+              </AdminRoute>
+            }
+          />
 
-        <Route
-          path="/admin/races"
-          element={
-            <AdminRoute>
-              <AdminRaceListPage />
-            </AdminRoute>
-          }
-        />
+          <Route
+            path="/admin/races"
+            element={
+              <AdminRoute>
+                <AdminRaceListPage />
+              </AdminRoute>
+            }
+          />
 
-        <Route
-          path="/admin/drivers"
-          element={
-            <AdminRoute>
-              <AdminDriversListPage />
-            </AdminRoute>
-          }
-        />
+          <Route
+            path="/admin/drivers"
+            element={
+              <AdminRoute>
+                <AdminDriversListPage />
+              </AdminRoute>
+            }
+          />
 
-        <Route
-          path="/admin/results"
-          element={
-            <AdminRoute>
-              <AdminOfficialResultsPage />
-            </AdminRoute>
-          }
-        />
+          <Route
+            path="/admin/results"
+            element={
+              <AdminRoute>
+                <AdminOfficialResultsPage />
+              </AdminRoute>
+            }
+          />
 
-        <Route
-          path="/admin/races/new"
-          element={
-            <AdminRoute>
-              <AdminRaceFormPage />
-            </AdminRoute>
-          }
-        />
+          <Route
+            path="/admin/races/new"
+            element={
+              <AdminRoute>
+                <AdminRaceFormPage />
+              </AdminRoute>
+            }
+          />
 
-        {/* Fallback wird angezeigt, wenn Route nicht existiert */}
-        <Route
-          path="*"
-          element={<div style={{ padding: 20 }}>Seite nicht gefunden</div>}
-        />
-      </Routes>
-    </>
+          {/* Fallback wird angezeigt, wenn Route nicht existiert */}
+          <Route
+            path="*"
+            element={<div style={{ padding: 20 }}>Seite nicht gefunden</div>}
+          />
+        </Routes>
+      </main>
+    </div>
   );
 }
 
