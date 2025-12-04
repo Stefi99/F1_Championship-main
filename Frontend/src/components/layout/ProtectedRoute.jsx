@@ -1,7 +1,16 @@
-// Route-Schutz für alle Bereiche, die nur für eingeloggte Benutzer sichtbar sein sollen.
+import { useContext } from "react";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext.js";
 
+// Geschützte Route für alle eingeloggten Benutzer (Player + Admin)
 function ProtectedRoute({ children }) {
-  // TODO: Später Login-Status aus dem AuthContext prüfen
+  const { isAuthenticated } = useContext(AuthContext);
+
+  // Wenn nicht eingeloggt = Weiterleitung zu /login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 }
 

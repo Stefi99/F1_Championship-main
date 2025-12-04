@@ -1,8 +1,21 @@
-// Route wird später für geschützen Admin zugriff verwendet.
-// Erlaubt aktuell alles, damit das Projekt nicht Blockiert.
+import { useContext } from "react";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext.js";
 
+// Geschützte Route nur für Admin-Benutzer
 function AdminRoute({ children }) {
-  // TODO: AuthContext einbauen und Rolle prüfen (admin/player)
+  const { isAuthenticated, isAdmin } = useContext(AuthContext);
+
+  // Nicht eingeloggt = Login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Eingeloggt aber keine Admin-Rolle = Weiterleitung zu Player
+  if (!isAdmin) {
+    return <Navigate to="/player" replace />;
+  }
+
   return children;
 }
 
