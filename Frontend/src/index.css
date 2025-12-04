@@ -207,6 +207,31 @@ button:focus-visible {
   box-shadow: 0 0 16px rgba(225, 6, 0, 0.5);
 }
 
+.f1-footer {
+  border-top: 1px solid #1d1f27;
+  padding: 22px 24px 32px;
+  background: rgba(12, 13, 17, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--f1-muted);
+}
+
+.f1-footer-heading {
+  margin: 0 0 6px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--f1-text);
+}
+
+.f1-footer-meta {
+  margin: 0;
+  font-weight: 700;
+  color: var(--f1-muted);
+  letter-spacing: 0.01em;
+}
+
 @media (max-width: 720px) {
   .f1-navbar {
     align-items: flex-start;
@@ -216,6 +241,13 @@ button:focus-visible {
   .f1-nav-links {
     width: 100%;
     gap: 10px 14px;
+  }
+}
+
+@media (max-width: 720px) {
+  .f1-footer {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
