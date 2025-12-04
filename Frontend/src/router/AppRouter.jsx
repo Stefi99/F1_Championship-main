@@ -1,4 +1,4 @@
-﻿import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 // Auth Pages
 import LoginPage from "../pages/auth/LoginPage.jsx";
@@ -113,6 +113,15 @@ function AppRouter() {
 
         <Route
           path="/admin/races/new"
+          element={
+            <AdminRoute>
+              <AdminRaceFormPage />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/races/:raceId/edit"
           element={
             <AdminRoute>
               <AdminRaceFormPage />

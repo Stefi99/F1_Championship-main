@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --f1-red: #e10600;
   --f1-red-2: #ff2a1a;
   --f1-black: #0c0d11;
@@ -250,4 +250,106 @@ button:focus-visible {
     align-items: flex-start;
   }
 }
+
+
+/* Team color tags */
+.driver-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f5f5f5;
+  color: #111;
+}
+
+.result-list {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background: #fafafa;
+  cursor: move;
+  gap: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.result-row-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.result-row-position {
+  min-width: 2.6rem;
+  text-align: center;
+  font-weight: 800;
+  padding: 0.25rem 0.35rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.result-row-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  gap: 0.15rem;
+}
+
+.result-row-name {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.result-row-team {
+  font-size: 0.92rem;
+  opacity: 0.9;
+}
+
+.result-row-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.result-row-btn {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #111;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-weight: 700;
+}
+
+.result-row-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.team-default {
+  background: #f5f5f5;
+  color: #111;
+}
+
+.team-red-bull { background: linear-gradient(90deg, #1e41ff, #3671c6); color: #fff; }
+.team-ferrari { background: #dc0000; color: #fff; }
+.team-mercedes { background: #00d2be; color: #0a2c2d; }
+.team-mclaren { background: #ff8700; color: #1e1e1e; }
+.team-aston-martin { background: #00594f; color: #e0f7f4; }
+.team-alpine { background: #0090ff; color: #f6fbff; }
+.team-sauber { background: #52e252; color: #0f2b0f; }
+.team-haas { background: #b6babd; color: #111; }
+.team-williams { background: #005aff; color: #f0f5ff; }
+.team-rb { background: linear-gradient(90deg, #00154f, #1e90ff); color: #f1f5ff; }
 
