@@ -95,26 +95,6 @@ function AdminOfficialResultsPage() {
     alert("Ergebnisse gespeichert (Status: closed)");
   };
 
-  const handleRefresh = () => {
-    const stored = loadRaces();
-    setRaces(stored);
-    if (stored.length === 0) {
-      setSelectedId("");
-      setResultsOrder([]);
-    } else if (!stored.find((r) => String(r.id) === String(selectedId))) {
-      const firstId = String(stored[0].id);
-      setSelectedId(firstId);
-      const driverList = Object.values(driversByName).map((d) => d.name);
-      setResultsOrder(
-        stored[0].resultsOrder?.length
-          ? stored[0].resultsOrder
-          : stored[0].drivers?.length
-          ? stored[0].drivers
-          : driverList
-      );
-    }
-  };
-
   const shuffleOrder = () => {
     setResultsOrder((prev) => {
       const next = [...prev];
@@ -143,18 +123,6 @@ function AdminOfficialResultsPage() {
     setDragIndex(null);
   };
 
-  const loadRaceDrivers = () => {
-    const current = races.find(
-      (race) => String(race.id) === String(selectedId)
-    );
-    if (current?.drivers?.length) {
-      setResultsOrder(current.drivers);
-      return;
-    }
-    const allDrivers = Object.values(driversByName).map((d) => d.name);
-    if (allDrivers.length) setResultsOrder(allDrivers);
-  };
-
   if (races.length === 0) {
     return (
       <div style={{ padding: "2rem" }}>
@@ -174,7 +142,7 @@ function AdminOfficialResultsPage() {
     <div style={{ padding: "2rem", maxWidth: "900px" }}>
       <h1>Offizielle Ergebnisse</h1>
       <p>
-        Rangfolge per Drag & Drop anordnen oder zufällig mischen. Danach
+        Rangfolge per Drag und Drop anordnen oder zufällig mischen. Danach
         speichern, um den Status auf "closed" zu setzen.
       </p>
 
@@ -197,13 +165,11 @@ function AdminOfficialResultsPage() {
             </option>
           ))}
         </select>
-        <button onClick={handleRefresh}>Aktualisieren</button>
         <button onClick={shuffleOrder}>Zufallsreihenfolge</button>
-        <button onClick={loadRaceDrivers}>Teilnehmer laden</button>
       </div>
 
       {currentRace && (
-        <div style={{ marginBottom: "1rem", color: "#333" }}>
+        <div style={{ marginBottom: "1rem", color: "#e1e1e1ff" }}>
           <div>
             <strong>Strecke:</strong> {currentRace.track}
           </div>

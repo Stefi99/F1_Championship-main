@@ -32,19 +32,6 @@ function AdminRaceListPage() {
     persist(next);
   };
 
-  const handleToggleStatus = (id) => {
-    const next = races.map((race) => {
-      if (String(race.id) !== String(id)) return race;
-      const newStatus = race.status === "closed" ? "open" : "closed";
-      return { ...race, status: newStatus };
-    });
-    persist(next);
-  };
-
-  const handleRefresh = () => {
-    setRaces(loadRaces());
-  };
-
   return (
     <div style={{ padding: "2rem" }}>
       <h1>Rennen verwalten</h1>
@@ -52,7 +39,6 @@ function AdminRaceListPage() {
         <button onClick={() => navigate("/admin/races/new")}>
           Neues Rennen anlegen
         </button>
-        <button onClick={handleRefresh}>Aktualisieren</button>
         <button onClick={() => navigate("/admin/results")}>
           Offizielle Ergebnisse
         </button>
@@ -114,11 +100,6 @@ function AdminRaceListPage() {
                       onClick={() => navigate(`/admin/races/${race.id}/edit`)}
                     >
                       Bearbeiten
-                    </button>
-                    <button onClick={() => handleToggleStatus(race.id)}>
-                      {race.status === "closed"
-                        ? "Rennen öffnen"
-                        : "Rennen schliessen"}
                     </button>
                     <button onClick={() => handleDelete(race.id)}>
                       Löschen
