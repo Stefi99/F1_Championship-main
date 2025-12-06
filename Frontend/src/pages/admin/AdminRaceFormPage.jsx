@@ -1,14 +1,15 @@
 // Formularseite zum Erstellen oder Bearbeiten eines Rennens
-import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { getStoredDrivers } from "../../data/drivers";
+
+const DRIVER_LIMIT = 20;
 
 function AdminRaceFormPage() {
   const navigate = useNavigate();
   const { raceId } = useParams();
   const isEdit = Boolean(raceId);
 
-  // Lokaler Formular-State
   const [track, setTrack] = useState("");
   const [weather, setWeather] = useState("");
   const [date, setDate] = useState("");
@@ -23,9 +24,15 @@ function AdminRaceFormPage() {
 
   // Fahrer laden (inkl. Teams aus Verwaltung)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDriverOptions(getStoredDrivers());
   }, []);
+
+  // Bei neuem Rennen alle Fahrer vorselektieren
+  useEffect(() => {
+    if (!isEdit && driverOptions.length > 0 && drivers.length === 0) {
+      setDrivers(driverOptions.map((driver) => driver.name));
+    }
+  }, [driverOptions, isEdit, drivers.length]);
 
   // Bei Edit: vorhandene Daten laden
   useEffect(() => {
@@ -39,7 +46,6 @@ function AdminRaceFormPage() {
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTrack(existing.track || "");
     setWeather(existing.weather || "");
     setDate(existing.date || "");
@@ -53,7 +59,7 @@ function AdminRaceFormPage() {
       if (prev.includes(driverName)) {
         return prev.filter((d) => d !== driverName);
       }
-      if (prev.length >= 20) {
+      if (prev.length >= DRIVER_LIMIT) {
         alert("Maximal 20 Fahrer wählbar");
         return prev;
       }
@@ -91,120 +97,173 @@ function AdminRaceFormPage() {
   };
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "700px" }}>
-      <h1>{isEdit ? "Rennen bearbeiten" : "Neues Rennen erstellen"}</h1>
+    <div className="race-form-page">
+      <header className="race-form-hero">
+        <div>
+          <p className="admin-eyebrow">
+            {isEdit ? "Rennen bearbeiten" : "Neues Rennen"}
+          </p>
+          <h1>
+            {isEdit ? "Renndaten aktualisieren" : "Neues Rennen erstellen"}
+          </h1>
+          <p className="admin-sub">
+            Kerninfos eintragen, Fahrerfeld bei Bedarf ausdünnen. Standardmäßig
+            sind alle Fahrer ausgewählt, du entfernst nur Abmeldungen.
+          </p>
+        </div>
+      </header>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-      >
-        {/* Strecke */}
-        <label>
-          Strecke auswählen:
-          <select
-            value={track}
-            onChange={(e) => setTrack(e.target.value)}
-            required
-          >
-            <option value="">Bitte wählen...</option>
-            <option value="Bahrain International Circuit">Bahrain</option>
-            <option value="Monza">Monza</option>
-            <option value="Silverstone">Silverstone</option>
-            <option value="Spa-Francorchamps">Spa</option>
-            <option value="Red Bull Ring">Red Bull Ring</option>
-          </select>
-        </label>
+      <form className="race-form-shell" onSubmit={handleSubmit}>
+        <section className="race-form-section">
+          <div className="race-form-section-header">
+            <span className="race-form-bar" />
+            <div>
+              <p className="admin-eyebrow">Renndaten</p>
+              <h2>Grunddaten</h2>
+            </div>
+          </div>
 
-        {/* Wetter */}
-        <label>
-          Wetter:
-          <select
-            value={weather}
-            onChange={(e) => setWeather(e.target.value)}
-            required
-          >
-            <option value="">Bitte wählen...</option>
-            <option value="sunny">Sonne</option>
-            <option value="cloudy">Wolken</option>
-            <option value="rain">Regen</option>
-          </select>
-        </label>
-
-        {/* Datum */}
-        <label>
-          Datum:
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-        </label>
-
-        {/* Reifen */}
-        <label>
-          Reifenwahl:
-          <select
-            value={tyres}
-            onChange={(e) => setTyres(e.target.value)}
-            required
-          >
-            <option value="">Bitte wählen...</option>
-            <option value="soft">Soft</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </label>
-
-        {/* Status */}
-        <label>
-          Status:
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            required
-          >
-            <option value="">Bitte wählen...</option>
-            <option value="open">Offen</option>
-            <option value="voting">Tippen möglich</option>
-            <option value="closed">Geschlossen</option>
-          </select>
-        </label>
-
-        {/* Fahrer Auswahl */}
-        <fieldset style={{ border: "1px solid #ccc", padding: "1rem" }}>
-          <legend>Teilnehmende Fahrer (max 20)</legend>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "0.5rem",
-            }}
-          >
-            {driverOptions.map((driver) => (
-              <label
-                key={driver.name}
-                style={{ display: "flex", gap: "0.35rem" }}
+          <div className="race-form-grid">
+            <label className="race-field-card">
+              <span className="race-field-label">Strecke wählen</span>
+              <span className="race-field-help">
+                Verwendet wird der volle Streckenname in allen Listen.
+              </span>
+              <select
+                value={track}
+                onChange={(e) => setTrack(e.target.value)}
+                required
               >
+                <option value="">Bitte wählen...</option>
+                <option value="Bahrain International Circuit">Bahrain</option>
+                <option value="Monza">Monza</option>
+                <option value="Silverstone">Silverstone</option>
+                <option value="Spa-Francorchamps">Spa</option>
+                <option value="Red Bull Ring">Red Bull Ring</option>
+              </select>
+            </label>
+
+            <label className="race-field-card">
+              <span className="race-field-label">Wetter</span>
+              <span className="race-field-help">
+                Für Erwartung und Stimmung in den Rennkarten.
+              </span>
+              <select
+                value={weather}
+                onChange={(e) => setWeather(e.target.value)}
+                required
+              >
+                <option value="">Bitte wählen...</option>
+                <option value="sunny">Sonne</option>
+                <option value="cloudy">Wolken</option>
+                <option value="rain">Regen</option>
+              </select>
+            </label>
+
+            <label className="race-field-card">
+              <span className="race-field-label">Datum</span>
+              <span className="race-field-help">
+                Pflichtfeld für Planung und Anzeige.
+              </span>
+              <div className="race-date-wrapper">
                 <input
-                  type="checkbox"
-                  checked={drivers.includes(driver.name)}
-                  onChange={() => toggleDriver(driver.name)}
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
                 />
-                <span>
-                  {driver.name} ({driver.team})
-                </span>
+              </div>
+            </label>
+
+            <label className="race-field-card">
+              <span className="race-field-label">Reifenwahl</span>
+              <span className="race-field-help">
+                Welche Mischung nominiert ist (Soft/Medium/Hard).
+              </span>
+              <select
+                value={tyres}
+                onChange={(e) => setTyres(e.target.value)}
+                required
+              >
+                <option value="">Bitte wählen...</option>
+                <option value="soft">Soft</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </label>
+
+            <label className="race-field-card">
+              <span className="race-field-label">Status</span>
+              <span className="race-field-help">
+                Steuert, ob Tippen erlaubt ist oder das Rennen geschlossen ist.
+              </span>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                required
+              >
+                <option value="">Bitte wählen...</option>
+                <option value="open">Offen</option>
+                <option value="voting">Tippen möglich</option>
+                <option value="closed">Geschlossen</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section className="race-form-section">
+          <div className="race-form-section-header">
+            <span className="race-form-bar" />
+            <div>
+              <p className="admin-eyebrow">Fahrerfeld</p>
+              <h2>Teilnehmende Fahrer</h2>
+            </div>
+            <div className="race-form-legend-row">
+              <div className="race-driver-legend" aria-hidden="true">
+                <div className="race-driver-legend-item">
+                  <span className="race-driver-legend-chip is-selected" />
+                  <span>Ausgewählt</span>
+                </div>
+                <div className="race-driver-legend-item">
+                  <span className="race-driver-legend-chip" />
+                  <span>Nicht ausgewählt</span>
+                </div>
+              </div>
+            </div>
+            <div className="race-form-counter">
+              {drivers.length}/{DRIVER_LIMIT}
+            </div>
+          </div>
+
+          <div className="race-driver-grid">
+            {driverOptions.map((driver) => (
+              <label key={driver.name} className="race-driver-card">
+                <div className="race-driver-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={drivers.includes(driver.name)}
+                    onChange={() => toggleDriver(driver.name)}
+                  />
+                  <span className="race-driver-mark" />
+                </div>
+                <div className="race-driver-info">
+                  <span className="race-driver-name">{driver.name}</span>
+                  <span className="race-driver-team">{driver.team}</span>
+                </div>
               </label>
             ))}
           </div>
-        </fieldset>
+        </section>
 
-        {/* Buttons */}
-        <div style={{ display: "flex", gap: "1rem" }}>
+        <div className="race-form-actions">
           <button type="submit">
             {isEdit ? "Aktualisieren" : "Speichern"}
           </button>
-          <button type="button" onClick={() => navigate("/admin/races")}>
+          <button
+            type="button"
+            className="race-ghost-btn"
+            onClick={() => navigate("/admin/races")}
+          >
             Abbrechen
           </button>
         </div>

@@ -1,8 +1,10 @@
 import { Routes, Route } from "react-router-dom";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminRaceListPage from "./pages/admin/AdminRaceListPage";
-import DriversListPage from "./pages/admin/DriversListPage";
 import AdminRaceFormPage from "./pages/admin/AdminRaceFormPage";
+import AdminDriversListPage from "./pages/admin/AdminDriversListPage";
+import AdminOfficialResultsPage from "./pages/admin/AdminOfficialResultsPage";
+import AdminRoute from "./components/layout/AdminRoute";
 import PageNotFound from "./pages/PageNotFound";
 
 function App() {
@@ -15,6 +17,24 @@ function App() {
         <Route path="*" element={<PageNotFound />} />
 
         <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/races"
+          element={
+            <AdminRoute>
+              <AdminRaceListPage />
+            </AdminRoute>
+          }
+        />
+
+        <Route
           path="/admin/races/new"
           element={
             <AdminRoute>
@@ -23,9 +43,23 @@ function App() {
           }
         />
 
-        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/admin/races" element={<AdminRaceListPage />} />
-        <Route path="/admin/drivers" element={<DriversListPage />} />
+        <Route
+          path="/admin/drivers"
+          element={
+            <AdminRoute>
+              <AdminDriversListPage />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/results"
+          element={
+            <AdminRoute>
+              <AdminOfficialResultsPage />
+            </AdminRoute>
+          }
+        />
       </Routes>
     </div>
   );

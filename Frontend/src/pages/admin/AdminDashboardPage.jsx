@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStoredDrivers } from "../../data/drivers";
 import driversImg from "../../assets/drivers.svg";
@@ -12,31 +12,32 @@ function AdminDashboardPage() {
   const actions = [
     {
       label: "Rennen verwalten",
-      description: "Bestehende Events prüfen, Status wechseln und Details anpassen.",
+      description:
+        "Bestehende Events prüfen, Status wechseln und Details anpassen.",
       title: "Geplante Rennen anzeigen und bearbeiten",
       img: raceImg,
       to: "/admin/races",
     },
     {
       label: "Fahrer verwalten",
-      description: "Fahrerdaten und Team-Zuordnung pflegen - wirkt in allen Rennen.",
+      description:
+        "Fahrerdaten und Team-Zuordnung pflegen - wirkt in allen Rennen.",
       title: "Fahrer- und Teamverwaltung öffnen",
       img: driversImg,
       to: "/admin/drivers",
     },
     {
       label: "Ergebnisse eintragen",
-      description: "Rangfolge per Drag & Drop setzen, Punkte speichern und Rennen schließen.",
+      description:
+        "Rangfolge per Drag & Drop setzen, Punkte speichern und Rennen schließen.",
       title: "Offizielle Resultate erfassen",
       img: resultsImg,
       to: "/admin/results",
     },
   ];
 
-  const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
-
-  const refreshStats = () => {
-    const races = loadRaces();
+  const refreshStats = useCallback(() => {
+    const races = JSON.parse(localStorage.getItem("races") || "[]");
     const drivers = getStoredDrivers();
     const openTasks = races.filter((race) => {
       const closed = race.status === "closed";
@@ -49,18 +50,23 @@ function AdminDashboardPage() {
       drivers: drivers.length,
       tasks: openTasks,
     });
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshStats();
     const handleStorage = (event) => {
-      if (event.key === "races" || event.key === "driversData" || event.key === null) {
+      if (
+        event.key === "races" ||
+        event.key === "driversData" ||
+        event.key === null
+      ) {
         refreshStats();
       }
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+  }, [refreshStats]);
 
   return (
     <div className="admin-dashboard-page">
@@ -114,13 +120,15 @@ function AdminDashboardPage() {
         <div>
           <h3>Nächste Schritte</h3>
           <p>
-            Neue Rennen anlegen, Fahrerkader pflegen oder Resultate direkt nach dem
-            Wochenende eintragen. So bleibt die Saison immer aktuell.
+            Neue Rennen anlegen, Fahrerkader pflegen oder Resultate direkt nach
+            dem Wochenende eintragen. So bleibt die Saison immer aktuell.
           </p>
         </div>
         <div className="admin-foot-highlight">
           <p className="admin-eyebrow">Tipp</p>
-          <p>Buttons sind klickbar, egal ob Bild oder Text - einfach loslegen.</p>
+          <p>
+            Buttons sind klickbar, egal ob Bild oder Text - einfach loslegen.
+          </p>
         </div>
       </section>
     </div>
