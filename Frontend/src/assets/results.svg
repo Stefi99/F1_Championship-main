@@ -1,0 +1,64 @@
+<svg width="960" height="600" viewBox="0 0 960 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="res1" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0D0F17" />
+      <stop offset="1" stop-color="#161C28" />
+    </linearGradient>
+    <linearGradient id="res2" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#E10600" />
+      <stop offset="1" stop-color="#FF4D46" />
+    </linearGradient>
+    <linearGradient id="res3" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#00F5FF" stop-opacity="0.35" />
+      <stop offset="1" stop-color="#0066FF" stop-opacity="0.08" />
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="600" rx="28" fill="url(#res1)" />
+
+  <g fill="#101421" stroke="#1E2432" stroke-width="2">
+    <rect x="120" y="154" width="720" height="290" rx="18" />
+    <rect x="160" y="194" width="640" height="62" rx="12" />
+    <rect x="160" y="272" width="640" height="62" rx="12" />
+    <rect x="160" y="350" width="640" height="62" rx="12" />
+  </g>
+
+  <g fill="#0F1320" stroke="#222A38" stroke-width="2">
+    <rect x="174" y="210" width="88" height="30" rx="8" />
+    <rect x="174" y="288" width="88" height="30" rx="8" />
+    <rect x="174" y="366" width="88" height="30" rx="8" />
+  </g>
+
+  <g fill="#E1E4ED" font-family="Montserrat, Segoe UI, sans-serif" font-weight="800" font-size="18">
+    <text x="198" y="232">1.</text>
+    <text x="198" y="310">2.</text>
+    <text x="198" y="388">3.</text>
+  </g>
+
+  <g fill="#E1E4ED" font-family="Montserrat, Segoe UI, sans-serif" font-weight="700" font-size="18">
+    <text x="298" y="232">Fahrer / Team</text>
+    <text x="298" y="310">Fahrer / Team</text>
+    <text x="298" y="388">Fahrer / Team</text>
+  </g>
+
+  <g fill="url(#res3)">
+    <rect x="628" y="210" width="140" height="30" rx="8" />
+    <rect x="628" y="288" width="140" height="30" rx="8" />
+    <rect x="628" y="366" width="140" height="30" rx="8" />
+  </g>
+
+  <g fill="#E1E4ED" font-family="Montserrat, Segoe UI, sans-serif" font-weight="800" font-size="18" text-anchor="end">
+    <text x="746" y="232">25 P</text>
+    <text x="746" y="310">18 P</text>
+    <text x="746" y="388">15 P</text>
+  </g>
+
+  <path d="M170 460H430" stroke="url(#res2)" stroke-width="12" stroke-linecap="round" stroke-dasharray="12 16" />
+  <circle cx="180" cy="460" r="10" fill="#E1E4ED" />
+  <circle cx="260" cy="460" r="10" fill="#E1E4ED" />
+  <circle cx="340" cy="460" r="10" fill="#E1E4ED" />
+  <circle cx="420" cy="460" r="10" fill="#E1E4ED" />
+
+  <text x="60" y="86" fill="#E7E9F2" font-size="38" font-family="Montserrat, Segoe UI, sans-serif" font-weight="800">Resultate</text>
+  <text x="60" y="126" fill="#9EA3B0" font-size="18" font-family="Montserrat, Segoe UI, sans-serif" font-weight="600">Platzierungen, Punkte und Status im Blick.</text>
+</svg>
