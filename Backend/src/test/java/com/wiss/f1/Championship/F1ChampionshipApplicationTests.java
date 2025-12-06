@@ -8,6 +8,7 @@ class F1ChampionshipApplicationTests {
 
 	@Test
 	void contextLoads() {
+		System.out.println("HelloWorld");
 	}
 
 }
