@@ -24,12 +24,14 @@ function AdminRaceFormPage() {
 
   // Fahrer laden (inkl. Teams aus Verwaltung)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDriverOptions(getStoredDrivers());
   }, []);
 
   // Bei neuem Rennen alle Fahrer vorselektieren
   useEffect(() => {
     if (!isEdit && driverOptions.length > 0 && drivers.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDrivers(driverOptions.map((driver) => driver.name));
     }
   }, [driverOptions, isEdit, drivers.length]);
@@ -46,6 +48,7 @@ function AdminRaceFormPage() {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTrack(existing.track || "");
     setWeather(existing.weather || "");
     setDate(existing.date || "");

@@ -70,7 +70,7 @@ function AdminDriversListPage() {
 
   const handleSave = () => {
     const previousDrivers = getStoredDrivers();
-    // Persist drivers (with stable ids)
+    // Persist drivers (mit stabilen IDs)
     saveDrivers(drivers);
     applyRenamesToRaces(drivers, previousDrivers);
     alert("Fahrer gespeichert");
@@ -83,73 +83,92 @@ function AdminDriversListPage() {
     applyRenamesToRaces(defaultDrivers, previousDrivers);
   };
 
+  const teamCount = new Set(drivers.map((d) => d.team)).size;
+
   return (
-    <div style={{ padding: "2rem", maxWidth: "900px" }}>
-      <h1>Fahrer verwalten</h1>
-      <p>
-        Namen und Team-Zuordnung ändern. Änderungen wirken automatisch in
-        Rennen, Ergebnissen und Farben.
-      </p>
-
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-        <button onClick={handleSave}>Speichern</button>
-        <button onClick={handleReset}>Auf Standard zurücksetzen</button>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "0.75rem",
-        }}
-      >
-        {drivers.map((driver) => (
-          <div
-            key={driver.id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "0.75rem",
-            }}
-          >
-            <label
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.35rem",
-              }}
+    <div className="drivers-admin-page">
+      <header className="drivers-hero">
+        <div className="drivers-hero-text">
+          <p className="admin-eyebrow">Fahrer verwalten</p>
+          <h1>Roster & Teamfarben</h1>
+          <p className="admin-sub">
+            Fahrer zentral pflegen. Aenderungen wirken sofort in Rennen,
+            Ergebnissen und Farbcodierungen.
+          </p>
+          <div className="driver-hero-actions">
+            <button type="button" onClick={handleSave}>
+              Speichern
+            </button>
+            <button
+              type="button"
+              className="admin-ghost-btn"
+              onClick={handleReset}
             >
-              Fahrername
-              <input
-                type="text"
-                value={driver.name}
-                onChange={(e) => handleChangeName(driver.id, e.target.value)}
-              />
-            </label>
-
-            <label
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.35rem",
-                marginTop: "0.5rem",
-              }}
-            >
-              Team
-              <select
-                value={driver.team}
-                onChange={(e) => handleChangeTeam(driver.id, e.target.value)}
-              >
-                {TEAM_OPTIONS.map((team) => (
-                  <option key={team} value={team}>
-                    {team}
-                  </option>
-                ))}
-              </select>
-            </label>
+              Auf Standard zuruecksetzen
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
+
+        <div className="drivers-hero-stats">
+          <div className="driver-hero-stat">
+            <strong>{drivers.length}</strong>
+            <span>Fahrer gelistet</span>
+          </div>
+          <div className="driver-hero-stat">
+            <strong>{teamCount}</strong>
+            <span>Teams vergeben</span>
+          </div>
+          <div className="driver-hero-stat">
+            <strong>Auto-Sync</strong>
+            <span>Wirkt sofort in Rennen</span>
+          </div>
+        </div>
+      </header>
+
+      <section className="drivers-panel">
+        <div className="drivers-panel-head">
+          <div>
+            <p className="admin-eyebrow">Roster bearbeiten</p>
+            <h2>Namen & Teams anpassen</h2>
+            <p className="driver-panel-copy">
+              Saubere Schreibweisen halten Ergebnisse und Teamfarben konsistent.
+              Aenderungen ueberschreiben alle gespeicherten Rennen.
+            </p>
+          </div>
+        </div>
+
+        <div className="driver-grid">
+          {drivers.map((driver) => (
+            <div key={driver.id} className="driver-card">
+              <label className="driver-field">
+                <span className="driver-field-label">Fahrername</span>
+                <input
+                  type="text"
+                  value={driver.name}
+                  onChange={(e) => handleChangeName(driver.id, e.target.value)}
+                />
+              </label>
+
+              <label className="driver-field">
+                <span className="driver-field-label">Team</span>
+                <span className="driver-field-help">
+                  Bestimmt Farbkodierung und Zuordnung in allen Rennen.
+                </span>
+                <select
+                  value={driver.team}
+                  onChange={(e) => handleChangeTeam(driver.id, e.target.value)}
+                >
+                  {TEAM_OPTIONS.map((team) => (
+                    <option key={team} value={team}>
+                      {team}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
