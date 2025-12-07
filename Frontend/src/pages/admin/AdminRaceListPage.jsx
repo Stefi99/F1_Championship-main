@@ -20,6 +20,8 @@ function AdminRaceListPage() {
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
+  const teamLabel = (driverName) => getDriverTeam(driverName) || "Team unbekannt";
+
   const statusLabel = {
     open: "Offen",
     voting: "Tippen möglich",
@@ -223,16 +225,31 @@ function AdminRaceListPage() {
                               {(race.resultsOrder || []).map((driver, index) => (
                                 <li
                                   key={driver}
-                                  className={`race-driver-chip ${teamClass(
-                                    driver
-                                  )}`}
+                                  className={`race-result-row ${teamClass(driver)}`}
                                 >
-                                  <span className="race-result-pos">
-                                    #{index + 1}
-                                  </span>
-                                  <span className="race-result-name">
-                                    {driver}
-                                  </span>
+                                  <span
+                                    className={`race-result-stripe ${teamClass(
+                                      driver
+                                    )}`}
+                                    aria-hidden="true"
+                                  />
+                                  <div className="race-result-main">
+                                    <span
+                                      className={`race-result-badge ${teamClass(
+                                        driver
+                                      )}`}
+                                    >
+                                      #{index + 1}
+                                    </span>
+                                    <div className="race-result-text">
+                                      <span className="race-result-name">
+                                        {driver}
+                                      </span>
+                                      <span className="race-result-team">
+                                        {teamLabel(driver)}
+                                      </span>
+                                    </div>
+                                  </div>
                                 </li>
                               ))}
                             </ol>

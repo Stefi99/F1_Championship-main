@@ -1,10 +1,16 @@
 // Formularseite zum Erstellen oder Bearbeiten eines Rennens
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getStoredDrivers } from "../../data/drivers";
+import {
+  getStoredDrivers,
+  getDriverTeam,
+  TEAM_CLASS_MAP,
+} from "../../data/drivers";
 import { TRACK_OPTIONS } from "../../data/tracks";
 
 const DRIVER_LIMIT = 20;
+const TEAM_COLOR_CLASS = (teamName) =>
+  TEAM_CLASS_MAP[teamName] || "team-default";
 
 function AdminRaceFormPage() {
   const navigate = useNavigate();
@@ -18,6 +24,7 @@ function AdminRaceFormPage() {
   const [status, setStatus] = useState("");
   const [drivers, setDrivers] = useState([]);
   const [driverOptions, setDriverOptions] = useState([]);
+  const [driverError, setDriverError] = useState("");
   const missingTrackOption =
     track &&
     !TRACK_OPTIONS.some((option) => String(option.value) === String(track))
@@ -66,12 +73,14 @@ function AdminRaceFormPage() {
   const toggleDriver = (driverName) => {
     setDrivers((prev) => {
       if (prev.includes(driverName)) {
+        setDriverError("");
         return prev.filter((d) => d !== driverName);
       }
       if (prev.length >= DRIVER_LIMIT) {
-        alert("Maximal 20 Fahrer wählbar");
+        setDriverError(`Maximal ${DRIVER_LIMIT} Fahrer wählbar.`);
         return prev;
       }
+      setDriverError("");
       return [...prev, driverName];
     });
   };
@@ -150,7 +159,9 @@ function AdminRaceFormPage() {
                   </option>
                 ))}
                 {missingTrackOption && (
-                  <option value={missingTrackOption}>{missingTrackOption}</option>
+                  <option value={missingTrackOption}>
+                    {missingTrackOption}
+                  </option>
                 )}
               </select>
             </label>
@@ -247,23 +258,43 @@ function AdminRaceFormPage() {
             </div>
           </div>
 
+          {driverError && <p className="race-driver-error">{driverError}</p>}
+
           <div className="race-driver-grid">
-            {driverOptions.map((driver) => (
-              <label key={driver.name} className="race-driver-card">
-                <div className="race-driver-checkbox">
+            {driverOptions.map((driver) => {
+              const isSelected = drivers.includes(driver.name);
+              const teamClass = TEAM_COLOR_CLASS(
+                getDriverTeam(driver.name) || driver.team
+              );
+
+              return (
+                <label
+                  key={driver.name}
+                  className={`race-driver-card ${
+                    isSelected ? "is-selected" : "is-deselected"
+                  }`}
+                >
                   <input
                     type="checkbox"
-                    checked={drivers.includes(driver.name)}
+                    checked={isSelected}
                     onChange={() => toggleDriver(driver.name)}
+                    className="race-driver-checkbox-input"
+                    aria-label={`${driver.name} ${
+                      isSelected ? "abwählen" : "hinzufügen"
+                    }`}
                   />
-                  <span className="race-driver-mark" />
-                </div>
-                <div className="race-driver-info">
-                  <span className="race-driver-name">{driver.name}</span>
-                  <span className="race-driver-team">{driver.team}</span>
-                </div>
-              </label>
-            ))}
+                  <span
+                    className={`race-driver-stripe ${teamClass}`}
+                    aria-hidden="true"
+                  />
+                  <span className="race-driver-check" aria-hidden="true" />
+                  <div className="race-driver-card-body">
+                    <span className="race-driver-name">{driver.name}</span>
+                    <span className="race-driver-team">{driver.team}</span>
+                  </div>
+                </label>
+              );
+            })}
           </div>
         </section>
 

@@ -657,8 +657,9 @@ button:focus-visible {
 
 .race-driver-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .race-form-legend-row {
@@ -704,60 +705,104 @@ button:focus-visible {
   box-shadow: 0 10px 24px rgba(225, 6, 0, 0.35);
 }
 
+.race-driver-error {
+  margin: 0 0 8px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #5a1b1b;
+  background: rgba(225, 6, 0, 0.08);
+  color: #ffb3b3;
+  font-weight: 750;
+}
+
 .race-driver-card {
+  position: relative;
   display: flex;
-  gap: 10px;
   align-items: center;
-  padding: 0.75rem 0.85rem;
-  border-radius: 12px;
-  border: 1px solid #1d1f27;
+  gap: 12px;
+  padding: 0.9rem 1rem 0.9rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid transparent;
   background: #0f1118;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: border-color 0.18s ease, transform 0.12s ease,
-    box-shadow 0.18s ease;
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    transform 0.12s ease, background 0.18s ease;
+}
+
+.race-driver-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 20% 30%, rgba(255, 65, 54, 0.08), transparent 38%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
 }
 
 .race-driver-card:hover {
-  border-color: var(--f1-red);
+  border-color: rgba(225, 6, 0, 0.9);
   transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.38),
+    0 0 0 2px rgba(255, 42, 26, 0.65);
 }
 
-.race-driver-checkbox {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.race-driver-card:focus-within {
+  border-color: rgba(225, 6, 0, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.38),
+    0 0 0 2px rgba(255, 42, 26, 0.65);
 }
 
-.race-driver-checkbox input {
+.race-driver-card:hover::before {
+  opacity: 1;
+}
+
+.race-driver-card.is-selected {
+  border-color: transparent;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.race-driver-card.is-selected:hover,
+.race-driver-card.is-selected:focus-within {
+  border-color: rgba(225, 6, 0, 0.9);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.38),
+    0 0 0 2px rgba(255, 42, 26, 0.65);
+}
+
+.race-driver-checkbox-input {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
   opacity: 0;
   cursor: pointer;
 }
 
-.race-driver-mark {
+.race-driver-stripe {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 8px;
+  border-radius: 0 12px 12px 0;
+  pointer-events: none;
+}
+
+.race-driver-check {
   width: 22px;
   height: 22px;
   border-radius: 8px;
-  border: 2px solid #2c303d;
-  background: #0f1118;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: border-color 0.18s ease, background 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-.race-driver-checkbox input:checked + .race-driver-mark {
-  border-color: var(--f1-red);
   background: linear-gradient(145deg, var(--f1-red), #b80000);
-  box-shadow: 0 10px 24px rgba(225, 6, 0, 0.35);
+  box-shadow: 0 10px 22px rgba(225, 6, 0, 0.35);
+  border: 1px solid #2c303d;
+  flex-shrink: 0;
 }
 
-.race-driver-info {
+.race-driver-card.is-deselected .race-driver-check {
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: none;
+}
+
+.race-driver-card-body {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -772,6 +817,40 @@ button:focus-visible {
   color: var(--f1-muted);
   font-weight: 700;
   font-size: 0.95rem;
+}
+
+.race-driver-stripe.team-red-bull {
+  background: linear-gradient(120deg, #1b2fab, #2037c4);
+}
+.race-driver-stripe.team-ferrari {
+  background: #dc0000;
+}
+.race-driver-stripe.team-mercedes {
+  background: #00d2be;
+}
+.race-driver-stripe.team-mclaren {
+  background: #ff8700;
+}
+.race-driver-stripe.team-aston-martin {
+  background: #00594f;
+}
+.race-driver-stripe.team-alpine {
+  background: linear-gradient(120deg, #52b8ff, #2b9be8);
+}
+.race-driver-stripe.team-sauber {
+  background: #52e252;
+}
+.race-driver-stripe.team-haas {
+  background: #b6babd;
+}
+.race-driver-stripe.team-williams {
+  background: linear-gradient(120deg, #1a6ee0, #1c7ef2);
+}
+.race-driver-stripe.team-rb {
+  background: linear-gradient(120deg, #0a155c, #0f1f7a);
+}
+.race-driver-stripe.team-default {
+  background: #2c303d;
 }
 
 .race-form-actions {
@@ -1236,8 +1315,8 @@ button:focus-visible {
   font-weight: 850;
   letter-spacing: 0.02em;
   box-shadow: 0 12px 30px rgba(255, 65, 54, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.2s ease,
-    filter 0.2s ease, border-color 0.18s ease;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease,
+    border-color 0.18s ease;
 }
 
 .race-danger-btn:hover {
@@ -1279,31 +1358,164 @@ button:focus-visible {
 }
 
 .race-results-list {
-  margin: 4px 0 0;
-  padding-left: 0;
+  margin: 6px 0 0;
+  padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+  gap: 10px;
+  width: min(520px, 100%);
+  align-self: flex-start;
 }
 
-.race-results-list .race-driver-chip {
-  width: 100%;
-  justify-content: space-between;
-  white-space: nowrap;
+.race-result-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #1d1f29;
+  background: linear-gradient(135deg, #0f1118 0%, #0c0e14 100%);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+  overflow: hidden;
 }
 
-@media (min-width: 780px) {
-  .race-results-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    grid-template-rows: repeat(10, auto);
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(240px, 1fr);
-  }
+.race-result-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.12)
+  );
+  pointer-events: none;
+}
+
+.race-result-row:hover {
+  border-color: var(--f1-red);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
+}
+
+.race-result-stripe {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 10px;
+  border-radius: 0 12px 12px 0;
+  pointer-events: none;
+}
+
+.race-result-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.race-result-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.race-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.race-result-name {
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.race-result-team {
+  color: var(--f1-muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* Fix team color overrides on result rows */
+.race-result-row[class*="team-"],
+.race-result-row[class*="team-"] .race-result-name {
+  color: #ffffff;
+}
+
+.race-result-row[class*="team-"] .race-result-team {
+  color: var(--f1-muted);
+}
+
+.race-result-badge.team-red-bull,
+.race-result-stripe.team-red-bull {
+  background: linear-gradient(120deg, #1b2fab, #2037c4);
+  color: #fff;
+}
+.race-result-badge.team-ferrari,
+.race-result-stripe.team-ferrari {
+  background: #dc0000;
+  color: #fff;
+}
+.race-result-badge.team-mercedes,
+.race-result-stripe.team-mercedes {
+  background: #00d2be;
+  color: #0a2c2d;
+}
+.race-result-badge.team-mclaren,
+.race-result-stripe.team-mclaren {
+  background: #ff8700;
+  color: #1e1e1e;
+}
+.race-result-badge.team-aston-martin,
+.race-result-stripe.team-aston-martin {
+  background: #00594f;
+  color: #e0f7f4;
+}
+.race-result-badge.team-alpine,
+.race-result-stripe.team-alpine {
+  background: linear-gradient(120deg, #52b8ff, #2b9be8);
+  color: #0a2c2d;
+}
+.race-result-badge.team-sauber,
+.race-result-stripe.team-sauber {
+  background: #52e252;
+  color: #0f2b0f;
+}
+.race-result-badge.team-haas,
+.race-result-stripe.team-haas {
+  background: #b6babd;
+  color: #111;
+}
+.race-result-badge.team-williams,
+.race-result-stripe.team-williams {
+  background: linear-gradient(120deg, #1a6ee0, #1c7ef2);
+  color: #f0f5ff;
+}
+.race-result-badge.team-rb,
+.race-result-stripe.team-rb {
+  background: linear-gradient(120deg, #0a155c, #0f1f7a);
+  color: #f1f5ff;
+}
+.race-result-badge.team-default,
+.race-result-stripe.team-default {
+  background: #2c303d;
+  color: #ffffff;
 }
 
 .race-driver-chip-grid {
@@ -1366,19 +1578,6 @@ button:focus-visible {
   color: #f1f5ff;
 }
 
-.race-result-pos {
-  display: inline-block;
-  min-width: 2.4rem;
-  padding: 2px 6px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(0, 0, 0, 0.3);
-  color: #ffffff;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  text-align: center;
-}
-
 .race-result-name {
   color: inherit;
 }
@@ -1407,7 +1606,6 @@ button:focus-visible {
   .race-card-media {
     min-height: 170px;
   }
-
 }
 
 /* Official Results Admin */
