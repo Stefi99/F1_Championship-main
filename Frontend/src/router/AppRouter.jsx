@@ -9,6 +9,7 @@ import PlayerDashboardPage from "../pages/player/PlayerDashboardPage.jsx";
 import PlayerLeaderboardPage from "../pages/player/PlayerLeaderboardPage.jsx";
 import PlayerRaceListPage from "../pages/player/PlayerRaceListPage.jsx";
 import PlayerRaceTipsPage from "../pages/player/PlayerRaceTipsPage.jsx";
+import PlayerProfilePage from "../pages/player/PlayerProfilePage.jsx";
 
 // Admin Pages
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage.jsx";
@@ -43,6 +44,15 @@ function AppRouter() {
           element={
             <ProtectedRoute>
               <PlayerDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/player/profile"
+          element={
+            <ProtectedRoute>
+              <PlayerProfilePage />
             </ProtectedRoute>
           }
         />

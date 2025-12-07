@@ -1,8 +1,9 @@
 // Login-Seite für Benutzer (Player und Admin)
 
 import { useContext } from "react";
-import { AuthContext } from "../../contexts/AuthContext.js";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext.js";
+import { loadPlayerProfile } from "../../utils/profile";
 
 // Dieser Login ist nur für den Start.
 // Später integrieren wir den echten Login mit Backend.
@@ -11,7 +12,11 @@ function LoginPage() {
   const navigate = useNavigate();
 
   function loginPlayer() {
-    login({ username: "player", role: "PLAYER" });
+    const profile = loadPlayerProfile();
+    if (!localStorage.getItem("playerProfile")) {
+      localStorage.setItem("playerProfile", JSON.stringify(profile));
+    }
+    login(profile);
     navigate("/player"); // Weiterleitung
   }
 
