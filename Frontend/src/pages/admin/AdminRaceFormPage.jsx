@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getStoredDrivers } from "../../data/drivers";
+import { TRACK_OPTIONS } from "../../data/tracks";
 
 const DRIVER_LIMIT = 20;
 
@@ -17,6 +18,11 @@ function AdminRaceFormPage() {
   const [status, setStatus] = useState("");
   const [drivers, setDrivers] = useState([]);
   const [driverOptions, setDriverOptions] = useState([]);
+  const missingTrackOption =
+    track &&
+    !TRACK_OPTIONS.some((option) => String(option.value) === String(track))
+      ? track
+      : null;
 
   const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
   const saveRaces = (list) =>
@@ -24,12 +30,14 @@ function AdminRaceFormPage() {
 
   // Fahrer laden (inkl. Teams aus Verwaltung)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDriverOptions(getStoredDrivers());
   }, []);
 
   // Bei neuem Rennen alle Fahrer vorselektieren
   useEffect(() => {
     if (!isEdit && driverOptions.length > 0 && drivers.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDrivers(driverOptions.map((driver) => driver.name));
     }
   }, [driverOptions, isEdit, drivers.length]);
@@ -46,6 +54,7 @@ function AdminRaceFormPage() {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTrack(existing.track || "");
     setWeather(existing.weather || "");
     setDate(existing.date || "");
@@ -135,11 +144,14 @@ function AdminRaceFormPage() {
                 required
               >
                 <option value="">Bitte wählen...</option>
-                <option value="Bahrain International Circuit">Bahrain</option>
-                <option value="Monza">Monza</option>
-                <option value="Silverstone">Silverstone</option>
-                <option value="Spa-Francorchamps">Spa</option>
-                <option value="Red Bull Ring">Red Bull Ring</option>
+                {TRACK_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+                {missingTrackOption && (
+                  <option value={missingTrackOption}>{missingTrackOption}</option>
+                )}
               </select>
             </label>
 
