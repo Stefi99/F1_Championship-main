@@ -1,6 +1,6 @@
-package com.wiss.f1.Championship.repository;
-import com.wiss.f1.Championship.entity.OfficialResult;
-import com.wiss.f1.Championship.entity.Race;
+package com.wiss.f1.championship.repository;
+import com.wiss.f1.championship.entity.OfficialResult;
+import com.wiss.f1.championship.entity.Race;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

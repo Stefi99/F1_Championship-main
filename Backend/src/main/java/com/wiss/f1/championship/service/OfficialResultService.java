@@ -1,7 +1,7 @@
-package com.wiss.f1.Championship.service;
-import com.wiss.f1.Championship.entity.OfficialResult;
-import com.wiss.f1.Championship.entity.Race;
-import com.wiss.f1.Championship.repository.OfficialResultRepository;
+package com.wiss.f1.championship.service;
+import com.wiss.f1.championship.entity.OfficialResult;
+import com.wiss.f1.championship.entity.Race;
+import com.wiss.f1.championship.repository.OfficialResultRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.wiss.f1.Championship.service;
-import com.wiss.f1.Championship.entity.Driver;
-import com.wiss.f1.Championship.repository.DriverRepository;
+package com.wiss.f1.championship.service;
+import com.wiss.f1.championship.entity.Driver;
+import com.wiss.f1.championship.repository.DriverRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

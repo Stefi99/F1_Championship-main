@@ -1,4 +1,4 @@
-package com.wiss.f1.Championship.entity;
+package com.wiss.f1.championship.entity;
 import jakarta.persistence.*;
 
 @Entity
@@ -44,5 +44,8 @@ public class Driver {
 
     public void setTeam(String team) {
         this.team = team;
+    }
+
+    public void setId(Long id) {
     }
 }

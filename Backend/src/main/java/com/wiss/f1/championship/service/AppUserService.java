@@ -1,6 +1,6 @@
-package com.wiss.f1.Championship.service;
-import com.wiss.f1.Championship.entity.AppUser;
-import com.wiss.f1.Championship.repository.AppUserRepository;
+package com.wiss.f1.championship.service;
+import com.wiss.f1.championship.entity.AppUser;
+import com.wiss.f1.championship.repository.AppUserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
