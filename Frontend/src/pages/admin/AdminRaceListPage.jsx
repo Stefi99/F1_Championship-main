@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDriverTeam, TEAM_CLASS_MAP } from "../../data/drivers";
+import { getTrackVisual } from "../../data/tracks";
 
 // Seite fuer die Verwaltung aller Rennen (Admin-Bereich)
 function AdminRaceListPage() {
@@ -19,11 +20,36 @@ function AdminRaceListPage() {
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
-  // Beim Laden vorhandene Rennen aus localStorage holen
+  const statusLabel = {
+    open: "Offen",
+    voting: "Tippen möglich",
+    closed: "Geschlossen",
+  };
+
+  const weatherLabel = {
+    sunny: "Sonne",
+    cloudy: "Wolkig",
+    rain: "Regen",
+  };
+
+  const tyreLabel = {
+    soft: "Soft",
+    medium: "Medium",
+    hard: "Hard",
+  };
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRaces(loadRaces());
   }, []);
+
+  const stats = useMemo(() => {
+    const total = races.length;
+    const openCount = races.filter((race) => race.status === "open").length;
+    const votingCount = races.filter((race) => race.status === "voting").length;
+    const closedCount = races.filter((race) => race.status === "closed").length;
+    return { total, openCount, votingCount, closedCount };
+  }, [races]);
 
   const handleDelete = (id) => {
     const confirmDelete = window.confirm("Rennen wirklich löschen?");
@@ -32,139 +58,218 @@ function AdminRaceListPage() {
     persist(next);
   };
 
+  const toggleExpand = (id) =>
+    setExpandedId((prev) => (String(prev) === String(id) ? null : id));
+
+  const mediaStyle = (visual) => {
+    const layers = [
+      visual.pattern,
+      visual.image ? `url(${visual.image})` : null,
+      visual.gradient,
+    ].filter(Boolean);
+    return {
+      backgroundImage: layers.join(", "),
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    };
+  };
+
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Rennen verwalten</h1>
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-        <button onClick={() => navigate("/admin/races/new")}>
-          Neues Rennen anlegen
-        </button>
-        <button onClick={() => navigate("/admin/results")}>
-          Offizielle Ergebnisse
-        </button>
-      </div>
+    <div className="races-admin-page">
+      <header className="races-hero">
+        <div className="races-hero-copy">
+          <p className="admin-eyebrow">Rennen</p>
+          <h1>Rennen verwalten</h1>
+          <p className="admin-sub">
+            Übersichtliche Karten mit Streckenplatzhalter, Status und schnellen
+            Aktionen. Alles in einem Stil wie Dashboard und Renn-Formular.
+          </p>
+          <div className="races-hero-actions">
+            <button onClick={() => navigate("/admin/races/new")}>
+              Neues Rennen anlegen
+            </button>
+            <button
+              type="button"
+              className="admin-ghost-btn"
+              onClick={() => navigate("/admin/results")}
+            >
+              Offizielle Ergebnisse
+            </button>
+          </div>
+        </div>
+        <div className="races-hero-stats">
+          <div className="races-stat">
+            <strong>{stats.total}</strong>
+            <span>geplante Rennen</span>
+          </div>
+          <div className="races-stat">
+            <strong>{stats.openCount + stats.votingCount}</strong>
+            <span>offen / tippen</span>
+          </div>
+          <div className="races-stat">
+            <strong>{stats.closedCount}</strong>
+            <span>geschlossen</span>
+          </div>
+        </div>
+      </header>
 
       {races.length === 0 ? (
-        <p>Keine Rennen erfasst.</p>
+        <div className="races-empty">
+          <h2>Noch keine Rennen erfasst</h2>
+          <p>
+            Lege das erste Event an oder springe direkt zu den offiziellen
+            Ergebnissen.
+          </p>
+          <div className="races-empty-actions">
+            <button onClick={() => navigate("/admin/races/new")}>
+              Neues Rennen anlegen
+            </button>
+            <button
+              type="button"
+              className="admin-ghost-btn"
+              onClick={() => navigate("/admin/results")}
+            >
+              Offizielle Ergebnisse
+            </button>
+          </div>
+        </div>
       ) : (
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            display: "grid",
-            gap: "0.75rem",
-          }}
-        >
+        <div className="race-card-grid">
           {races.map((race) => {
             const isExpanded = String(expandedId) === String(race.id);
             const hasOrder = (race.resultsOrder || []).length > 0;
+            const driverList = race.drivers || [];
+            const trackVisual = getTrackVisual(race.track);
             return (
-              <li
+              <article
                 key={race.id}
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  padding: "1rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.5rem",
-                }}
+                className={`race-card ${isExpanded ? "is-open" : ""}`}
               >
                 <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: "1rem",
-                  }}
+                  className="race-card-media"
+                  style={mediaStyle(trackVisual)}
+                  aria-hidden="true"
                 >
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{race.track}</div>
-                    <div style={{ fontSize: "0.95rem", color: "#555" }}>
-                      {race.date || "Kein Datum"}
+                  <div className="race-media-top">
+                    <span className="race-tag">
+                      {trackVisual.code || "F1"}
+                    </span>
+                    <span
+                      className={`race-status-chip race-status-${
+                        race.status || "open"
+                      }`}
+                    >
+                      {statusLabel[race.status] || "Offen"}
+                    </span>
+                  </div>
+                  <div className="race-media-bottom">
+                    <p className="race-media-label">
+                      {trackVisual.label || race.track || "Strecke"}
+                    </p>
+                    <span className="race-media-track">
+                      {race.track || "Strecke folgt"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="race-card-body">
+                  <div className="race-meta-row">
+                    <div className="race-meta-tile">
+                      <span>Datum</span>
+                      <strong>{race.date || "Noch offen"}</strong>
                     </div>
-                    <div style={{ fontSize: "0.9rem" }}>
-                      Status: {race.status || "-"}
+                    <div className="race-meta-tile">
+                      <span>Wetter</span>
+                      <strong>{weatherLabel[race.weather] || "-"}</strong>
+                    </div>
+                    <div className="race-meta-tile">
+                      <span>Reifen</span>
+                      <strong>{tyreLabel[race.tyres] || "-"}</strong>
                     </div>
                   </div>
 
-                  <div
-                    style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}
-                  >
+                  <div className="race-card-actions">
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : race.id)}
+                      type="button"
+                      className="race-ghost-btn"
+                      onClick={() => toggleExpand(race.id)}
                     >
-                      {isExpanded ? "Details ausblenden" : "Rennen ansehen"}
+                      {isExpanded ? "Details ausblenden" : "Renn-Details"}
                     </button>
                     <button
+                      type="button"
                       onClick={() => navigate(`/admin/races/${race.id}/edit`)}
                     >
                       Bearbeiten
                     </button>
-                    <button onClick={() => handleDelete(race.id)}>
+                    <button
+                      type="button"
+                      className="race-danger-btn"
+                      onClick={() => handleDelete(race.id)}
+                    >
                       Löschen
                     </button>
                   </div>
-                </div>
 
-                {isExpanded && (
-                  <div style={{ display: "grid", gap: "0.35rem" }}>
-                    <div>
-                      <strong>Wetter:</strong> {race.weather || "-"}
-                    </div>
-                    <div>
-                      <strong>Reifen:</strong> {race.tyres || "-"}
-                    </div>
-                    <div>
-                      <strong>Ergebnisse:</strong>{" "}
-                      {hasOrder ? (
-                        <ol
-                          style={{
-                            paddingLeft: "1.25rem",
-                            margin: "0.35rem 0",
-                          }}
-                        >
-                          {(race.resultsOrder || []).map((driver) => (
-                            <li
-                              key={driver}
-                              className={`driver-chip ${teamClass(driver)}`}
-                              style={{ marginBottom: "0.35rem" }}
-                            >
-                              {driver}
-                            </li>
-                          ))}
-                        </ol>
-                      ) : (
-                        race.results || "Keine Ergebnisse eingetragen"
-                      )}
-                    </div>
-                    <div>
-                      <strong>Teilnehmende Fahrer:</strong>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "0.35rem",
-                        }}
-                      >
-                        {(race.drivers || []).length === 0
-                          ? "Keine Fahrer zugeordnet"
-                          : (race.drivers || []).map((driver) => (
-                              <span
-                                key={driver}
-                                className={`driver-chip ${teamClass(driver)}`}
-                              >
-                                {driver}
-                              </span>
-                            ))}
+                  {isExpanded && (
+                    <div className="race-card-details">
+                      <div className="race-detail-block">
+                        <p className="race-detail-title">Ergebnisse</p>
+                        <div className="race-detail-content">
+                          <strong>Ergebnisliste:</strong>{" "}
+                          {hasOrder ? (
+                            <ol className="race-results-list">
+                              {(race.resultsOrder || []).map((driver, index) => (
+                                <li
+                                  key={driver}
+                                  className={`race-driver-chip ${teamClass(
+                                    driver
+                                  )}`}
+                                >
+                                  <span className="race-result-pos">
+                                    #{index + 1}
+                                  </span>
+                                  <span className="race-result-name">
+                                    {driver}
+                                  </span>
+                                </li>
+                              ))}
+                            </ol>
+                          ) : (
+                            race.results || "Keine Ergebnisse eingetragen"
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="race-detail-block">
+                        <p className="race-detail-title">Teilnehmende Fahrer</p>
+                        <div className="race-detail-content">
+                          {driverList.length === 0 ? (
+                            "Keine Fahrer zugeordnet"
+                          ) : (
+                            <div className="race-driver-chip-grid">
+                              {driverList.map((driver) => (
+                                <span
+                                  key={driver}
+                                  className={`race-driver-chip ${teamClass(
+                                    driver
+                                  )}`}
+                                >
+                                  {driver}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </li>
+                  )}
+                </div>
+              </article>
             );
           })}
-        </ul>
+        </div>
       )}
     </div>
   );
