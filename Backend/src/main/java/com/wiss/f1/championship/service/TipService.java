@@ -1,6 +1,6 @@
-package com.wiss.f1.Championship.service;
-import com.wiss.f1.Championship.entity.*;
-import com.wiss.f1.Championship.repository.TipRepository;
+package com.wiss.f1.championship.service;
+import com.wiss.f1.championship.entity.*;
+import com.wiss.f1.championship.repository.TipRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

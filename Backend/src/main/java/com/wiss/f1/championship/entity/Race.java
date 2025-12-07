@@ -1,4 +1,4 @@
-package com.wiss.f1.Championship.entity;
+package com.wiss.f1.championship.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -83,5 +83,9 @@ public class Race {
 
     public void setStatus(RaceStatus status) {
         this.status = status;
+    }
+
+    public void setId(Long id) {
+
     }
 }

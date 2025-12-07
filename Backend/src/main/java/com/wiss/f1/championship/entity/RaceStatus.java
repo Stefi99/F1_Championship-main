@@ -1,4 +1,4 @@
-package com.wiss.f1.Championship.entity;
+package com.wiss.f1.championship.entity;
 
 public enum RaceStatus {
     OPEN,          // Rennen erstellt, noch keine Tipps möglich

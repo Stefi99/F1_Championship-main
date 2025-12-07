@@ -1,5 +1,5 @@
-package com.wiss.f1.Championship.repository;
-import com.wiss.f1.Championship.entity.AppUser;
+package com.wiss.f1.championship.repository;
+import com.wiss.f1.championship.entity.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

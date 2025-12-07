@@ -1,4 +1,4 @@
-package com.wiss.f1.Championship;
+package com.wiss.f1.championship;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

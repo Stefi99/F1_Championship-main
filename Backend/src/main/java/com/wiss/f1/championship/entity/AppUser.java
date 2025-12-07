@@ -1,4 +1,4 @@
-package com.wiss.f1.Championship.entity;
+package com.wiss.f1.championship.entity;
 import jakarta.persistence.*;
 
 @Entity

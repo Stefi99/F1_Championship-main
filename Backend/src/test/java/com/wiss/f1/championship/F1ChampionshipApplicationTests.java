@@ -1,4 +1,4 @@
-package com.wiss.f1.Championship;
+package com.wiss.f1.championship;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
