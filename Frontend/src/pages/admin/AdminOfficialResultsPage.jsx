@@ -5,6 +5,19 @@ import {
   TEAM_CLASS_MAP,
 } from "../../data/drivers";
 
+const TEAM_COLOR_PALETTE = {
+  "team-red-bull": "#2037c4",
+  "team-ferrari": "#dc0000",
+  "team-mercedes": "#00d2be",
+  "team-mclaren": "#ff8700",
+  "team-aston-martin": "#00594f",
+  "team-alpine": "#2b9be8",
+  "team-sauber": "#52e252",
+  "team-haas": "#b6babd",
+  "team-williams": "#1c7ef2",
+  "team-rb": "#0f1f7a",
+};
+
 // Seite fuer die Eingabe und Anzeige der offiziellen Rennergebnisse
 function AdminOfficialResultsPage() {
   const [races, setRaces] = useState([]);
@@ -24,6 +37,11 @@ function AdminOfficialResultsPage() {
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
+  const teamColor = (driverName) => {
+    const className = teamClass(driverName);
+    return TEAM_COLOR_PALETTE[className] || "var(--f1-red)";
+  };
+
   const teamLabel = (driverName) =>
     getDriverTeam(driverName) ||
     driversByName[driverName]?.team ||
@@ -31,24 +49,23 @@ function AdminOfficialResultsPage() {
 
   useEffect(() => {
     const driverList = getStoredDrivers();
-    const map = driverList.reduce((acc, d) => {
-      acc[d.name] = d;
+    const map = driverList.reduce((acc, driver) => {
+      acc[driver.name] = driver;
       return acc;
     }, {});
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDriversByName(map);
 
     const stored = loadRaces();
     setRaces(stored);
     if (stored.length > 0) {
-      const firstId = String(stored[0].id);
-      setSelectedId(firstId);
       const firstRace = stored[0];
+      const firstId = String(firstRace.id);
       const initialOrder = firstRace.resultsOrder?.length
         ? firstRace.resultsOrder
         : firstRace.drivers?.length
         ? firstRace.drivers
-        : driverList.map((d) => d.name);
+        : driverList.map((driver) => driver.name);
+      setSelectedId(firstId);
       setResultsOrder(initialOrder);
     }
   }, []);
@@ -56,7 +73,6 @@ function AdminOfficialResultsPage() {
   // Wenn Auswahl wechselt, vorhandene Ergebnisse des Rennens laden
   useEffect(() => {
     if (!selectedId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResultsOrder([]);
       return;
     }
@@ -68,13 +84,13 @@ function AdminOfficialResultsPage() {
       ? current.resultsOrder
       : current?.drivers?.length
       ? current.drivers
-      : driverList.map((d) => d.name);
+      : driverList.map((driver) => driver.name);
     setResultsOrder(initialOrder || []);
   }, [selectedId, races, driversByName]);
 
   const handleSave = () => {
     if (!selectedId) {
-      alert("Bitte zuerst ein Rennen auswählen");
+      alert("Bitte zuerst ein Rennen auswaehlen");
       return;
     }
     if (resultsOrder.length === 0) {
@@ -109,6 +125,7 @@ function AdminOfficialResultsPage() {
   const moveItem = (from, to) => {
     if (from === null || to === null || from === to) return;
     setResultsOrder((prev) => {
+      if (to < 0 || to >= prev.length) return prev;
       const next = [...prev];
       const [item] = next.splice(from, 1);
       next.splice(to, 0, item);
@@ -119,122 +136,212 @@ function AdminOfficialResultsPage() {
   const handleDragStart = (index) => setDragIndex(index);
   const handleDragOver = (e) => e.preventDefault();
   const handleDrop = (index) => {
+    if (dragIndex === null) return;
     moveItem(dragIndex, index);
     setDragIndex(null);
   };
-
-  if (races.length === 0) {
-    return (
-      <div style={{ padding: "2rem" }}>
-        <h1>Offizielle Ergebnisse</h1>
-        <p>Keine Rennen erfasst. Bitte zuerst Rennen anlegen.</p>
-      </div>
-    );
-  }
 
   const currentRace = races.find(
     (race) => String(race.id) === String(selectedId)
   );
   const hasDrivers =
     resultsOrder.length > 0 || (currentRace?.drivers || []).length > 0;
+  const closedCount = races.filter((race) => race.status === "closed").length;
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "900px" }}>
-      <h1>Offizielle Ergebnisse</h1>
-      <p>
-        Rangfolge per Drag und Drop anordnen oder zufällig mischen. Danach
-        speichern, um den Status auf "closed" zu setzen.
-      </p>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          marginBottom: "1rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <select
-          value={selectedId}
-          onChange={(e) => setSelectedId(e.target.value)}
-          style={{ minWidth: "260px" }}
-        >
-          {races.map((race) => (
-            <option key={race.id} value={race.id}>
-              {race.track} - {race.date || "Datum fehlt"}
-            </option>
-          ))}
-        </select>
-        <button onClick={shuffleOrder}>Zufallsreihenfolge</button>
-      </div>
-
-      {currentRace && (
-        <div style={{ marginBottom: "1rem", color: "#e1e1e1ff" }}>
-          <div>
-            <strong>Strecke:</strong> {currentRace.track}
-          </div>
-          <div>
-            <strong>Datum:</strong> {currentRace.date || "-"}
-          </div>
-          <div>
-            <strong>Status:</strong> {currentRace.status || "-"}
-          </div>
-          <div>
-            <strong>Wetter:</strong> {currentRace.weather || "-"}
+    <div className="results-admin-page">
+      <header className="results-hero">
+        <div className="results-hero-text">
+          <p className="admin-eyebrow">Offizielle Ergebnisse</p>
+          <h1>Rangliste finalisieren</h1>
+          <p className="admin-sub">
+            Fahrer per Drag-and-Drop oder mit den Pfeilen verschieben. Danach
+            speichern, um das Rennen zu schliessen und die Reihenfolge zu
+            sichern.
+          </p>
+          <div className="results-hero-actions">
+            <button
+              type="button"
+              className="admin-ghost-btn"
+              onClick={shuffleOrder}
+              disabled={races.length === 0 || !hasDrivers}
+            >
+              Zufallsreihenfolge
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!hasDrivers || races.length === 0}
+            >
+              Ergebnisse speichern
+            </button>
           </div>
         </div>
-      )}
+        <div className="results-hero-stats">
+          <div className="results-stat">
+            <span>Rennen</span>
+            <strong>{races.length}</strong>
+          </div>
+          <div className="results-stat">
+            <span>Geschlossen</span>
+            <strong>{closedCount}</strong>
+          </div>
+          <div className="results-stat">
+            <span>Fahrer im Feld</span>
+            <strong>{resultsOrder.length}</strong>
+          </div>
+        </div>
+      </header>
 
-      {!hasDrivers ? (
-        <p>
-          Keine Fahrer im Rennen hinterlegt. Bitte im Rennen Fahrer zuweisen
-          oder "Teilnehmer laden" verwenden.
-        </p>
-      ) : (
-        <div className="result-list">
-          {resultsOrder.map((driver, index) => (
-            <div
-              key={driver}
-              draggable
-              onDragStart={() => handleDragStart(index)}
-              onDragOver={handleDragOver}
-              onDrop={() => handleDrop(index)}
-              className={`result-row ${teamClass(driver)}`}
-            >
-              <div className="result-row-info">
-                <div className="result-row-position">#{index + 1}</div>
-                <div className="result-row-text">
-                  <div className="result-row-name">{driver}</div>
-                  <div className="result-row-team">{teamLabel(driver)}</div>
+      <div className="results-shell">
+        {races.length === 0 ? (
+          <div className="results-panel results-empty">
+            <h2>Keine Rennen vorhanden</h2>
+            <p className="results-panel-copy">
+              Bitte zuerst ein Rennen im Bereich "Rennen" anlegen, um
+              offizielle Ergebnisse einzutragen.
+            </p>
+          </div>
+        ) : (
+          <>
+            <section className="results-panel">
+              <div className="results-panel-head">
+                <div>
+                  <p className="admin-eyebrow">Rennen</p>
+                  <h2>Event auswaehlen</h2>
+                  <p className="results-panel-copy">
+                    Waehle das Rennen, fuer das du die offizielle Reihenfolge
+                    festlegen moechtest.
+                  </p>
+                </div>
+                <div className="results-controls">
+                  <select
+                    value={selectedId}
+                    onChange={(e) => setSelectedId(e.target.value)}
+                    className="results-select"
+                  >
+                    {races.map((race) => (
+                      <option key={race.id} value={race.id}>
+                        {race.track} - {race.date || "Datum fehlt"}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-              <div className="result-row-actions">
+
+              {currentRace && (
+                <div className="results-meta-grid">
+                  <div className="results-meta-card">
+                    <span>Strecke</span>
+                    <strong>{currentRace.track}</strong>
+                  </div>
+                  <div className="results-meta-card">
+                    <span>Datum</span>
+                    <strong>{currentRace.date || "-"}</strong>
+                  </div>
+                  <div className="results-meta-card">
+                    <span>Status</span>
+                    <strong>{currentRace.status || "-"}</strong>
+                  </div>
+                  <div className="results-meta-card">
+                    <span>Wetter</span>
+                    <strong>{currentRace.weather || "-"}</strong>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className="results-panel">
+              <div className="results-panel-head">
+                <div>
+                  <p className="admin-eyebrow">Platzierungen</p>
+                  <h2>Fahrer positionieren</h2>
+                  <p className="results-panel-copy">
+                    Ziehe die Fahrerkarten oder nutze Up/Down. Jede Karte zeigt
+                    Position, Namen, Team und ein farbiges Team-Symbol.
+                  </p>
+                </div>
+                <div className="results-count">
+                  {resultsOrder.length} Fahrer
+                </div>
+              </div>
+
+              {!hasDrivers ? (
+                <div className="results-empty">
+                  <h3>Keine Fahrer hinterlegt</h3>
+                  <p className="results-panel-copy">
+                    Fuege zuerst Fahrer im Rennen hinzu, um sie hier sortieren zu
+                    koennen.
+                  </p>
+                </div>
+              ) : (
+                <div className="result-list">
+                  {resultsOrder.map((driver, index) => (
+                    <div
+                      key={driver}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={handleDragOver}
+                      onDrop={() => handleDrop(index)}
+                      className="result-row"
+                      style={{ "--result-accent": teamColor(driver) }}
+                    >
+                      <div className="result-row-info">
+                        <div className="result-row-position">#{index + 1}</div>
+                        <span
+                          className="result-team-swatch"
+                          aria-hidden="true"
+                        />
+                        <div className="result-row-text">
+                          <div className="result-row-name">{driver}</div>
+                          <div className="result-row-team">
+                            {teamLabel(driver)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="result-row-actions">
+                        <button
+                          type="button"
+                          className="result-row-btn"
+                          onClick={() => moveItem(index, index - 1)}
+                          disabled={index === 0}
+                        >
+                          Up
+                        </button>
+                        <button
+                          type="button"
+                          className="result-row-btn"
+                          onClick={() => moveItem(index, index + 1)}
+                          disabled={index === resultsOrder.length - 1}
+                        >
+                          Down
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="results-action-row">
                 <button
                   type="button"
-                  className="result-row-btn"
-                  onClick={() => moveItem(index, index - 1)}
-                  disabled={index === 0}
+                  onClick={handleSave}
+                  disabled={!hasDrivers || races.length === 0}
                 >
-                  Up
+                  Ergebnisse speichern
                 </button>
                 <button
                   type="button"
-                  className="result-row-btn"
-                  onClick={() => moveItem(index, index + 1)}
-                  disabled={index === resultsOrder.length - 1}
+                  className="admin-ghost-btn"
+                  onClick={shuffleOrder}
+                  disabled={!hasDrivers}
                 >
-                  Down
+                  Zufallsreihenfolge
                 </button>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
-        <button onClick={handleSave} disabled={!hasDrivers}>
-          Ergebnisse speichern
-        </button>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
