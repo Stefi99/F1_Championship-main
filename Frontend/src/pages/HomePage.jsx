@@ -1,13 +1,326 @@
-// Startseite der Anwendung
-// allgemeine Übersicht oder Begrüßung.
-// Seite ist öffentlich zugänglich (kein Login nötig).
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getTrackVisual } from "../data/tracks";
 
+// Oeffentliche Home-Seite mit Ranglisten-Link, Rennteasern und CTA fuer Tipps
 function HomePage() {
+  const navigate = useNavigate();
+  const [races, setRaces] = useState([]);
+
+  useEffect(() => {
+    const loadRaces = () => {
+      try {
+        return JSON.parse(localStorage.getItem("races") || "[]");
+      } catch (err) {
+        console.error("races parse error", err);
+        return [];
+      }
+    };
+
+    setRaces(loadRaces());
+
+    const handleStorage = (event) => {
+      if (event.key === "races" || event.key === null) {
+        setRaces(loadRaces());
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  const stats = useMemo(() => {
+    const planned = races.filter((race) => race.status === "open").length;
+    const tipping = races.filter((race) => race.status === "voting").length;
+    const closed = races.filter((race) => race.status === "closed").length;
+    return {
+      total: races.length,
+      planned,
+      tipping,
+      closed,
+    };
+  }, [races]);
+
+  const statusLabel = {
+    open: "Geplant",
+    voting: "Tippen moeglich",
+    closed: "Ergebnis steht",
+  };
+
+  const weatherLabel = {
+    sunny: "Sonne",
+    cloudy: "Wolken",
+    rain: "Regen",
+  };
+
+  const upcomingRaces = useMemo(() => {
+    const parseDate = (value) => (value ? new Date(value) : null);
+    return [...races]
+      .filter((race) => race.status !== "closed")
+      .sort((a, b) => {
+        const da = parseDate(a.date);
+        const db = parseDate(b.date);
+        if (!da && !db) return 0;
+        if (!da) return 1;
+        if (!db) return -1;
+        return da - db;
+      })
+      .slice(0, 3);
+  }, [races]);
+
+  const votingRaces = useMemo(
+    () => races.filter((race) => race.status === "voting"),
+    [races]
+  );
+
+  const plannedRaces = useMemo(
+    () => races.filter((race) => race.status === "open"),
+    [races]
+  );
+
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>F1 Championship</h1>
-      <p>Willkommen zur offiziellen F1 Championship Applikation.</p>
-      <p>Bitte melde dich an, um fortzufahren.</p>
+    <div className="home-page">
+      <section className="home-hero">
+        <div className="home-hero-text">
+          <p className="home-kicker">Offizielle F1 Championship</p>
+          <h1>Ranglisten, Tipps und Rennkalender in einem Hub</h1>
+          <p className="home-lead">
+            Hol dir den schnellen Ueberblick: aktuelle Rangliste, offene
+            Tippfenster und geplante Rennen. Alles im gleichen Look wie das
+            Admin-Dashboard.
+          </p>
+          <div className="home-cta-row">
+            <button
+              type="button"
+              onClick={() => navigate("/player/leaderboard")}
+            >
+              Zur Rangliste
+            </button>
+            <button
+              type="button"
+              className="home-ghost-btn"
+              onClick={() => navigate("/player/races")}
+            >
+              Zu den Rennen
+            </button>
+          </div>
+          <div className="home-pill-row">
+            <span className="home-pill">Season Center</span>
+            <span className="home-pill muted">Live gepflegt vom Admin</span>
+          </div>
+        </div>
+
+        <div className="home-hero-stats">
+          <div className="home-stat">
+            <span>Rennen gelistet</span>
+            <strong>{stats.total}</strong>
+          </div>
+          <div className="home-stat">
+            <span>Tippen offen</span>
+            <strong>{stats.tipping}</strong>
+          </div>
+          <div className="home-stat">
+            <span>Geplant</span>
+            <strong>{stats.planned}</strong>
+          </div>
+          <div className="home-stat">
+            <span>Abgeschlossen</span>
+            <strong>{stats.closed}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-feature-grid">
+        <article className="home-feature-card">
+          <p className="home-eyebrow">Rangliste</p>
+          <h2>Wer fuehrt die Saison an?</h2>
+          <p>Oeffentliche Leaderboard-Seite mit allen Punkten und Platzierungen.</p>
+          <div className="home-feature-actions">
+            <button
+              type="button"
+              onClick={() => navigate("/player/leaderboard")}
+            >
+              Rangliste oeffnen
+            </button>
+            <button
+              type="button"
+              className="home-ghost-btn"
+              onClick={() => navigate("/login")}
+            >
+              Anmelden
+            </button>
+          </div>
+        </article>
+
+        <article className="home-feature-card secondary">
+          <p className="home-eyebrow">Tipps</p>
+          <h2>Direkt ins Tippfenster</h2>
+          <p>
+            Sieh dir die Rennen an, bei denen aktuell Tipps erlaubt sind, und
+            lege los.
+          </p>
+          <div className="home-pills-list">
+            {votingRaces.length === 0 ? (
+              <span className="home-chip muted">Kein Tippfenster offen</span>
+            ) : (
+              votingRaces.map((race) => (
+                <span key={race.id} className="home-chip">
+                  {race.track || "Rennen"}
+                  {" \u00b7 "}
+                  {race.date || "Datum folgt"}
+                </span>
+              ))
+            )}
+          </div>
+          <div className="home-feature-actions">
+            <button type="button" onClick={() => navigate("/player/races")}>
+              Rennen ansehen
+            </button>
+            <button
+              type="button"
+              className="home-ghost-btn"
+              onClick={() =>
+                votingRaces.length > 0
+                  ? navigate(`/player/race/${votingRaces[0].id}/tips`)
+                  : navigate("/player/races")
+              }
+            >
+              Jetzt tippen
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <section className="home-races-section">
+        <div className="home-section-head">
+          <div>
+            <p className="home-eyebrow">Kalender</p>
+            <h2>Anstehende Rennen</h2>
+            <p className="home-lead">
+              Geplante Events und aktive Tippfenster mit Streckenfarben und
+              Status.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="home-ghost-btn"
+            onClick={() => navigate("/admin/races")}
+          >
+            Rennen verwalten
+          </button>
+        </div>
+
+        {upcomingRaces.length === 0 ? (
+          <div className="home-empty">
+            <h3>Noch keine Rennen gepflegt</h3>
+            <p>
+              Lege im Admin-Bereich die ersten Events an, damit sie hier
+              erscheinen.
+            </p>
+          </div>
+        ) : (
+          <div className="home-race-grid">
+            {upcomingRaces.map((race) => {
+              const visual = getTrackVisual(race.track);
+              return (
+                <article
+                  key={race.id}
+                  className="home-race-card"
+                  style={{
+                    backgroundImage: `${visual.pattern}, ${visual.gradient}`,
+                  }}
+                >
+                  <div className="home-race-overlay" />
+                  <div className="home-race-top">
+                    <span className="home-track-code">
+                      {visual.code || "F1"}
+                    </span>
+                    <span
+                      className={`home-status-chip status-${
+                        race.status || "open"
+                      }`}
+                    >
+                      {statusLabel[race.status] || "Geplant"}
+                    </span>
+                  </div>
+                  <div className="home-race-body">
+                    <div className="home-race-title">
+                      <p>{visual.label || race.track || "Strecke"}</p>
+                      <h3>{race.track || "Rennen folgt"}</h3>
+                    </div>
+                    <div className="home-race-meta">
+                      <span>{race.date || "Datum folgt"}</span>
+                      <span className="home-dot">{"\u00b7"}</span>
+                      <span>
+                        {weatherLabel[race.weather] || "Wetter folgt"}
+                      </span>
+                    </div>
+                    <div className="home-race-actions">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          race.status === "voting"
+                            ? navigate(`/player/race/${race.id}/tips`)
+                            : navigate("/player/races")
+                        }
+                      >
+                        {race.status === "voting" ? "Tippen" : "Details"}
+                      </button>
+                      <button
+                        type="button"
+                        className="home-ghost-btn"
+                        onClick={() => navigate("/player/leaderboard")}
+                      >
+                        Rangliste
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="home-summary">
+        <div className="home-summary-card">
+          <p className="home-eyebrow">Kurz gesagt</p>
+          <h3>Planung</h3>
+          <p>
+            {plannedRaces.length === 0
+              ? "Noch keine geplanten Rennen eingetragen."
+              : `${plannedRaces.length} Rennen in Planung, ${votingRaces.length} Tippfenster offen.`}
+          </p>
+        </div>
+        <div className="home-summary-card">
+          <p className="home-eyebrow">Results</p>
+          <h3>Abgeschlossen</h3>
+          <p>
+            {stats.closed === 0
+              ? "Noch keine offiziellen Resultate."
+              : `${stats.closed} Rennen bereits mit Ergebnissen geschlossen.`}
+          </p>
+        </div>
+        <div className="home-summary-card">
+          <p className="home-eyebrow">Call to action</p>
+          <h3>Jetzt einsteigen</h3>
+          <p>
+            Logge dich ein, um Tipps abzugeben oder die Admin-Tools zu nutzen.
+          </p>
+          <div className="home-summary-actions">
+            <button type="button" onClick={() => navigate("/login")}>
+              Login
+            </button>
+            <button
+              type="button"
+              className="home-ghost-btn"
+              onClick={() => navigate("/register")}
+            >
+              Registrieren
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
