@@ -1050,6 +1050,345 @@ button:focus-visible {
   }
 }
 
+.player-races-page,
+.player-tip-page {
+  padding: 32px 24px 64px;
+  max-width: 1220px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.player-races-hero,
+.player-tip-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 26px;
+  background: radial-gradient(
+      circle at 16% 12%,
+      rgba(225, 6, 0, 0.12),
+      transparent 34%
+    ),
+    #0f1118;
+  border: 1px solid #1d1f29;
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+}
+
+.player-races-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  min-width: 240px;
+  max-width: 380px;
+}
+
+.player-races-stat {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #1f2230;
+  background: linear-gradient(135deg, #121623, #0f121c);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.player-races-stat strong {
+  display: block;
+  font-size: 1.35rem;
+  color: #ffffff;
+}
+
+.player-races-stat span {
+  color: var(--f1-muted);
+  font-weight: 750;
+  letter-spacing: 0.01em;
+}
+
+.player-race-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-race-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.player-race-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.player-race-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #1f2230;
+  background: #0f1118;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.22s ease,
+    border-color 0.18s ease;
+}
+
+.player-race-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--f1-red);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+}
+
+.player-race-media {
+  position: relative;
+  min-height: 170px;
+  padding: 16px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-bottom: 1px solid #1d1f29;
+  overflow: hidden;
+}
+
+.player-race-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, #0c0d11 100%);
+  opacity: 0.88;
+}
+
+.player-race-media-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.player-race-media-body {
+  position: relative;
+  z-index: 1;
+  margin-top: 60px;
+}
+
+.player-race-meta-line {
+  color: var(--f1-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-race-card-body {
+  padding: 14px 16px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.player-race-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-race-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.player-tip-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #2c303d;
+  background: rgba(225, 6, 0, 0.1);
+  color: #ffffff;
+  font-weight: 800;
+  width: fit-content;
+}
+
+.player-tip-chip.muted {
+  background: #111420;
+  color: var(--f1-muted);
+}
+
+.player-tip-chip-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: var(--f1-red);
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.player-tip-chip-name {
+  font-weight: 800;
+}
+
+.player-tip-hero {
+  gap: 18px;
+}
+
+.player-tip-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+}
+
+.player-tip-hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 360px;
+  flex: 1;
+}
+
+.player-tip-track {
+  height: 170px;
+  border-radius: 14px;
+  border: 1px solid #1d1f29;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.player-tip-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.player-tip-meta-card {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #1f2230;
+  background: #0f1118;
+}
+
+.player-tip-meta-card span {
+  color: var(--f1-muted);
+  font-weight: 700;
+}
+
+.player-tip-meta-card strong {
+  display: block;
+  color: #ffffff;
+}
+
+.player-tip-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.player-tip-panel {
+  background: linear-gradient(135deg, #0c0d11 0%, #10121a 55%, #0c0d11 100%);
+  border: 1px solid #1d1f29;
+  border-radius: 16px;
+  padding: 16px 16px 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.42);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-tip-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.player-tip-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.player-tip-limit {
+  color: var(--f1-muted);
+  font-weight: 750;
+}
+
+.player-available-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.player-available-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid #1f2230;
+  background: #0f1118;
+  color: #e7e8ec;
+  font-weight: 800;
+  box-shadow: none;
+  transition: transform 0.16s ease, border-color 0.18s ease;
+}
+
+.player-available-chip:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--f1-red);
+}
+
+.player-available-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.result-row.is-muted {
+  opacity: 0.62;
+  filter: saturate(0.65);
+}
+
+@media (max-width: 900px) {
+  .player-races-hero,
+  .player-tip-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .player-race-card-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .player-races-page,
+  .player-tip-page {
+    padding: 24px 16px 48px;
+  }
+
+  .player-race-media-body {
+    margin-top: 46px;
+  }
+}
+
 /* Race Form */
 .race-form-page {
   padding: 32px 24px 64px;
