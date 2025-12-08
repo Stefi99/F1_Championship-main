@@ -1,11 +1,8 @@
-// Registrierungsseite für neue Benutzer
+import AuthPage from "./LoginPage.jsx";
+
+// Weiterleitung auf die kombinierte Auth-Seite mit Fokus auf Registrierung
 function RegisterPage() {
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Registrierung</h1>
-      <p>Hier können sich neue Benutzer ein Konto erstellen.</p>
-    </div>
-  );
+  return <AuthPage defaultMode="register" />;
 }
 
 export default RegisterPage;

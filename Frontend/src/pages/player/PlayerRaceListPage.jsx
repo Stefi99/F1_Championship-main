@@ -92,10 +92,22 @@ function PlayerRaceListPage() {
   const renderRaceCard = (race) => {
     const visual = getTrackVisual(race.track);
     const tip = tips[race.id];
+    const tipOrder = Array.isArray(tip?.order)
+      ? tip.order
+      : Array.isArray(tip)
+      ? tip
+      : [];
+    const resultsOrder = Array.isArray(race.resultsOrder)
+      ? race.resultsOrder
+      : [];
     const updatedAt = tip?.updatedAt
       ? new Date(tip.updatedAt).toLocaleString("de-DE")
       : null;
     const canTip = race.status === "voting";
+    const showResults =
+      race.status === "closed" &&
+      resultsOrder.length > 0 &&
+      tipOrder.length > 0;
 
     return (
       <article
@@ -144,15 +156,46 @@ function PlayerRaceListPage() {
                 ? `Tipp gespeichert${updatedAt ? ` am ${updatedAt}` : ""}.`
                 : "Noch keinen Tipp abgegeben."}
             </p>
-            {tip?.order?.length ? (
+            {tipOrder?.length ? (
               <div className="player-tip-chip">
                 <span className="player-tip-chip-rank">#1</span>
                 <span className="player-tip-chip-name">
-                  {tip.order[0] || "Top-Pick"}
+                  {tipOrder[0] || "Top-Pick"}
                 </span>
               </div>
             ) : (
               <div className="player-tip-chip muted">Top-Pick fehlt</div>
+            )}
+            {showResults && (
+              <div className="player-tip-results" aria-label="Tipp vs Ergebnis">
+                <span className="player-tip-result-label">Ergebnis</span>
+                {tipOrder
+                  .filter(Boolean)
+                  .slice(0, 3)
+                  .map((driver, index) => {
+                    const officialIndex = resultsOrder.indexOf(driver);
+                    const officialPos =
+                      officialIndex >= 0 ? officialIndex + 1 : null;
+                    return (
+                      <span
+                        key={`${race.id}-${driver}`}
+                        className={`player-tip-result-pill ${
+                          officialPos ? "" : "is-missing"
+                        }`}
+                      >
+                        <span className="player-tip-result-pred">
+                          #{index + 1}
+                        </span>
+                        <span className="player-tip-result-name">
+                          {driver}
+                        </span>
+                        <span className="player-tip-result-official">
+                          {officialPos ? `P${officialPos}` : "kein Ergebnis"}
+                        </span>
+                      </span>
+                    );
+                  })}
+              </div>
             )}
           </div>
           <div className="player-race-card-actions">
