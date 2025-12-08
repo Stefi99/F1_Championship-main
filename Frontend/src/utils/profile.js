@@ -1,3 +1,5 @@
+import { upsertUserProfile } from "./authStorage";
+
 const DEFAULT_PLAYER_PROFILE = {
   username: "player",
   displayName: "Racing Fan",
@@ -35,7 +37,7 @@ export function loadPlayerProfile() {
     ...DEFAULT_PLAYER_PROFILE,
     ...stored,
     username: stored.username || DEFAULT_PLAYER_PROFILE.username,
-    role: "PLAYER",
+    role: stored.role || DEFAULT_PLAYER_PROFILE.role || "PLAYER",
     lastUpdated: fallbackLastUpdated,
     points: parsedPoints,
   };
@@ -49,14 +51,16 @@ export function persistPlayerProfile(profile) {
     ...DEFAULT_PLAYER_PROFILE,
     ...profile,
     username: profile.username || DEFAULT_PLAYER_PROFILE.username,
-    role: "PLAYER",
+    role: profile.role || DEFAULT_PLAYER_PROFILE.role || "PLAYER",
     lastUpdated: new Date().toISOString(),
     points: parsedPoints,
   };
 
   try {
-    localStorage.setItem("playerProfile", JSON.stringify(next));
-    localStorage.setItem("user", JSON.stringify(next));
+    const synced = upsertUserProfile(next);
+    localStorage.setItem("playerProfile", JSON.stringify(synced));
+    localStorage.setItem("user", JSON.stringify(synced));
+    return synced;
   } catch (err) {
     console.error("playerProfile save error", err);
   }
