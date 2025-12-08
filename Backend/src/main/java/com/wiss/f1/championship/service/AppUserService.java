@@ -28,15 +28,18 @@ public class AppUserService {
         return userRepository.findByUsername(username);
     }
 
-    public AppUser registerUser(String username, String rawPassword, Role role) {
+    public AppUser registerUser(String username, String email, String rawPassword, Role role) {
 
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("Username already exists");
         }
+        if (userRepository.existsByEmail(email)){
+            throw new IllegalArgumentException("Email already exists");
+        }
 
         String hashedPassword = passwordEncoder.encode(rawPassword);
 
-        AppUser user = new AppUser(username, hashedPassword, role);
+        AppUser user = new AppUser(username, email, hashedPassword, role);
 
         return userRepository.save(user);
     }
@@ -53,3 +56,4 @@ public class AppUserService {
         return user;
     }
 }
+

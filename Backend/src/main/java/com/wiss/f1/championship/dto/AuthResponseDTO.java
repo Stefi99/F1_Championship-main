@@ -1,15 +1,15 @@
 package com.wiss.f1.championship.dto;
 
-public class AuthResponseDto {
+public class AuthResponseDTO {
 
     private Long id;
     private String username;
     private String role;
 
-    public AuthResponseDto() {
+    public AuthResponseDTO() {
     }
 
-    public AuthResponseDto(Long id, String username, String role) {
+    public AuthResponseDTO(Long id, String username, String role) {
         this.id = id;
         this.username = username;
         this.role = role;

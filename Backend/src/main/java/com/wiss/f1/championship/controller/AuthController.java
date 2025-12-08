@@ -1,7 +1,7 @@
 package com.wiss.f1.championship.controller;
 
-import com.wiss.f1.championship.dto.AuthRequestDto;
-import com.wiss.f1.championship.dto.AuthResponseDto;
+import com.wiss.f1.championship.dto.AuthRequestDTO;
+import com.wiss.f1.championship.dto.AuthResponseDTO;
 import com.wiss.f1.championship.entity.AppUser;
 import com.wiss.f1.championship.entity.Role;
 import com.wiss.f1.championship.service.AppUserService;
@@ -19,17 +19,17 @@ public class AuthController {
         this.userService = userService;
     }
 
-    // Registrierung eines neuen Users (standardmässig ROLE_PLAYER)
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDto> register(@RequestBody AuthRequestDto request) {
+    public ResponseEntity<AuthResponseDTO> register(@RequestBody AuthRequestDTO request) {
         try {
             AppUser user = userService.registerUser(
                     request.getUsername(),
+                    request.getEmail(),
                     request.getPassword(),
                     Role.PLAYER
             );
 
-            AuthResponseDto response = new AuthResponseDto(
+            AuthResponseDTO response = new AuthResponseDTO(
                     user.getId(),
                     user.getUsername(),
                     user.getRole().name()
@@ -38,21 +38,20 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (IllegalArgumentException ex) {
-            // z. B. "Username already exists"
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 
-    // Login mit Username & Password
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto request) {
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
         try {
             AppUser user = userService.authenticate(
                     request.getUsername(),
                     request.getPassword()
             );
 
-            AuthResponseDto response = new AuthResponseDto(
+            AuthResponseDTO response = new AuthResponseDTO(
                     user.getId(),
                     user.getUsername(),
                     user.getRole().name()
@@ -61,8 +60,9 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException ex) {
-            // z. B. "User not found" oder "Invalid password"
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }
+
