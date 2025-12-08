@@ -20,8 +20,4 @@ public class AppUserController {
         return userService.getUserById(id);
     }
 
-    @PostMapping
-    public AppUser createUser(@RequestBody AppUser user) {
-        return userService.createUser(user);
-    }
 }
