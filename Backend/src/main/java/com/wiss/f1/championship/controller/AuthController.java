@@ -4,6 +4,7 @@ import com.wiss.f1.championship.dto.AuthRequestDTO;
 import com.wiss.f1.championship.dto.AuthResponseDTO;
 import com.wiss.f1.championship.entity.AppUser;
 import com.wiss.f1.championship.entity.Role;
+import com.wiss.f1.championship.security.JwtService;
 import com.wiss.f1.championship.service.AppUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AppUserService userService;
+    private final JwtService jwtService;
 
-    public AuthController(AppUserService userService) {
+    public AuthController(AppUserService userService, JwtService jwtService) {
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -29,17 +32,21 @@ public class AuthController {
                     Role.PLAYER
             );
 
+            // Token erzeugen
+            String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
+
             AuthResponseDTO response = new AuthResponseDTO(
                     user.getId(),
                     user.getUsername(),
-                    user.getRole().name()
+                    user.getRole().name(),
+                    token
             );
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (IllegalArgumentException ex) {
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new AuthResponseDTO(null, null, null, "ERROR: " + ex.getMessage()));
         }
     }
 
@@ -51,17 +58,21 @@ public class AuthController {
                     request.getPassword()
             );
 
+            // Token erzeugen
+            String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
+
             AuthResponseDTO response = new AuthResponseDTO(
                     user.getId(),
                     user.getUsername(),
-                    user.getRole().name()
+                    user.getRole().name(),
+                    token
             );
 
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException ex) {
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponseDTO(null, null, null, "ERROR: " + ex.getMessage()));
         }
     }
 }
