@@ -1,9 +1,16 @@
 package com.wiss.f1.championship.entity;
+
 import jakarta.persistence.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "app_users")
-public class AppUser {
+public class AppUser implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,41 +26,46 @@ public class AppUser {
     @Column(nullable = false, length = 20)
     private Role role;
 
-    // Leerer Konstruktor für JPA
-    public AppUser() {
-    }
+    public AppUser() {}
 
-    // Komfort Konstruktor
     public AppUser(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
     }
 
-    // Getter und Setter
-
-    public Long getId() {
-        return id;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
+    // WICHTIG: diese beiden fehlen bei dir noch
+    @Override
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
+
+    // Getter/Setter für ID + Role (und optional Username/Password)
+
+    public Long getId() {
+        return id;
     }
 
     public Role getRole() {
@@ -62,5 +74,13 @@ public class AppUser {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
