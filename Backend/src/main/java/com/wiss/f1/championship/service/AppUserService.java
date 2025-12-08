@@ -20,6 +20,14 @@ public class AppUserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public Optional<AppUser> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public Optional<AppUser> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     public AppUser registerUser(String username, String email, String rawPassword, Role role) {
 
         if (userRepository.existsByUsername(username)) {
@@ -45,9 +53,5 @@ public class AppUserService {
         }
 
         return user;
-    }
-
-    public Optional<AppUser> getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
     }
 }

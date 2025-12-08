@@ -5,7 +5,7 @@ public class AuthRequestDTO {
     private String email;
     private String username;
     private String password;
-    private String role; // ADMIN oder PLAYER
+    private String role;
 
     public String getEmail() { return email; }
     public String getUsername() { return username; }

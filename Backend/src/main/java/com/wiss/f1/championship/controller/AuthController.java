@@ -25,9 +25,8 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDTO> register(@RequestBody AuthRequestDTO request) {
         try {
+            Role role = Role.PLAYER;
 
-            // ROLE aus JSON übernehmen – WICHTIG!
-            Role role = Role.PLAYER; // Standard
             if (request.getRole() != null) {
                 role = Role.valueOf(request.getRole().toUpperCase());
             }
@@ -41,17 +40,31 @@ public class AuthController {
 
             String token = jwtService.generateToken(user);
 
-            AuthResponseDTO response = new AuthResponseDTO(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getRole().name(),
-                    token
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new AuthResponseDTO(user.getId(), user.getUsername(), user.getRole().name(), token));
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new AuthResponseDTO(null, null, null, "ERROR: " + ex.getMessage()));
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
+        try {
+            AppUser user = userService.authenticate(
+                    request.getUsername(),
+                    request.getPassword()
             );
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            String token = jwtService.generateToken(user);
 
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.ok(
+                    new AuthResponseDTO(user.getId(), user.getUsername(), user.getRole().name(), token)
+            );
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponseDTO(null, null, null, "ERROR: " + ex.getMessage()));
         }
     }
