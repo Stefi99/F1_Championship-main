@@ -25,15 +25,21 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDTO> register(@RequestBody AuthRequestDTO request) {
         try {
+
+            // ROLE aus JSON übernehmen – WICHTIG!
+            Role role = Role.PLAYER; // Standard
+            if (request.getRole() != null) {
+                role = Role.valueOf(request.getRole().toUpperCase());
+            }
+
             AppUser user = userService.registerUser(
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
-                    Role.PLAYER
+                    role
             );
 
-            // Token erzeugen
-            String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
+            String token = jwtService.generateToken(user);
 
             AuthResponseDTO response = new AuthResponseDTO(
                     user.getId(),
@@ -49,31 +55,4 @@ public class AuthController {
                     .body(new AuthResponseDTO(null, null, null, "ERROR: " + ex.getMessage()));
         }
     }
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
-        try {
-            AppUser user = userService.authenticate(
-                    request.getUsername(),
-                    request.getPassword()
-            );
-
-            // Token erzeugen
-            String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
-
-            AuthResponseDTO response = new AuthResponseDTO(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getRole().name(),
-                    token
-            );
-
-            return ResponseEntity.ok(response);
-
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponseDTO(null, null, null, "ERROR: " + ex.getMessage()));
-        }
-    }
 }
-
