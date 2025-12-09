@@ -82,6 +82,13 @@
 			<version>42.7.4</version>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!-- JUnit 5 + Mockito + Spring Test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
