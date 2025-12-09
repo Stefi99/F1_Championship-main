@@ -1,3 +1,4 @@
+//Seite zur Eingabe der offiziellen Rennergebnisse.
 import { useEffect, useState } from "react";
 import {
   getStoredDrivers,
@@ -5,6 +6,7 @@ import {
   TEAM_CLASS_MAP,
 } from "../../data/drivers";
 
+//Farbpalette für Teams zur visuellen Hervorhebung
 const TEAM_COLOR_PALETTE = {
   "team-red-bull": "#2037c4",
   "team-ferrari": "#dc0000",
@@ -26,12 +28,15 @@ function AdminOfficialResultsPage() {
   const [dragIndex, setDragIndex] = useState(null);
   const [driversByName, setDriversByName] = useState({});
 
+  // Hilfsfunktionen zum Laden und Speichern aller Rennen.
+  // persist() speichert Änderungen und aktualisiert den State.
   const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
   const persist = (list) => {
     setRaces(list);
     localStorage.setItem("races", JSON.stringify(list));
   };
 
+  // Hilfsfunktionen zur Ermittlung von Teamfarben und Teamnamen.
   const teamClass = (driverName) => {
     const team = getDriverTeam(driverName) || driversByName[driverName]?.team;
     return TEAM_CLASS_MAP[team] || "team-default";
@@ -47,6 +52,7 @@ function AdminOfficialResultsPage() {
     driversByName[driverName]?.team ||
     "Team unbekannt";
 
+  // Laden von Fahrer-/Teamdaten, Rennen, Ergebnisse
   useEffect(() => {
     const driverList = getStoredDrivers();
     const map = driverList.reduce((acc, driver) => {
@@ -70,7 +76,7 @@ function AdminOfficialResultsPage() {
     }
   }, []);
 
-  // Wenn Auswahl wechselt, vorhandene Ergebnisse des Rennens laden
+  // Aktualisiert die Ergebnisliste neu, wenn Auswahl gewechselt wird
   useEffect(() => {
     if (!selectedId) {
       setResultsOrder([]);
@@ -88,6 +94,7 @@ function AdminOfficialResultsPage() {
     setResultsOrder(initialOrder || []);
   }, [selectedId, races, driversByName]);
 
+  // Speichert die offizielle Reihenfolge des ausgewählten Rennens
   const handleSave = () => {
     if (!selectedId) {
       alert("Bitte zuerst ein Rennen auswählen");
@@ -111,6 +118,7 @@ function AdminOfficialResultsPage() {
     alert("Ergebnisse gespeichert (Status: closed)");
   };
 
+  // Erstellt eine zufällige Reihenfolge der Fahrer
   const shuffleOrder = () => {
     setResultsOrder((prev) => {
       const next = [...prev];
@@ -122,6 +130,7 @@ function AdminOfficialResultsPage() {
     });
   };
 
+  // Verschiebt einen Fahrer innerhalb der Ergebnisliste
   const moveItem = (from, to) => {
     if (from === null || to === null || from === to) return;
     setResultsOrder((prev) => {
@@ -133,6 +142,7 @@ function AdminOfficialResultsPage() {
     });
   };
 
+  // Drag-&-Drop Steuerung
   const handleDragStart = (index) => setDragIndex(index);
   const handleDragOver = (e) => e.preventDefault();
   const handleDrop = (index) => {
@@ -148,6 +158,7 @@ function AdminOfficialResultsPage() {
     resultsOrder.length > 0 || (currentRace?.drivers || []).length > 0;
   const closedCount = races.filter((race) => race.status === "closed").length;
 
+  // Darstellung der kompletten Ergebnis-Erfassungsseite
   return (
     <div className="results-admin-page">
       <header className="results-hero">
@@ -198,8 +209,8 @@ function AdminOfficialResultsPage() {
           <div className="results-panel results-empty">
             <h2>Keine Rennen vorhanden</h2>
             <p className="results-panel-copy">
-              Bitte zuerst ein Rennen im Bereich "Rennen" anlegen, um
-              offizielle Ergebnisse einzutragen.
+              Bitte zuerst ein Rennen im Bereich "Rennen" anlegen, um offizielle
+              Ergebnisse einzutragen.
             </p>
           </div>
         ) : (

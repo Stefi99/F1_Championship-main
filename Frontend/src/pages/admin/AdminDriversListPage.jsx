@@ -10,24 +10,29 @@ import {
 function AdminDriversListPage() {
   const [drivers, setDrivers] = useState([]);
 
+  // Hilfsfunktionen zum Laden und Speichern der Rennen
   const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
   const saveRaces = (list) =>
     localStorage.setItem("races", JSON.stringify(list));
 
+  // Lädt die gespeicherten Fahrer beim ersten Rendern.
   useEffect(() => {
     const stored = getStoredDrivers();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDrivers(stored);
   }, []);
 
+  //Ändert das Team eines Fahrers direkt, erst beim Speichern dauerhaft gespeichert
   const handleChangeTeam = (id, team) => {
     setDrivers((prev) => prev.map((d) => (d.id === id ? { ...d, team } : d)));
   };
 
+  //Aktualisiert den Namen eines Fahrers
   const handleChangeName = (id, name) => {
     setDrivers((prev) => prev.map((d) => (d.id === id ? { ...d, name } : d)));
   };
 
+  //Synchronisiert Namensänderungen in allen Rennen
   const applyRenamesToRaces = (updatedDrivers, previousDrivers) => {
     const prevById = (previousDrivers || []).reduce((acc, d) => {
       const key = d.id || d.name;
@@ -68,6 +73,7 @@ function AdminDriversListPage() {
     saveRaces(updatedRaces);
   };
 
+  //Speichert die Änderungen dauerhaft
   const handleSave = () => {
     const previousDrivers = getStoredDrivers();
     // Persist drivers (mit stabilen IDs)
@@ -76,6 +82,7 @@ function AdminDriversListPage() {
     alert("Fahrer gespeichert");
   };
 
+  // Setzt die Fahrerliste auf die Standard-Fahrer zurück
   const handleReset = () => {
     const previousDrivers = getStoredDrivers();
     setDrivers(defaultDrivers);
@@ -85,6 +92,7 @@ function AdminDriversListPage() {
 
   const teamCount = new Set(drivers.map((d) => d.team)).size;
 
+  // Darstellung der Fahrer-Verwaltungsoberfläche
   return (
     <div className="drivers-admin-page">
       <header className="drivers-hero">

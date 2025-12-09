@@ -9,19 +9,23 @@ function AdminRaceListPage() {
   const [races, setRaces] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
 
+  // LocalStorage-Hilfsfunktionen zum Laden und Speichern der Rennen
   const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
   const persist = (list) => {
     setRaces(list);
     localStorage.setItem("races", JSON.stringify(list));
   };
 
+  // Team-Informationen für Fahrerchips in der Detailansicht
   const teamClass = (driverName) => {
     const team = getDriverTeam(driverName);
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
-  const teamLabel = (driverName) => getDriverTeam(driverName) || "Team unbekannt";
+  const teamLabel = (driverName) =>
+    getDriverTeam(driverName) || "Team unbekannt";
 
+  // Mapping-Tabellen für die Übersetzung technischer Werte
   const statusLabel = {
     open: "Offen",
     voting: "Tippen möglich",
@@ -40,11 +44,13 @@ function AdminRaceListPage() {
     hard: "Hard",
   };
 
+  // Lädt alle gespeicherten Rennen beim ersten Rendern.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRaces(loadRaces());
   }, []);
 
+  // Berechnet Statistiken (Anzahl offen, voting, geschlossen)
   const stats = useMemo(() => {
     const total = races.length;
     const openCount = races.filter((race) => race.status === "open").length;
@@ -53,6 +59,7 @@ function AdminRaceListPage() {
     return { total, openCount, votingCount, closedCount };
   }, [races]);
 
+  // Löscht ein Rennen nach Bestätigung durch den Benutzer.
   const handleDelete = (id) => {
     const confirmDelete = window.confirm("Rennen wirklich löschen?");
     if (!confirmDelete) return;
@@ -60,9 +67,11 @@ function AdminRaceListPage() {
     persist(next);
   };
 
+  // Öffnet oder schließt die Detailansicht einer Rennkarte
   const toggleExpand = (id) =>
     setExpandedId((prev) => (String(prev) === String(id) ? null : id));
 
+  // Erzeugt die Hintergrund-Styles für die Track-Karte
   const mediaStyle = (visual) => {
     const layers = [
       visual.pattern,
@@ -77,6 +86,7 @@ function AdminRaceListPage() {
     };
   };
 
+  // Darstellung der kompletten Rennen-Übersicht
   return (
     <div className="races-admin-page">
       <header className="races-hero">
@@ -154,9 +164,7 @@ function AdminRaceListPage() {
                   aria-hidden="true"
                 >
                   <div className="race-media-top">
-                    <span className="race-tag">
-                      {trackVisual.code || "F1"}
-                    </span>
+                    <span className="race-tag">{trackVisual.code || "F1"}</span>
                     <span
                       className={`race-status-chip race-status-${
                         race.status || "open"
@@ -222,36 +230,40 @@ function AdminRaceListPage() {
                           <strong>Ergebnisliste:</strong>{" "}
                           {hasOrder ? (
                             <ol className="race-results-list">
-                              {(race.resultsOrder || []).map((driver, index) => (
-                                <li
-                                  key={driver}
-                                  className={`race-result-row ${teamClass(driver)}`}
-                                >
-                                  <span
-                                    className={`race-result-stripe ${teamClass(
+                              {(race.resultsOrder || []).map(
+                                (driver, index) => (
+                                  <li
+                                    key={driver}
+                                    className={`race-result-row ${teamClass(
                                       driver
                                     )}`}
-                                    aria-hidden="true"
-                                  />
-                                  <div className="race-result-main">
+                                  >
                                     <span
-                                      className={`race-result-badge ${teamClass(
+                                      className={`race-result-stripe ${teamClass(
                                         driver
                                       )}`}
-                                    >
-                                      #{index + 1}
-                                    </span>
-                                    <div className="race-result-text">
-                                      <span className="race-result-name">
-                                        {driver}
+                                      aria-hidden="true"
+                                    />
+                                    <div className="race-result-main">
+                                      <span
+                                        className={`race-result-badge ${teamClass(
+                                          driver
+                                        )}`}
+                                      >
+                                        #{index + 1}
                                       </span>
-                                      <span className="race-result-team">
-                                        {teamLabel(driver)}
-                                      </span>
+                                      <div className="race-result-text">
+                                        <span className="race-result-name">
+                                          {driver}
+                                        </span>
+                                        <span className="race-result-team">
+                                          {teamLabel(driver)}
+                                        </span>
+                                      </div>
                                     </div>
-                                  </div>
-                                </li>
-                              ))}
+                                  </li>
+                                )
+                              )}
                             </ol>
                           ) : (
                             race.results || "Keine Ergebnisse eingetragen"

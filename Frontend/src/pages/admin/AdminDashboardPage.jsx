@@ -1,3 +1,4 @@
+// zentrale Startseite für Administratoren
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStoredDrivers } from "../../data/drivers";
@@ -9,6 +10,8 @@ function AdminDashboardPage() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ races: 0, drivers: 0, tasks: 0 });
 
+  //Definiert alle Verwaltungsaktionen
+  // wird als Klickbare Karte angezeigt
   const actions = [
     {
       label: "Rennen verwalten",
@@ -36,6 +39,7 @@ function AdminDashboardPage() {
     },
   ];
 
+  // Lädt aktuelle Statistikdaten aus dem LocalStorage (Anzahl Rennen, Fahrer und offene Tasks/Rennen)
   const refreshStats = useCallback(() => {
     const races = JSON.parse(localStorage.getItem("races") || "[]");
     const drivers = getStoredDrivers();
@@ -52,6 +56,7 @@ function AdminDashboardPage() {
     });
   }, []);
 
+  // Ladet und übernimmt sofort änderungen die aus anderen Browsertabs gemacht wurden.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshStats();
@@ -68,6 +73,7 @@ function AdminDashboardPage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, [refreshStats]);
 
+  // Layout der Admin-Dashboard-Seite
   return (
     <div className="admin-dashboard-page">
       <header className="admin-dashboard-hero">
