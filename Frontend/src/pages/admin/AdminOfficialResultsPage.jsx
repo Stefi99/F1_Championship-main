@@ -18,7 +18,7 @@ const TEAM_COLOR_PALETTE = {
   "team-rb": "#0f1f7a",
 };
 
-// Seite fuer die Eingabe und Anzeige der offiziellen Rennergebnisse
+// Seite für die Eingabe und Anzeige der offiziellen Rennergebnisse
 function AdminOfficialResultsPage() {
   const [races, setRaces] = useState([]);
   const [selectedId, setSelectedId] = useState("");
@@ -90,7 +90,7 @@ function AdminOfficialResultsPage() {
 
   const handleSave = () => {
     if (!selectedId) {
-      alert("Bitte zuerst ein Rennen auswaehlen");
+      alert("Bitte zuerst ein Rennen auswählen");
       return;
     }
     if (resultsOrder.length === 0) {
@@ -156,7 +156,7 @@ function AdminOfficialResultsPage() {
           <h1>Rangliste finalisieren</h1>
           <p className="admin-sub">
             Fahrer per Drag-and-Drop oder mit den Pfeilen verschieben. Danach
-            speichern, um das Rennen zu schliessen und die Reihenfolge zu
+            speichern, um das Rennen zu schließen und die Reihenfolge zu
             sichern.
           </p>
           <div className="results-hero-actions">
@@ -208,10 +208,10 @@ function AdminOfficialResultsPage() {
               <div className="results-panel-head">
                 <div>
                   <p className="admin-eyebrow">Rennen</p>
-                  <h2>Event auswaehlen</h2>
+                  <h2>Event auswählen</h2>
                   <p className="results-panel-copy">
-                    Waehle das Rennen, fuer das du die offizielle Reihenfolge
-                    festlegen moechtest.
+                    Wähle das Rennen, für das du die offizielle Reihenfolge
+                    festlegen möchtest.
                   </p>
                 </div>
                 <div className="results-controls">
@@ -270,8 +270,8 @@ function AdminOfficialResultsPage() {
                 <div className="results-empty">
                   <h3>Keine Fahrer hinterlegt</h3>
                   <p className="results-panel-copy">
-                    Fuege zuerst Fahrer im Rennen hinzu, um sie hier sortieren zu
-                    koennen.
+                    Füge zuerst Fahrer im Rennen hinzu, um sie hier sortieren zu
+                    können.
                   </p>
                 </div>
               ) : (

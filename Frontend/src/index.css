@@ -2750,6 +2750,7 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   letter-spacing: 0.02em;
+  color: #ffffff;
 }
 
 .result-team-swatch {
@@ -2826,15 +2827,15 @@ button:focus-visible {
 .result-row.is-off-position .result-row-position,
 .result-row.is-off-position .result-row-name,
 .result-row.is-off-position .result-row-team {
-  opacity: 0.68;
+  opacity: 0.72;
   filter: saturate(0.75);
 }
 
 .result-row.is-missing-position .result-row-position,
 .result-row.is-missing-position .result-row-name,
 .result-row.is-missing-position .result-row-team {
-  opacity: 0.55;
-  filter: saturate(0.6);
+  opacity: 0.58;
+  filter: saturate(0.62);
 }
 
 .result-row.is-correct-position .result-row-official strong {

@@ -69,7 +69,7 @@ function PlayerProfilePage() {
   const passwordInfo = useMemo(
     () =>
       profile.lastPasswordChange
-        ? `Zuletzt geaendert am ${formatDateTime(profile.lastPasswordChange)}`
+        ? `Zuletzt geändert am ${formatDateTime(profile.lastPasswordChange)}`
         : "Noch kein Passwort gesetzt",
     [profile.lastPasswordChange]
   );
@@ -90,7 +90,7 @@ function PlayerProfilePage() {
     }
 
     if (form.password && form.password !== form.confirmPassword) {
-      setError("Passwoerter stimmen nicht ueberein.");
+      setError("Passwörter stimmen nicht überein.");
       return;
     }
 
@@ -141,7 +141,7 @@ function PlayerProfilePage() {
               <p className="player-eyebrow">Basisdaten</p>
               <h2>Kontakt und Anzeigename</h2>
               <p className="player-sub">
-                Diese Daten nutzen wir fuer den Spielerbereich und die Leaderboard-Anzeige.
+                Diese Daten nutzen wir für den Spielerbereich und die Leaderboard-Anzeige.
               </p>
             </div>
           </div>
@@ -197,7 +197,7 @@ function PlayerProfilePage() {
                 value={form.favoriteTeam}
                 onChange={handleChange("favoriteTeam")}
               >
-                <option value="">Bitte waehlen...</option>
+                <option value="">Bitte wählen...</option>
                 <option value="Keines">Kein Favorit</option>
                 {TEAM_OPTIONS.map((team) => (
                   <option key={team} value={team}>
@@ -235,7 +235,7 @@ function PlayerProfilePage() {
               <p className="player-eyebrow">Login</p>
               <h2>Passwort anpassen</h2>
               <p className="player-sub">
-                Neues Passwort setzen, um deine Tipps zu schuetzen. Wird lokal gespeichert.
+                Neues Passwort setzen, um deine Tipps zu schützen. Wird lokal gespeichert.
               </p>
             </div>
           </div>
@@ -252,7 +252,7 @@ function PlayerProfilePage() {
             </label>
 
             <label className="player-field-card">
-              <span className="player-field-label">Passwort bestaetigen</span>
+              <span className="player-field-label">Passwort bestätigen</span>
               <input
                 type="password"
                 value={form.confirmPassword}
@@ -276,7 +276,7 @@ function PlayerProfilePage() {
             className="player-ghost-btn"
             onClick={() => navigate("/player")}
           >
-            Zurueck zum Dashboard
+            Zurück zum Dashboard
           </button>
         </div>
       </form>

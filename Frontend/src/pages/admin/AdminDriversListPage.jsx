@@ -6,7 +6,7 @@ import {
   defaultDrivers,
 } from "../../data/drivers";
 
-// Seite fuer die Verwaltung der Fahrer (Admin-Bereich)
+// Seite für die Verwaltung der Fahrer (Admin-Bereich)
 function AdminDriversListPage() {
   const [drivers, setDrivers] = useState([]);
 
@@ -92,7 +92,7 @@ function AdminDriversListPage() {
           <p className="admin-eyebrow">Fahrer verwalten</p>
           <h1>Roster & Teamfarben</h1>
           <p className="admin-sub">
-            Fahrer zentral pflegen. Aenderungen wirken sofort in Rennen,
+            Fahrer zentral pflegen. Änderungen wirken sofort in Rennen,
             Ergebnissen und Farbcodierungen.
           </p>
           <div className="driver-hero-actions">
@@ -104,7 +104,7 @@ function AdminDriversListPage() {
               className="admin-ghost-btn"
               onClick={handleReset}
             >
-              Auf Standard zuruecksetzen
+              Auf Standard zurücksetzen
             </button>
           </div>
         </div>
@@ -132,7 +132,7 @@ function AdminDriversListPage() {
             <h2>Namen & Teams anpassen</h2>
             <p className="driver-panel-copy">
               Saubere Schreibweisen halten Ergebnisse und Teamfarben konsistent.
-              Aenderungen ueberschreiben alle gespeicherten Rennen.
+              Änderungen überschreiben alle gespeicherten Rennen.
             </p>
           </div>
         </div>

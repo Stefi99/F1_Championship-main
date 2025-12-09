@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getDriverTeam, TEAM_CLASS_MAP } from "../../data/drivers";
 import { getTrackVisual } from "../../data/tracks";
 
-// Seite fuer die Verwaltung aller Rennen (Admin-Bereich)
+// Seite für die Verwaltung aller Rennen (Admin-Bereich)
 function AdminRaceListPage() {
   const navigate = useNavigate();
   const [races, setRaces] = useState([]);

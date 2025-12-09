@@ -215,7 +215,7 @@ function PlayerRaceTipsPage() {
       return;
     }
     if (selection.length === 0) {
-      setError("Bitte mindestens einen Fahrer fuer die Top 10 auswaehlen.");
+      setError("Bitte mindestens einen Fahrer für die Top 10 auswählen.");
       return;
     }
     const entry = persistRaceTip(raceId, selection);
@@ -245,7 +245,7 @@ function PlayerRaceTipsPage() {
           <h1>{race.track || "Rennen"}</h1>
           <p className="player-sub">
             Ordne deine Top 10 wie beim Admin-Ergebnis ein, nur dass hier
-            hoechstens die Plaetze 1 bis 10 vergeben werden koennen.
+            höchstens die Plätze 1 bis 10 vergeben werden können.
           </p>
           <div className="player-badge-row">
             <span className="player-badge">Status: {statusText}</span>
@@ -310,7 +310,7 @@ function PlayerRaceTipsPage() {
               <h2>Fahrer platzieren</h2>
               <p className="player-sub">
                 Drag & Drop oder Up/Down wie im Admin-Bereich. Es werden nur die
-                Plaetze 1-10 gespeichert.
+                Plätze 1-10 gespeichert.
               </p>
             </div>
             <div className="player-tip-actions">
@@ -323,10 +323,10 @@ function PlayerRaceTipsPage() {
               </button>
               <button
                 type="button"
-                className="player-ghost-btn"
-                onClick={syncData}
-              >
-                Zuruecksetzen
+              className="player-ghost-btn"
+              onClick={syncData}
+            >
+                Zurücksetzen
               </button>
             </div>
           </div>
@@ -336,7 +336,7 @@ function PlayerRaceTipsPage() {
 
           {selection.length === 0 ? (
             <div className="player-empty">
-              <p>Kein Fahrer ausgewaehlt. Fuege Fahrer aus dem Pool hinzu.</p>
+              <p>Kein Fahrer ausgewählt. Füge Fahrer aus dem Pool hinzu.</p>
             </div>
           ) : (
             <div className="result-list">
@@ -435,15 +435,15 @@ function PlayerRaceTipsPage() {
           <div className="player-tip-panel-head">
             <div>
               <p className="player-eyebrow muted">Fahrerpool</p>
-              <h3>Weitere Fahrer hinzufuegen</h3>
+              <h3>Weitere Fahrer hinzufügen</h3>
               <p className="player-sub">
-                Waehle aus den restlichen Fahrern und fuege sie deinem Top-10
+                Wähle aus den restlichen Fahrern und füge sie deinem Top-10
                 Tipp hinzu.
-              </p>
-            </div>
-            <div className="player-tip-limit">
-              Verfuegbar: {available.length} Fahrer
-            </div>
+            </p>
+          </div>
+          <div className="player-tip-limit">
+            Verfügbar: {available.length} Fahrer
+          </div>
           </div>
 
           {available.length === 0 ? (
@@ -476,7 +476,7 @@ function PlayerRaceTipsPage() {
                 <h3>Offizielles Ergebnis</h3>
                 <p className="player-sub">
                   Gespeichert vom Admin. Nutze die finale Reihenfolge, um deine
-                  Tipps fuer kommende Rennen zu verbessern.
+                  Tipps für kommende Rennen zu verbessern.
                 </p>
               </div>
               <div className="player-tip-limit">

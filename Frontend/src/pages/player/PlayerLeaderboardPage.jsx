@@ -421,7 +421,7 @@ function PlayerLeaderboardPage() {
               className="player-ghost-btn"
               onClick={() => navigate("/player/races")}
             >
-              Naechstes Tippfenster
+              Nächstes Tippfenster
             </button>
           </div>
         </div>
@@ -503,7 +503,7 @@ function PlayerLeaderboardPage() {
             <h2>Form, Konstanz & Anstehendes</h2>
             <p className="player-sub">
               Kurze Auswertung deiner Saison: Formkurve, Treffer-Quote und was
-              als Naechstes ansteht.
+              als Nächstes ansteht.
             </p>
           </div>
         </div>
@@ -513,7 +513,7 @@ function PlayerLeaderboardPage() {
             <span className="leaderboard-label">Formkurve (letzte 3)</span>
             <strong>{formPoints} Punkte</strong>
             <p className="player-sub">
-              Durchschnitt der letzten drei Events. Haelt die Pace stabil?
+              Durchschnitt der letzten drei Events. Hält die Pace stabil?
             </p>
           </article>
           <article className="leaderboard-mini-card">
@@ -525,14 +525,14 @@ function PlayerLeaderboardPage() {
             </p>
           </article>
           <article className="leaderboard-mini-card">
-            <span className="leaderboard-label">Naechste Schritte</span>
+            <span className="leaderboard-label">Nächste Schritte</span>
             {races.length === 0 ? (
               <p className="player-sub">Noch keine Rennen geplant.</p>
             ) : (
               <p className="player-sub">
                 {races.filter((race) => race.status !== "closed").length > 0
-                  ? "Tippen oeffnen, bevor das naechste Rennen geschlossen wird."
-                  : "Alle Rennen sind abgeschlossen - Zeit fuer neue Saison!"}
+                  ? "Tippen öffnen, bevor das nächste Rennen geschlossen wird."
+                  : "Alle Rennen sind abgeschlossen - Zeit für neue Saison!"}
               </p>
             )}
             <div className="leaderboard-mini-actions">
