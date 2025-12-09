@@ -68,4 +68,8 @@ public class AppUser implements UserDetails {
     public Role getRole() { return role; }
 
     public void setRole(Role role) { this.role = role; }
+
+    public String getDisplayName() {
+        return username;
+    }
 }
