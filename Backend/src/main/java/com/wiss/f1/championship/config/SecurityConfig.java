@@ -33,6 +33,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin muss eingeloggt + ADMIN-Rolle
                         .requestMatchers("/api/player/**").hasRole("PLAYER") // Player-Routen
                         .requestMatchers("/api/leaderboard/**").authenticated()
+                        .requestMatchers("/api/tips/**").authenticated()
+                        .requestMatchers("/api/races/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
