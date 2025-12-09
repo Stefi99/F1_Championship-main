@@ -1,8 +1,10 @@
+// Zeigt alle Rennen aus Spielersicht in chronologischer Reihenfolge
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTrackVisual } from "../../data/tracks";
 import { loadPlayerTips } from "../../utils/tips";
 
+// Übersetzungs-Tabellen für UI-Anzeige von Renn- und Wetterstatus
 const statusLabel = {
   open: "Geplant",
   voting: "Tippen offen",
@@ -15,6 +17,7 @@ const weatherLabel = {
   rain: "Regen",
 };
 
+// Hilfsfunktion, um Daten für Sortierung in echte Date-Objekte umzuwandeln
 const parseDate = (value) => {
   if (!value) return null;
   const date = new Date(value);
@@ -27,6 +30,8 @@ function PlayerRaceListPage() {
   const [races, setRaces] = useState([]);
   const [tips, setTips] = useState({});
 
+  // Lädt Rennen und gespeicherte Tipps. Listener sorgt dafür,
+  // dass Änderungen aus anderen Tabs übernommen werden.
   useEffect(() => {
     const readRaces = () => {
       try {
@@ -39,6 +44,7 @@ function PlayerRaceListPage() {
 
     const readTips = () => loadPlayerTips();
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRaces(readRaces());
     setTips(readTips());
 
@@ -57,6 +63,7 @@ function PlayerRaceListPage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+  // Sortiert die Rennen nach Datum (aufsteigend), sodass die nächste Strecke oben steht
   const sortedRaces = useMemo(() => {
     return [...races].sort((a, b) => {
       const da = parseDate(a.date);
@@ -68,6 +75,7 @@ function PlayerRaceListPage() {
     });
   }, [races]);
 
+  // Filtert Rennen nach Status für separate Bereiche
   const votingRaces = useMemo(
     () => sortedRaces.filter((race) => race.status === "voting"),
     [sortedRaces]
@@ -78,17 +86,17 @@ function PlayerRaceListPage() {
     [sortedRaces]
   );
 
-  const savedTipsCount = useMemo(
-    () => Object.keys(tips || {}).length,
-    [tips]
-  );
+  // Anzahl der gespeicherten Tipps zur Anzeige im Dashboard
+  const savedTipsCount = useMemo(() => Object.keys(tips || {}).length, [tips]);
 
+  // Formatiert Datumswerte für die UI
   const formatDate = (value) => {
     const date = parseDate(value);
     if (!date) return "Datum folgt";
     return date.toLocaleDateString("de-DE");
   };
 
+  // Rendert eine einzelne Rennkarte
   const renderRaceCard = (race) => {
     const visual = getTrackVisual(race.track);
     const tip = tips[race.id];
@@ -109,6 +117,7 @@ function PlayerRaceListPage() {
       resultsOrder.length > 0 &&
       tipOrder.length > 0;
 
+    // Darstellung der kompletten Rennübersicht
     return (
       <article
         key={race.id}
@@ -131,9 +140,7 @@ function PlayerRaceListPage() {
           <div className="player-race-media-top">
             <span className="player-pill">{visual.code || "F1"}</span>
             <span
-              className={`player-status-chip status-${
-                race.status || "open"
-              }`}
+              className={`player-status-chip status-${race.status || "open"}`}
             >
               {statusLabel[race.status] || statusLabel.open}
             </span>
@@ -186,9 +193,7 @@ function PlayerRaceListPage() {
                         <span className="player-tip-result-pred">
                           #{index + 1}
                         </span>
-                        <span className="player-tip-result-name">
-                          {driver}
-                        </span>
+                        <span className="player-tip-result-name">{driver}</span>
                         <span className="player-tip-result-official">
                           {officialPos ? `P${officialPos}` : "kein Ergebnis"}
                         </span>
