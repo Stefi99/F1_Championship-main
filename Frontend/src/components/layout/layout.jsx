@@ -1,6 +1,9 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 
+// Globales Seitenlayout.
+// Enthält die Navigationsleiste, den Platzhalter für Seiteninhalte (Outlet)
+// sowie den Footer. Dieses Layout wird um alle Hauptseiten herum verwendet.
 const Layout = () => {
   return (
     <div className="f1-shell">

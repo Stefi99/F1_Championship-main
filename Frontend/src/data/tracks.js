@@ -1,4 +1,5 @@
-// Track options plus simple placeholders for the admin views
+// Track-Konfigurationen für Anzeige und Auswahl.
+// Enthält Designinformationen (Labels, Kürzel, Farbverläufe)
 const TRACK_PLACEHOLDERS = {
   "Bahrain International Circuit": {
     label: "Bahrain",
@@ -45,11 +46,14 @@ const DEFAULT_TRACK_VISUAL = {
     "radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.1), transparent 40%)",
 };
 
+// Generierte Dropdown-Auswahlliste für Formulare
 export const TRACK_OPTIONS = Object.keys(TRACK_PLACEHOLDERS).map((track) => ({
   value: track,
   label: TRACK_PLACEHOLDERS[track].label || track,
 }));
 
+// Liefert Design-Informationen für Anzeige eines Rennens
+// oder eine Default-Darstellung, falls die Strecke nicht definiert ist.
 export function getTrackVisual(trackName) {
   if (!trackName) return DEFAULT_TRACK_VISUAL;
   return (

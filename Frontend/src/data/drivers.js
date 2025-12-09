@@ -1,3 +1,4 @@
+//Zuordnung für CSS-Teamfarben
 export const TEAM_CLASS_MAP = {
   "Red Bull": "team-red-bull",
   Ferrari: "team-ferrari",
@@ -13,6 +14,7 @@ export const TEAM_CLASS_MAP = {
 
 export const TEAM_OPTIONS = Object.keys(TEAM_CLASS_MAP);
 
+//Standart Liste aller F1-Fahrer
 export const defaultDrivers = [
   { id: "max-verstappen", name: "Max Verstappen", team: "Red Bull" },
   { id: "sergio-perez", name: "Sergio Perez", team: "Red Bull" },
@@ -36,6 +38,7 @@ export const defaultDrivers = [
   { id: "daniel-ricciardo", name: "Daniel Ricciardo", team: "RB" },
 ];
 
+//wenn Fahrer keine ID hat dann wird Namen angezeigt
 function withIds(driversList) {
   return (driversList || []).map((d) => ({
     ...d,
@@ -43,12 +46,14 @@ function withIds(driversList) {
   }));
 }
 
+//ladet Fahrer aus localStorage oder Default-Daten
 export function getStoredDrivers() {
   try {
     const raw = localStorage.getItem("driversData");
     if (!raw) return withIds(defaultDrivers);
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) return withIds(defaultDrivers);
+    if (!Array.isArray(parsed) || parsed.length === 0)
+      return withIds(defaultDrivers);
     return withIds(parsed);
   } catch (err) {
     console.error("driversData parse error", err);
@@ -56,6 +61,7 @@ export function getStoredDrivers() {
   }
 }
 
+//Speichert Fahreränderungen lokal
 export function saveDrivers(drivers) {
   try {
     localStorage.setItem("driversData", JSON.stringify(drivers));
@@ -64,6 +70,7 @@ export function saveDrivers(drivers) {
   }
 }
 
+//Liefert das Team eines Fahrers
 export function getDriverTeam(name) {
   const drivers = getStoredDrivers();
   const found = drivers.find((d) => d.name === name);

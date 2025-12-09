@@ -6,12 +6,12 @@ import { AuthContext } from "../../contexts/AuthContext.js";
 function AdminRoute({ children }) {
   const { isAuthenticated, isAdmin } = useContext(AuthContext);
 
-  // Nicht eingeloggt = Login
+  // Nicht eingeloggt = Weiterleitung zum Login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Eingeloggt aber keine Admin-Rolle = Weiterleitung zu Player
+  // Eingeloggt aber keine Admin-Rolle = Weiterleitung zu Player-Ansicht
   if (!isAdmin) {
     return <Navigate to="/player" replace />;
   }
