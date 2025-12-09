@@ -1,12 +1,13 @@
+// Öffentliche Startseite ohne Login.
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTrackVisual } from "../data/tracks";
 
-// Öffentliche Home-Seite mit Ranglisten-Link, Rennteasern und CTA für Tipps
 function HomePage() {
   const navigate = useNavigate();
   const [races, setRaces] = useState([]);
 
+  // Lädt Rennen initial aus LocalStorage
   useEffect(() => {
     const loadRaces = () => {
       try {
@@ -17,6 +18,7 @@ function HomePage() {
       }
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRaces(loadRaces());
 
     const handleStorage = (event) => {
@@ -29,6 +31,7 @@ function HomePage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+  // Statistische Zusammenfassung aller Rennen
   const stats = useMemo(() => {
     const planned = races.filter((race) => race.status === "open").length;
     const tipping = races.filter((race) => race.status === "voting").length;
@@ -41,6 +44,7 @@ function HomePage() {
     };
   }, [races]);
 
+  // UI-Labels für Status und Wetteranzeigen.
   const statusLabel = {
     open: "Geplant",
     voting: "Tippen möglich",
@@ -53,6 +57,7 @@ function HomePage() {
     rain: "Regen",
   };
 
+  // Ermittelt die nächsten anstehenden (nicht geschlossenen) Rennen
   const upcomingRaces = useMemo(() => {
     const parseDate = (value) => (value ? new Date(value) : null);
     return [...races]
@@ -68,6 +73,7 @@ function HomePage() {
       .slice(0, 3);
   }, [races]);
 
+  // Filtert Rennen nach Status zur Darstellung in Info-Karten und CTA-Bereichen.
   const votingRaces = useMemo(
     () => races.filter((race) => race.status === "voting"),
     [races]
@@ -78,6 +84,7 @@ function HomePage() {
     [races]
   );
 
+  // Aufbau der Home-Page
   return (
     <div className="home-page">
       <section className="home-hero">
@@ -134,7 +141,9 @@ function HomePage() {
         <article className="home-feature-card">
           <p className="home-eyebrow">Rangliste</p>
           <h2>Wer führt die Saison an?</h2>
-          <p>Öffentliche Leaderboard-Seite mit allen Punkten und Platzierungen.</p>
+          <p>
+            Öffentliche Leaderboard-Seite mit allen Punkten und Platzierungen.
+          </p>
           <div className="home-feature-actions">
             <button
               type="button"

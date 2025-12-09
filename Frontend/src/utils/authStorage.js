@@ -1,7 +1,10 @@
+// Verwaltet lokale Benutzerkonten im LocalStorage
 const USERS_KEY = "users";
 
+// Normalisiert Strings für Vergleiche (lowercase + trim)
 const normalize = (value) => (value || "").trim().toLowerCase();
 
+// Liest Userliste aus dem LocalStorage und wandelt sie in Array um
 const readUsers = () => {
   try {
     const parsed = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
@@ -12,6 +15,7 @@ const readUsers = () => {
   }
 };
 
+// Speichert die komplette Userliste zurück in LocalStorage
 const writeUsers = (users) => {
   try {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
@@ -20,6 +24,7 @@ const writeUsers = (users) => {
   }
 };
 
+// Erzeugt eindeutige User-ID.
 const createId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -27,6 +32,7 @@ const createId = () => {
   return `user-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
+// Legt neuen localStorage-User an.
 export const registerUser = ({ email, username, displayName, password }) => {
   const emailValue = normalize(email);
   const usernameValue = normalize(username);
@@ -73,6 +79,7 @@ export const registerUser = ({ email, username, displayName, password }) => {
   return { user };
 };
 
+// Login-Funktion
 export const authenticateUser = (identifier, password) => {
   const key = normalize(identifier);
   if (!key || !password) {
@@ -96,6 +103,7 @@ export const authenticateUser = (identifier, password) => {
   return { user: { ...user } };
 };
 
+// Aktualisiert bestehendes Nutzerprofil oder legt neues an.
 export const upsertUserProfile = (profile) => {
   const users = readUsers();
   const profileId = profile.id;
@@ -116,7 +124,8 @@ export const upsertUserProfile = (profile) => {
     id: existing.id || profile.id || createId(),
     role: profile.role || existing.role || "PLAYER",
     password: profile.password || existing.password || "",
-    lastUpdated: profile.lastUpdated || existing.lastUpdated || new Date().toISOString(),
+    lastUpdated:
+      profile.lastUpdated || existing.lastUpdated || new Date().toISOString(),
   };
 
   if (existingIndex >= 0) {
@@ -129,4 +138,5 @@ export const upsertUserProfile = (profile) => {
   return merged;
 };
 
+// Hilfsfunktion zur Anzeige aller gespeicherten Nutzer
 export const getAllUsers = () => readUsers();

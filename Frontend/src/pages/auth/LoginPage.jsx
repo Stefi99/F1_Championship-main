@@ -1,9 +1,11 @@
-import { useContext, useMemo, useState } from "react";
+// Gemeinsame Auth-Seite mit Login links und Registrierung rechts
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
 import { authenticateUser, registerUser } from "../../utils/authStorage";
-import { loadPlayerProfile, persistPlayerProfile } from "../../utils/profile";
+import { persistPlayerProfile } from "../../utils/profile";
 
+// Initialzustände für Login- und Registrierungsformulare.
 const initialLogin = { identifier: "", password: "" };
 const initialRegister = {
   email: "",
@@ -12,11 +14,12 @@ const initialRegister = {
   password: "",
 };
 
-// Gemeinsame Auth-Seite mit Login links und Registrierung rechts
+// Hauptkomponente für Authentifizierung.
 function AuthPage({ defaultMode = "login" }) {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // Lokale UI- und Formulare-States
   const [highlight, setHighlight] = useState(
     defaultMode === "register" ? "register" : "login"
   );
@@ -27,6 +30,7 @@ function AuthPage({ defaultMode = "login" }) {
   const [registerError, setRegisterError] = useState("");
   const [registerMessage, setRegisterMessage] = useState("");
 
+  // Formulareingaben aktualisieren. Separate Handler für Login- und Registrierfelder
   const handleLoginChange = (field) => (event) => {
     const { value } = event.target;
     setLoginForm((prev) => ({ ...prev, [field]: value }));
@@ -37,11 +41,14 @@ function AuthPage({ defaultMode = "login" }) {
     setRegisterForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Startet Nutzersession
   const startSession = (userData, successMessage) => {
     const profile = persistPlayerProfile({
       ...userData,
       lastPasswordChange:
-        userData.lastPasswordChange || userData.createdAt || userData.lastUpdated,
+        userData.lastPasswordChange ||
+        userData.createdAt ||
+        userData.lastUpdated,
     });
 
     login(profile);
@@ -51,6 +58,7 @@ function AuthPage({ defaultMode = "login" }) {
     navigate(profile.role === "ADMIN" ? "/admin" : "/player");
   };
 
+  // Login-Flow
   const handleLoginSubmit = (event) => {
     event.preventDefault();
     setLoginError("");
@@ -70,6 +78,7 @@ function AuthPage({ defaultMode = "login" }) {
     setLoginForm(initialLogin);
   };
 
+  // Registrierungs-Flow
   const handleRegisterSubmit = (event) => {
     event.preventDefault();
     setRegisterError("");
@@ -94,27 +103,7 @@ function AuthPage({ defaultMode = "login" }) {
     setHighlight("login");
   };
 
-  const handleDemoLogin = useMemo(
-    () => ({
-      player: () => {
-        const profile = persistPlayerProfile(loadPlayerProfile());
-        login(profile);
-        navigate("/player");
-      },
-      admin: () => {
-        const profile = persistPlayerProfile({
-          username: "admin",
-          displayName: "Race Control",
-          email: "admin@example.com",
-          role: "ADMIN",
-        });
-        login(profile);
-        navigate("/admin");
-      },
-    }),
-    [login, navigate]
-  );
-
+  // Darstellung beider Auth-Formulare
   return (
     <div className="auth-page">
       <section className="auth-header">
@@ -131,7 +120,8 @@ function AuthPage({ defaultMode = "login" }) {
               <p className="auth-eyebrow">Login</p>
               <h2>Zurück ins Fahrerlager</h2>
               <p className="auth-sub">
-                Mit E-Mail oder Benutzername anmelden und ins Player-Dashboard springen.
+                Mit E-Mail oder Benutzername anmelden und ins Player-Dashboard
+                springen.
               </p>
             </div>
             <span className="auth-chip">Nur Login</span>
@@ -161,15 +151,23 @@ function AuthPage({ defaultMode = "login" }) {
             />
           </label>
 
-          {loginError && <div className="auth-alert is-error">{loginError}</div>}
-          {loginMessage && <div className="auth-alert is-success">{loginMessage}</div>}
+          {loginError && (
+            <div className="auth-alert is-error">{loginError}</div>
+          )}
+          {loginMessage && (
+            <div className="auth-alert is-success">{loginMessage}</div>
+          )}
 
           <button type="submit">Einloggen</button>
-          <p className="auth-hint">Login geht mit Mail oder Benutzername + Passwort.</p>
+          <p className="auth-hint">
+            Login geht mit Mail oder Benutzername + Passwort.
+          </p>
         </form>
 
         <form
-          className={`auth-card ${highlight === "register" ? "is-focused" : ""}`}
+          className={`auth-card ${
+            highlight === "register" ? "is-focused" : ""
+          }`}
           onSubmit={handleRegisterSubmit}
         >
           <div className="auth-card-head">
@@ -177,7 +175,8 @@ function AuthPage({ defaultMode = "login" }) {
               <p className="auth-eyebrow">Registrierung</p>
               <h2>Neuen Account anlegen</h2>
               <p className="auth-sub">
-                Nur einmal registrieren. Danach immer über das Login-Fenster anmelden.
+                Nur einmal registrieren. Danach immer über das Login-Fenster
+                anmelden.
               </p>
             </div>
             <span className="auth-chip accent">Eindeutig</span>
@@ -244,7 +243,6 @@ function AuthPage({ defaultMode = "login" }) {
           </p>
         </form>
       </div>
-
     </div>
   );
 }
