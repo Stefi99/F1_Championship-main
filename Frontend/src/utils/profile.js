@@ -1,5 +1,7 @@
+// Verwaltet das Spielerprofil im LocalStorage
 import { upsertUserProfile } from "./authStorage";
 
+// Standardprofil für Spieler (Fallback, falls nichts gespeichert ist)
 const DEFAULT_PLAYER_PROFILE = {
   username: "player",
   displayName: "Racing Fan",
@@ -13,6 +15,7 @@ const DEFAULT_PLAYER_PROFILE = {
   role: "PLAYER",
 };
 
+// Sicheres JSON-Parsing für Spielerprofile.
 function safeParseProfile(raw) {
   try {
     const parsed = JSON.parse(raw);
@@ -26,10 +29,13 @@ function safeParseProfile(raw) {
   }
 }
 
+// Lädt Spielerprofil aus localStorage
 export function loadPlayerProfile() {
   const stored = safeParseProfile(localStorage.getItem("playerProfile"));
   const fallbackLastUpdated =
-    stored.lastUpdated || DEFAULT_PLAYER_PROFILE.lastUpdated || new Date().toISOString();
+    stored.lastUpdated ||
+    DEFAULT_PLAYER_PROFILE.lastUpdated ||
+    new Date().toISOString();
   const parsedPoints = Number.isNaN(Number(stored.points))
     ? DEFAULT_PLAYER_PROFILE.points
     : Number(stored.points);
@@ -43,6 +49,7 @@ export function loadPlayerProfile() {
   };
 }
 
+// Speichert Profil
 export function persistPlayerProfile(profile) {
   const parsedPoints = Number.isNaN(Number(profile.points))
     ? DEFAULT_PLAYER_PROFILE.points

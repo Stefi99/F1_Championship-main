@@ -1,9 +1,12 @@
+// Zentrales Dashboard für Spieler. Zeigt Profildaten, offene Tippfenster,
+// kommende Rennen und Schnellzugriffe (Tippen, Leaderboard, Profil).
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
 import { getTrackVisual } from "../../data/tracks";
 import { loadPlayerProfile } from "../../utils/profile";
 
+// Mapping-Tabellen für die UI-Anzeige der Renn- und Wetterstatus-Werte.
 const statusLabel = {
   open: "Geplant",
   voting: "Tippen offen",
@@ -17,6 +20,7 @@ const weatherLabel = {
 };
 
 function PlayerDashboardPage() {
+  // Zugriff auf aktuellen Benutzer aus dem globalen Auth-Kontext.
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [profile, setProfile] = useState(() => loadPlayerProfile());
@@ -55,6 +59,7 @@ function PlayerDashboardPage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+  // Berechnet Statistiken über alle Rennen
   const stats = useMemo(() => {
     const open = races.filter((race) => race.status === "open").length;
     const voting = races.filter((race) => race.status === "voting").length;
@@ -67,6 +72,7 @@ function PlayerDashboardPage() {
     };
   }, [races]);
 
+  // Filtert die Rennen nach Status, um nur relevante Listen anzuzeigen.
   const votingRaces = useMemo(
     () => races.filter((race) => race.status === "voting"),
     [races]
@@ -76,6 +82,7 @@ function PlayerDashboardPage() {
     [races]
   );
 
+  // Ermittelt das nächste anstehende Rennen
   const nextRace = useMemo(() => {
     const toTimestamp = (value) => {
       if (!value) return Number.POSITIVE_INFINITY;
@@ -89,6 +96,7 @@ function PlayerDashboardPage() {
     );
   }, [races]);
 
+  // Hilfsfunktionen zur formatierten Ausgabe von Datums- und Zeitwerten
   const formatDate = (value) => {
     if (!value) return "Datum folgt";
     const date = new Date(value);
@@ -103,6 +111,7 @@ function PlayerDashboardPage() {
     return date.toLocaleString("de-DE");
   };
 
+  // Definiert die Shortcut-Karten für das Dashboard
   const actions = [
     {
       title: "Tipps abgeben",
@@ -137,6 +146,7 @@ function PlayerDashboardPage() {
     ? 0
     : Number(profile.points);
 
+  // Darstellung des Spieler-Dashboards
   return (
     <div className="player-dashboard">
       <header className="player-hero">
@@ -199,7 +209,11 @@ function PlayerDashboardPage() {
               <h3>{action.title}</h3>
               <p className="player-sub">{action.description}</p>
             </div>
-            <button type="button" className="player-ghost-btn" onClick={action.onClick}>
+            <button
+              type="button"
+              className="player-ghost-btn"
+              onClick={action.onClick}
+            >
               {action.cta}
             </button>
           </article>
@@ -219,7 +233,11 @@ function PlayerDashboardPage() {
               </p>
             </div>
             {nextRace && (
-              <span className={`player-status-chip status-${nextRace.status || "open"}`}>
+              <span
+                className={`player-status-chip status-${
+                  nextRace.status || "open"
+                }`}
+              >
                 {statusLabel[nextRace.status] || "Geplant"}
               </span>
             )}
@@ -253,10 +271,7 @@ function PlayerDashboardPage() {
                 </div>
               </div>
               <div className="player-highlight-actions">
-                <button
-                  type="button"
-                  onClick={() => navigate("/player/races")}
-                >
+                <button type="button" onClick={() => navigate("/player/races")}>
                   Rennübersicht
                 </button>
                 <button
@@ -268,9 +283,7 @@ function PlayerDashboardPage() {
                       : navigate("/player/leaderboard")
                   }
                 >
-                  {nextRace.status === "voting"
-                    ? "Jetzt tippen"
-                    : "Rangliste"}
+                  {nextRace.status === "voting" ? "Jetzt tippen" : "Rangliste"}
                 </button>
               </div>
             </div>
@@ -311,7 +324,9 @@ function PlayerDashboardPage() {
                     <div className="player-race-meta">
                       <span>{formatDate(race.date)}</span>
                       <span className="player-dot">·</span>
-                      <span>{weatherLabel[race.weather] || "Wetter folgt"}</span>
+                      <span>
+                        {weatherLabel[race.weather] || "Wetter folgt"}
+                      </span>
                     </div>
                   </div>
                   <button

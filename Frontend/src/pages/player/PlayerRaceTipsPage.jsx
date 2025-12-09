@@ -1,3 +1,4 @@
+// Seite zur Abgabe oder Ansicht der persönlichen Tipps für ein bestimmtes Rennen
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -8,6 +9,7 @@ import {
 import { getTrackVisual } from "../../data/tracks";
 import { getRaceTip, persistRaceTip } from "../../utils/tips";
 
+// Farbzuordnung der Teams für visuelle Hervorhebung in Tipp- und Ergebnislisten
 const TEAM_COLOR_PALETTE = {
   "team-red-bull": "#2037c4",
   "team-ferrari": "#dc0000",
@@ -21,6 +23,7 @@ const TEAM_COLOR_PALETTE = {
   "team-rb": "#0f1f7a",
 };
 
+// UI-Beschriftungen für Rennstatus und Wetteranzeigen.
 const statusLabel = {
   open: "Geplant",
   voting: "Tippen offen",
@@ -33,6 +36,7 @@ const weatherLabel = {
   rain: "Regen",
 };
 
+// Hilfsfunktionen zur formatierten Ausgabe von Datum und Zeit.
 const formatDate = (value) => {
   if (!value) return "Datum folgt";
   const parsed = new Date(value);
@@ -59,6 +63,7 @@ function PlayerRaceTipsPage() {
   const [error, setError] = useState("");
   const [lastSavedAt, setLastSavedAt] = useState(null);
 
+  // Lädt alle Rennen aus dem LocalStorage
   const loadRaces = () => {
     try {
       return JSON.parse(localStorage.getItem("races") || "[]");
@@ -68,6 +73,7 @@ function PlayerRaceTipsPage() {
     }
   };
 
+  // Hauptroutine zum Synchronisieren aller relevanten Daten
   const syncData = useCallback(() => {
     const driverList = getStoredDrivers();
     const map = driverList.reduce((acc, driver) => {
@@ -92,9 +98,7 @@ function PlayerRaceTipsPage() {
     );
 
     const initialSelection =
-      savedOrder.length > 0
-        ? savedOrder.slice(0, 10)
-        : allDrivers.slice(0, 10);
+      savedOrder.length > 0 ? savedOrder.slice(0, 10) : allDrivers.slice(0, 10);
     const remaining = allDrivers.filter(
       (name) => !initialSelection.includes(name)
     );
@@ -106,7 +110,9 @@ function PlayerRaceTipsPage() {
     setError("");
   }, [raceId]);
 
+  // Lädt alle Tipp- und Renninformationen beim Seitenstart
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     syncData();
     const handleStorage = (event) => {
       if (
@@ -122,6 +128,7 @@ function PlayerRaceTipsPage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, [syncData]);
 
+  // Teambezogene Hilfsfunktionen für Darstellung und Teamfarben
   const teamClass = (driverName) => {
     const team = getDriverTeam(driverName) || driversByName[driverName]?.team;
     return TEAM_CLASS_MAP[team] || "team-default";
@@ -137,12 +144,11 @@ function PlayerRaceTipsPage() {
     return TEAM_COLOR_PALETTE[className] || "var(--f1-red)";
   };
 
-  const trackVisual = useMemo(
-    () => getTrackVisual(race?.track),
-    [race?.track]
-  );
+  // Memoisierte Ableitungen
+  const trackVisual = useMemo(() => getTrackVisual(race?.track), [race?.track]);
 
   const officialOrder = useMemo(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     () =>
       Array.isArray(race?.resultsOrder)
         ? race.resultsOrder.filter(Boolean)
@@ -162,6 +168,7 @@ function PlayerRaceTipsPage() {
   const statusText = statusLabel[race?.status] || statusLabel.open;
   const lastSavedText = formatDateTime(lastSavedAt);
 
+  // Verschiebt einen Fahrer innerhalb der Top-10-Auswahl
   const moveItem = (from, to) => {
     if (from === null || to === null || from === to) return;
     setSelection((prev) => {
@@ -173,6 +180,7 @@ function PlayerRaceTipsPage() {
     });
   };
 
+  // Steuerung der Drag & Drop Interaktion
   const handleDragStart = (index) => {
     if (!canTip) return;
     setDragIndex(index);
@@ -190,6 +198,7 @@ function PlayerRaceTipsPage() {
     setDragIndex(null);
   };
 
+  // Fügt einen Fahrer aus dem verfügbaren Pool zur Top 10 hinzu
   const handleAddDriver = (driverName) => {
     if (selection.includes(driverName)) return;
     if (selection.length >= 10) {
@@ -202,6 +211,7 @@ function PlayerRaceTipsPage() {
     setMessage("");
   };
 
+  // Entfernt einen Fahrer aus der Top 10 und legt ihn zurück in den Fahrerpool
   const handleRemoveDriver = (driverName) => {
     setSelection((prev) => prev.filter((name) => name !== driverName));
     setAvailable((prev) =>
@@ -209,6 +219,7 @@ function PlayerRaceTipsPage() {
     );
   };
 
+  // Speichert den Tipp des Spielers
   const handleSave = () => {
     if (!race) {
       setError("Rennen wurde nicht gefunden.");
@@ -220,7 +231,9 @@ function PlayerRaceTipsPage() {
     }
     const entry = persistRaceTip(raceId, selection);
     setLastSavedAt(entry.updatedAt);
-    setMessage("Tipp gespeichert. Nur die ersten 10 Positionen werden gewertet.");
+    setMessage(
+      "Tipp gespeichert. Nur die ersten 10 Positionen werden gewertet."
+    );
     setError("");
   };
 
@@ -237,6 +250,7 @@ function PlayerRaceTipsPage() {
     );
   }
 
+  // Darstellung der Tippsseite
   return (
     <div className="player-tip-page">
       <header className="player-tip-hero">
@@ -323,9 +337,9 @@ function PlayerRaceTipsPage() {
               </button>
               <button
                 type="button"
-              className="player-ghost-btn"
-              onClick={syncData}
-            >
+                className="player-ghost-btn"
+                onClick={syncData}
+              >
                 Zurücksetzen
               </button>
             </div>
@@ -369,10 +383,7 @@ function PlayerRaceTipsPage() {
                   >
                     <div className="result-row-info">
                       <div className="result-row-position">#{index + 1}</div>
-                      <span
-                        className="result-team-swatch"
-                        aria-hidden="true"
-                      />
+                      <span className="result-team-swatch" aria-hidden="true" />
                       <div className="result-row-text">
                         <div className="result-row-name">{driver}</div>
                         <div className="result-row-team">
@@ -437,13 +448,13 @@ function PlayerRaceTipsPage() {
               <p className="player-eyebrow muted">Fahrerpool</p>
               <h3>Weitere Fahrer hinzufügen</h3>
               <p className="player-sub">
-                Wähle aus den restlichen Fahrern und füge sie deinem Top-10
-                Tipp hinzu.
-            </p>
-          </div>
-          <div className="player-tip-limit">
-            Verfügbar: {available.length} Fahrer
-          </div>
+                Wähle aus den restlichen Fahrern und füge sie deinem Top-10 Tipp
+                hinzu.
+              </p>
+            </div>
+            <div className="player-tip-limit">
+              Verfügbar: {available.length} Fahrer
+            </div>
           </div>
 
           {available.length === 0 ? (
@@ -498,10 +509,7 @@ function PlayerRaceTipsPage() {
                   >
                     <div className="result-row-info">
                       <div className="result-row-position">#{index + 1}</div>
-                      <span
-                        className="result-team-swatch"
-                        aria-hidden="true"
-                      />
+                      <span className="result-team-swatch" aria-hidden="true" />
                       <div className="result-row-text">
                         <div className="result-row-name">{driver}</div>
                         <div className="result-row-team">

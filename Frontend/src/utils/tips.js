@@ -1,8 +1,11 @@
+// Verwaltung aller Tipp-Daten eines Spielers im LocalStorage
 const STORAGE_KEY = "playerTips";
 
+// Bereinigt Tipp-Liste
 const cleanOrder = (order) =>
   Array.isArray(order) ? order.filter(Boolean).slice(0, 10) : [];
 
+// Sicheres Parsing des Tipp-Objekts. Keine Crashes bei ungültigem JSON
 const safeParse = (value) => {
   if (!value) return {};
   try {
@@ -14,10 +17,12 @@ const safeParse = (value) => {
   }
 };
 
+// Lädt komplette Tippstruktur aus localStorage
 export function loadPlayerTips() {
   return safeParse(localStorage.getItem(STORAGE_KEY));
 }
 
+// Speichert vollständige Tippstruktur wieder in localStorage
 export function savePlayerTips(map) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
@@ -26,6 +31,7 @@ export function savePlayerTips(map) {
   }
 }
 
+// Liefert Tipp für ein bestimmtes Rennen
 export function getRaceTip(raceId) {
   const tips = loadPlayerTips();
   const entry = tips[raceId];
@@ -44,6 +50,7 @@ export function getRaceTip(raceId) {
   return null;
 }
 
+// Speichert Tipp für ein Rennen
 export function persistRaceTip(raceId, order) {
   const tips = loadPlayerTips();
   const entry = {

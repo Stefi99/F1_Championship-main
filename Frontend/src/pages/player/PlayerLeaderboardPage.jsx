@@ -1,3 +1,4 @@
+// Zeigt die komplette Saisonrangliste
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TEAM_CLASS_MAP } from "../../data/drivers";
@@ -5,6 +6,7 @@ import { getTrackVisual } from "../../data/tracks";
 import { loadPlayerProfile } from "../../utils/profile";
 import { loadPlayerTips } from "../../utils/tips";
 
+// Farbzuordnung für Teams zum Gestalten von Avataren, Chips und Row-Akzenten.
 const TEAM_COLOR_PALETTE = {
   "team-red-bull": "#2037c4",
   "team-ferrari": "#dc0000",
@@ -19,14 +21,46 @@ const TEAM_COLOR_PALETTE = {
   "team-default": "#e10600",
 };
 
+// Standardisierte KI-Gegner
 const SEED_PLAYERS = [
-  { username: "gridfox", displayName: "Grid Fox", team: "Ferrari", country: "ITA", base: 240 },
-  { username: "polehunter", displayName: "Pole Hunter", team: "Red Bull", country: "AUT", base: 228 },
-  { username: "undercut", displayName: "Undercut Pro", team: "Mercedes", country: "GER", base: 214 },
-  { username: "drywet", displayName: "Rain Whisperer", team: "McLaren", country: "GBR", base: 205 },
-  { username: "latebraker", displayName: "Late Braker", team: "Aston Martin", country: "ESP", base: 192 },
+  {
+    username: "gridfox",
+    displayName: "Grid Fox",
+    team: "Ferrari",
+    country: "ITA",
+    base: 240,
+  },
+  {
+    username: "polehunter",
+    displayName: "Pole Hunter",
+    team: "Red Bull",
+    country: "AUT",
+    base: 228,
+  },
+  {
+    username: "undercut",
+    displayName: "Undercut Pro",
+    team: "Mercedes",
+    country: "GER",
+    base: 214,
+  },
+  {
+    username: "drywet",
+    displayName: "Rain Whisperer",
+    team: "McLaren",
+    country: "GBR",
+    base: 205,
+  },
+  {
+    username: "latebraker",
+    displayName: "Late Braker",
+    team: "Aston Martin",
+    country: "ESP",
+    base: 192,
+  },
 ];
 
+// Lädt gespeicherte Spielerprofile
 const loadPlayerRoster = () => {
   try {
     const raw = JSON.parse(localStorage.getItem("playerRoster") || "[]");
@@ -51,8 +85,10 @@ const loadPlayerRoster = () => {
   }
 };
 
+// F1-ähnliche Punkteskala für genaue Treffer
 const POSITION_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 3, 2];
 
+// Datumshilfsfunktionen für Sortierung und Anzeige.
 const parseDate = (value) => {
   if (!value) return null;
   const date = new Date(value);
@@ -65,8 +101,10 @@ const formatDate = (value) => {
   return date.toLocaleDateString("de-DE");
 };
 
+// Liefert CSS-Teamklasse für grafische Darstellung im UI.
 const teamClass = (teamName) => TEAM_CLASS_MAP[teamName] || "team-default";
 
+// Kernlogik für die Auswertung eines Tipps gegenüber den offiziellen Ergebnissen
 const scoreTipAgainstResults = (tipOrder = [], resultsOrder = []) => {
   const trimmedTip = Array.isArray(tipOrder) ? tipOrder.slice(0, 10) : [];
   const official = Array.isArray(resultsOrder) ? resultsOrder.slice(0, 10) : [];
@@ -93,7 +131,10 @@ const scoreTipAgainstResults = (tipOrder = [], resultsOrder = []) => {
       detail.points = (POSITION_POINTS[index] || 2) + (index === 0 ? 5 : 0);
     } else if (Math.abs(officialIndex - index) === 1) {
       near += 1;
-      detail.points = Math.max(6, Math.round((POSITION_POINTS[index] || 4) * 0.5));
+      detail.points = Math.max(
+        6,
+        Math.round((POSITION_POINTS[index] || 4) * 0.5)
+      );
     } else {
       inTop += 1;
       detail.points = 3;
@@ -129,6 +170,7 @@ const scoreTipAgainstResults = (tipOrder = [], resultsOrder = []) => {
   };
 };
 
+// Generiert deterministische Punktzahlen für Seed-Spieler,
 const deterministicRaceScore = (race, seedIndex) => {
   const code = String(race.id || race.track || seedIndex)
     .split("")
@@ -138,12 +180,17 @@ const deterministicRaceScore = (race, seedIndex) => {
 
 const buildSeedOpponents = (closedRaces) =>
   SEED_PLAYERS.map((player, idx) => {
-    const perRace = closedRaces.map((race) => deterministicRaceScore(race, idx));
+    const perRace = closedRaces.map((race) =>
+      deterministicRaceScore(race, idx)
+    );
     const raceTotal = perRace.reduce((sum, value) => sum + value, 0);
     return {
       ...player,
       points: player.base + raceTotal,
-      form: Math.round(perRace.slice(-3).reduce((sum, value) => sum + value, 0) / Math.max(1, Math.min(perRace.length, 3))),
+      form: Math.round(
+        perRace.slice(-3).reduce((sum, value) => sum + value, 0) /
+          Math.max(1, Math.min(perRace.length, 3))
+      ),
       lastRacePoints: perRace.slice(-1)[0] || player.base / 10,
       isUser: false,
     };
@@ -156,6 +203,7 @@ function PlayerLeaderboardPage() {
   const [tips, setTips] = useState(() => loadPlayerTips());
   const [roster, setRoster] = useState(() => loadPlayerRoster());
 
+  // Lädt Rennen, Tipps, Spielerprofil und Roster initial.
   useEffect(() => {
     const readRaces = () => {
       try {
@@ -166,6 +214,7 @@ function PlayerLeaderboardPage() {
       }
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRaces(readRaces());
     setTips(loadPlayerTips());
     setProfile(loadPlayerProfile());
@@ -190,6 +239,7 @@ function PlayerLeaderboardPage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+  // Filtert nur vollständig geschlossene Rennen, die offizielle Ergebnisse besitzen
   const closedRaces = useMemo(
     () =>
       races.filter(
@@ -201,11 +251,15 @@ function PlayerLeaderboardPage() {
     [races]
   );
 
+  // Für jedes geschlossene Rennen wird eine Statistik berechnet
   const raceStats = useMemo(() => {
     return closedRaces.map((race) => {
       const entry = tips?.[race.id] || {};
       const order = entry.order || entry;
-      const scoring = scoreTipAgainstResults(order || [], race.resultsOrder || []);
+      const scoring = scoreTipAgainstResults(
+        order || [],
+        race.resultsOrder || []
+      );
       return {
         ...race,
         ...scoring,
@@ -216,6 +270,7 @@ function PlayerLeaderboardPage() {
     });
   }, [closedRaces, tips]);
 
+  // Sortiert die Rennen chronologisch
   const sortedRaceStats = useMemo(() => {
     return [...raceStats].sort((a, b) => {
       const da = parseDate(a.date);
@@ -227,12 +282,16 @@ function PlayerLeaderboardPage() {
     });
   }, [raceStats]);
 
+  // Berechnet Gesamtsaisonpunkte:
   const seasonPoints = useMemo(() => {
-    const base = Number.isNaN(Number(profile.points)) ? 0 : Number(profile.points);
+    const base = Number.isNaN(Number(profile.points))
+      ? 0
+      : Number(profile.points);
     const fromTips = raceStats.reduce((sum, race) => sum + race.score, 0);
     return base + fromTips;
   }, [profile.points, raceStats]);
 
+  // Durchschnittliche Trefferquote über alle Rennen.
   const accuracyAverage = raceStats.length
     ? Math.round(
         raceStats.reduce((sum, race) => sum + race.accuracy, 0) /
@@ -240,6 +299,7 @@ function PlayerLeaderboardPage() {
       )
     : 0;
 
+  // Durchschnittspunkte der letzten drei Events.
   const formPoints = useMemo(() => {
     const lastThree = sortedRaceStats.slice(0, 3);
     if (lastThree.length === 0) return 0;
@@ -252,10 +312,13 @@ function PlayerLeaderboardPage() {
     return race.score > best.score ? race : best;
   }, null);
 
+  // Identifizieren das beste Rennen und das zuletzt abgeschlossene Rennen.
   const latestRace = sortedRaceStats[0] || null;
 
+  // Baut die Ranglisteneinträge
   const leaderboardRows = useMemo(() => {
-    const baseRoster = roster.length > 0 ? roster : buildSeedOpponents(closedRaces);
+    const baseRoster =
+      roster.length > 0 ? roster : buildSeedOpponents(closedRaces);
     const userEntry = {
       username: profile.username || "du",
       displayName: profile.displayName || profile.username || "Du",
@@ -292,8 +355,8 @@ function PlayerLeaderboardPage() {
           <h1>Saison-Ranking & Race-Insights</h1>
           <p className="player-sub">
             Punkte basieren auf offiziellen Ergebnissen vs. deinen Tipps. Die
-            Saison-Rangliste kombiniert alle abgeschlossenen Rennen; dazu gibt es
-            eine Renn-Bewertung und eine Formkurve.
+            Saison-Rangliste kombiniert alle abgeschlossenen Rennen; dazu gibt
+            es eine Renn-Bewertung und eine Formkurve.
           </p>
           <div className="player-badge-row">
             <span className="player-badge">Saisonpunkte: {seasonPoints}</span>
@@ -322,7 +385,11 @@ function PlayerLeaderboardPage() {
           <div className="leaderboard-hero-card">
             <span>Avg. Punkte/Rennen</span>
             <strong>{raceStats.length ? formPoints : 0}</strong>
-            <p>{raceStats.length ? "Basierend auf den letzten 3 Rennen" : "Noch keine Rennen abgeschlossen"}</p>
+            <p>
+              {raceStats.length
+                ? "Basierend auf den letzten 3 Rennen"
+                : "Noch keine Rennen abgeschlossen"}
+            </p>
           </div>
           <div className="leaderboard-hero-card">
             <span>Trefferquote</span>
@@ -353,7 +420,9 @@ function PlayerLeaderboardPage() {
           </div>
           <div className="leaderboard-pill">
             {latestRace
-              ? `Letztes Rennen: ${latestRace.track} · ${formatDate(latestRace.date)}`
+              ? `Letztes Rennen: ${latestRace.track} · ${formatDate(
+                  latestRace.date
+                )}`
               : "Noch kein Rennen abgeschlossen"}
           </div>
         </div>
@@ -363,6 +432,7 @@ function PlayerLeaderboardPage() {
             const teamClassName = teamClass(row.team);
             const accent = TEAM_COLOR_PALETTE[teamClassName] || "#161925";
 
+            // Darstellung der kompletten Ranglisten-Seite
             return (
               <article
                 key={row.username}
@@ -380,7 +450,9 @@ function PlayerLeaderboardPage() {
                   <div>
                     <div className="leaderboard-name">
                       {row.displayName}{" "}
-                      {row.isUser && <span className="leaderboard-chip">Du</span>}
+                      {row.isUser && (
+                        <span className="leaderboard-chip">Du</span>
+                      )}
                     </div>
                     <div className="leaderboard-meta">
                       {row.team} • {row.country}
@@ -411,8 +483,8 @@ function PlayerLeaderboardPage() {
             <p className="player-eyebrow muted">Race Day</p>
             <h2>Renn-Bewertungen</h2>
             <p className="player-sub">
-              Wie gut passten deine Tipps zu den offiziellen Ergebnissen? Punkte,
-              exakte Treffer und dein bester Pick je Event.
+              Wie gut passten deine Tipps zu den offiziellen Ergebnissen?
+              Punkte, exakte Treffer und dein bester Pick je Event.
             </p>
           </div>
           <div className="leaderboard-actions">
@@ -428,7 +500,10 @@ function PlayerLeaderboardPage() {
 
         {sortedRaceStats.length === 0 ? (
           <div className="player-empty">
-            <p>Noch kein Rennen geschlossen. Sobald Ergebnisse gepflegt sind, erscheint hier die Rennbewertung.</p>
+            <p>
+              Noch kein Rennen geschlossen. Sobald Ergebnisse gepflegt sind,
+              erscheint hier die Rennbewertung.
+            </p>
           </div>
         ) : (
           <div className="leaderboard-race-grid">

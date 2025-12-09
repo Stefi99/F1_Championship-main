@@ -1,4 +1,4 @@
-// Formularseite zum Erstellen oder Bearbeiten eines Rennens
+// Formularseite zum Erstellen oder Bearbeiten von Rennen
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -8,6 +8,7 @@ import {
 } from "../../data/drivers";
 import { TRACK_OPTIONS } from "../../data/tracks";
 
+//Limit und Team-Farbzuordnung
 const DRIVER_LIMIT = 20;
 const TEAM_COLOR_CLASS = (teamName) =>
   TEAM_CLASS_MAP[teamName] || "team-default";
@@ -31,6 +32,7 @@ function AdminRaceFormPage() {
       ? track
       : null;
 
+  // Hilfsfunktionen zum Zugriff auf gespeicherte Rennen
   const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
   const saveRaces = (list) =>
     localStorage.setItem("races", JSON.stringify(list));
@@ -70,6 +72,7 @@ function AdminRaceFormPage() {
     setDrivers(existing.drivers || []);
   }, [isEdit, raceId, navigate]);
 
+  // Fügt einen Fahrer hinzu oder entfernt ihn aus der Fahrer-Liste
   const toggleDriver = (driverName) => {
     setDrivers((prev) => {
       if (prev.includes(driverName)) {
@@ -85,6 +88,7 @@ function AdminRaceFormPage() {
     });
   };
 
+  // Speichert das Rennen (Bearbeitung und Neue Rennen)
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -114,6 +118,7 @@ function AdminRaceFormPage() {
     navigate("/admin/races");
   };
 
+  // Darstellung des vollständigen Renn-Formulars
   return (
     <div className="race-form-page">
       <header className="race-form-hero">

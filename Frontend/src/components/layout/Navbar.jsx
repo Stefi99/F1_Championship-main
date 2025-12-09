@@ -1,8 +1,12 @@
 ﻿import { NavLink } from "react-router-dom";
 
+// Navigationsleiste der Anwendung.
 function Navbar() {
   const navLinkClass = ({ isActive }) =>
     `f1-nav-link${isActive ? " is-active" : ""}`;
+
+  // Nutzt NavLink, um aktive Navigationspunkte visuell hervorzuheben.
+  // Die Links werden später dynamisch an die Benutzerrolle angepasst.
 
   return (
     <>

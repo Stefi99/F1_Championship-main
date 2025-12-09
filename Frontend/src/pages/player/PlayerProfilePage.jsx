@@ -1,3 +1,4 @@
+// Seite zur Bearbeitung des persönlichen Spielerprofils.
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
@@ -7,10 +8,12 @@ import { loadPlayerProfile, persistPlayerProfile } from "../../utils/profile";
 function PlayerProfilePage() {
   const { user, login } = useContext(AuthContext);
   const navigate = useNavigate();
+  // Lädt bestehendes Profil aus LocalStorage.
   const [profile, setProfile] = useState(() => loadPlayerProfile());
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Initialisiert das Formular mit den aktuellen Profildaten.
   const [form, setForm] = useState(() => ({
     displayName: profile.displayName || "",
     email: profile.email || "",
@@ -23,11 +26,13 @@ function PlayerProfilePage() {
     confirmPassword: "",
   }));
 
+  // Aktualisiert das Profil, wenn sich der angemeldete Benutzer ändert.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setProfile(loadPlayerProfile());
   }, [user]);
 
+  // Listener für Änderungen an playerProfile in anderen Tabs/Seiten.
   useEffect(() => {
     const handleStorage = (event) => {
       if (event.key === "playerProfile" || event.key === null) {
@@ -38,6 +43,8 @@ function PlayerProfilePage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+  // Übernimmt neue Profildaten ins Formular,
+  // ohne Passwortfelder zu verändern.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm((prev) => ({
@@ -54,6 +61,8 @@ function PlayerProfilePage() {
     }));
   }, [profile]);
 
+  // Hilfsfunktion zur Ausgabe eines formatierten Zeitpunkts,
+  // mit optionalem Fallback für leere oder ungültige Werte.
   const formatDateTime = (value, fallback = "Noch nie aktualisiert") => {
     if (!value) return fallback;
     const date = new Date(value);
@@ -61,6 +70,7 @@ function PlayerProfilePage() {
     return date.toLocaleString("de-DE");
   };
 
+  // Memoisierte Textversionen für Anzeige im Header
   const lastUpdateText = useMemo(
     () => formatDateTime(profile.lastUpdated),
     [profile.lastUpdated]
@@ -74,17 +84,23 @@ function PlayerProfilePage() {
     [profile.lastPasswordChange]
   );
 
+  // Generische Feld-Update-Funktion für das Formular
   const handleChange = (field) => (event) => {
     const { value } = event.target;
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Validiert und speichert das Profil
   const handleSubmit = (event) => {
     event.preventDefault();
     setError("");
     setMessage("");
 
-    if (!form.displayName.trim() || !form.email.trim() || !form.username.trim()) {
+    if (
+      !form.displayName.trim() ||
+      !form.email.trim() ||
+      !form.username.trim()
+    ) {
       setError("Anzeigename, E-Mail und Benutzername sind Pflichtfelder.");
       return;
     }
@@ -102,7 +118,9 @@ function PlayerProfilePage() {
       favoriteTeam: form.favoriteTeam.trim(),
       country: form.country.trim(),
       bio: form.bio.trim(),
-      points: Number.isNaN(Number(form.points)) ? profile.points || 0 : Number(form.points),
+      points: Number.isNaN(Number(form.points))
+        ? profile.points || 0
+        : Number(form.points),
     };
 
     if (form.password) {
@@ -116,6 +134,7 @@ function PlayerProfilePage() {
     setMessage("Profil gespeichert.");
   };
 
+  // Darstellung des Profilbearbeitungsformulars
   return (
     <div className="player-profile-page">
       <header className="player-profile-hero">
@@ -128,7 +147,9 @@ function PlayerProfilePage() {
           </p>
           <div className="player-profile-meta">
             <span className="player-badge">User: {profile.username}</span>
-            <span className="player-badge muted">Letztes Update: {lastUpdateText}</span>
+            <span className="player-badge muted">
+              Letztes Update: {lastUpdateText}
+            </span>
             <span className="player-badge accent">{passwordInfo}</span>
           </div>
         </div>
@@ -141,7 +162,8 @@ function PlayerProfilePage() {
               <p className="player-eyebrow">Basisdaten</p>
               <h2>Kontakt und Anzeigename</h2>
               <p className="player-sub">
-                Diese Daten nutzen wir für den Spielerbereich und die Leaderboard-Anzeige.
+                Diese Daten nutzen wir für den Spielerbereich und die
+                Leaderboard-Anzeige.
               </p>
             </div>
           </div>
@@ -235,14 +257,17 @@ function PlayerProfilePage() {
               <p className="player-eyebrow">Login</p>
               <h2>Passwort anpassen</h2>
               <p className="player-sub">
-                Neues Passwort setzen, um deine Tipps zu schützen. Wird lokal gespeichert.
+                Neues Passwort setzen, um deine Tipps zu schützen. Wird lokal
+                gespeichert.
               </p>
             </div>
           </div>
 
           <div className="player-profile-grid">
             <label className="player-field-card">
-              <span className="player-field-label">Neues Passwort (optional)</span>
+              <span className="player-field-label">
+                Neues Passwort (optional)
+              </span>
               <input
                 type="password"
                 value={form.password}
