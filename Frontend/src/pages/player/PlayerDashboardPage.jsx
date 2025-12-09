@@ -144,12 +144,12 @@ function PlayerDashboardPage() {
           <p className="player-eyebrow">Willkommen, {displayName}</p>
           <h1>Dein Fahrer-Hub</h1>
           <p className="player-sub">
-            Uebersicht ueber offene Tipps, kommende Rennen und deine Profildaten
+            Übersicht über offene Tipps, kommende Rennen und deine Profildaten
             im gleichen Look wie Admin- und Home-Dashboard.
           </p>
           <div className="player-hero-actions">
             <button type="button" onClick={() => navigate("/player/races")}>
-              Rennen ueberblicken
+              Rennen überblicken
             </button>
             <button
               type="button"
@@ -210,7 +210,7 @@ function PlayerDashboardPage() {
         <article className="player-highlight-card">
           <div className="player-card-head">
             <div>
-              <p className="player-eyebrow">Naechstes Event</p>
+              <p className="player-eyebrow">Nächstes Event</p>
               <h2>{nextRace ? nextRace.track : "Noch kein Rennen geplant"}</h2>
               <p className="player-sub">
                 {nextRace
@@ -257,7 +257,7 @@ function PlayerDashboardPage() {
                   type="button"
                   onClick={() => navigate("/player/races")}
                 >
-                  Rennuebersicht
+                  Rennübersicht
                 </button>
                 <button
                   type="button"
@@ -341,7 +341,7 @@ function PlayerDashboardPage() {
               className="player-ghost-btn"
               onClick={() => navigate("/player/profile")}
             >
-              Profil oeffnen
+              Profil öffnen
             </button>
           </div>
           <div className="player-profile-summary">
@@ -369,7 +369,7 @@ function PlayerDashboardPage() {
               <span>Passwort</span>
               <strong>
                 {profile.lastPasswordChange
-                  ? `Geaendert am ${formatDateTime(profile.lastPasswordChange)}`
+                  ? `Geändert am ${formatDateTime(profile.lastPasswordChange)}`
                   : "Noch nicht gesetzt"}
               </strong>
             </div>

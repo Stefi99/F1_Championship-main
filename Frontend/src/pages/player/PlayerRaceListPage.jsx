@@ -232,7 +232,7 @@ function PlayerRaceListPage() {
           <h1>Rennen zum Tippen</h1>
           <p className="player-sub">
             Alle Events im selben Look wie Dashboard und Home. Strecken sind
-            klickbar und fuehren direkt zur Tipp-Seite.
+            klickbar und führen direkt zur Tipp-Seite.
           </p>
           <div className="player-badge-row">
             <span className="player-badge">Gesamt: {sortedRaces.length}</span>
@@ -275,7 +275,7 @@ function PlayerRaceListPage() {
           <div className="player-empty">
             <p>Aktuell ist kein Tippfenster offen.</p>
             <button type="button" onClick={() => navigate("/player")}>
-              Zurueck zum Dashboard
+              Zurück zum Dashboard
             </button>
           </div>
         ) : (
@@ -288,7 +288,7 @@ function PlayerRaceListPage() {
       <section className="player-race-section">
         <div className="player-race-section-head">
           <div>
-            <p className="player-eyebrow muted">Uebersicht</p>
+            <p className="player-eyebrow muted">Übersicht</p>
             <h2>Alle Rennen</h2>
             <p className="player-sub">
               Plane deine Tipps, egal ob geplant, offen oder schon beendet.

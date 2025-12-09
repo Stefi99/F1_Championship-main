@@ -66,7 +66,7 @@ function AuthPage({ defaultMode = "login" }) {
       return;
     }
 
-    startSession(user, "Willkommen zurueck.");
+    startSession(user, "Willkommen zurück.");
     setLoginForm(initialLogin);
   };
 
@@ -129,7 +129,7 @@ function AuthPage({ defaultMode = "login" }) {
           <div className="auth-card-head">
             <div>
               <p className="auth-eyebrow">Login</p>
-              <h2>Zurueck ins Fahrerlager</h2>
+              <h2>Zurück ins Fahrerlager</h2>
               <p className="auth-sub">
                 Mit E-Mail oder Benutzername anmelden und ins Player-Dashboard springen.
               </p>
@@ -177,7 +177,7 @@ function AuthPage({ defaultMode = "login" }) {
               <p className="auth-eyebrow">Registrierung</p>
               <h2>Neuen Account anlegen</h2>
               <p className="auth-sub">
-                Nur einmal registrieren. Danach immer ueber das Login-Fenster anmelden.
+                Nur einmal registrieren. Danach immer über das Login-Fenster anmelden.
               </p>
             </div>
             <span className="auth-chip accent">Eindeutig</span>
@@ -240,7 +240,7 @@ function AuthPage({ defaultMode = "login" }) {
 
           <button type="submit">Account erstellen</button>
           <p className="auth-hint">
-            Mail, Benutzername und Anzeigename duerfen nur einmal vorkommen.
+            Mail, Benutzername und Anzeigename dürfen nur einmal vorkommen.
           </p>
         </form>
       </div>

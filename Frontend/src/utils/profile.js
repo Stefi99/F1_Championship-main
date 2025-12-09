@@ -6,7 +6,7 @@ const DEFAULT_PLAYER_PROFILE = {
   email: "player@example.com",
   favoriteTeam: "Ferrari",
   country: "Schweiz",
-  bio: "Bereit fuer die naechste Session.",
+  bio: "Bereit für die nächste Session.",
   points: 0,
   lastUpdated: null,
   lastPasswordChange: null,

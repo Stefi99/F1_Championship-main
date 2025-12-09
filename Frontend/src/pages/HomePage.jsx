@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTrackVisual } from "../data/tracks";
 
-// Oeffentliche Home-Seite mit Ranglisten-Link, Rennteasern und CTA fuer Tipps
+// Öffentliche Home-Seite mit Ranglisten-Link, Rennteasern und CTA für Tipps
 function HomePage() {
   const navigate = useNavigate();
   const [races, setRaces] = useState([]);
@@ -43,7 +43,7 @@ function HomePage() {
 
   const statusLabel = {
     open: "Geplant",
-    voting: "Tippen moeglich",
+    voting: "Tippen möglich",
     closed: "Ergebnis steht",
   };
 
@@ -85,7 +85,7 @@ function HomePage() {
           <p className="home-kicker">Offizielle F1 Championship</p>
           <h1>Ranglisten, Tipps und Rennkalender in einem Hub</h1>
           <p className="home-lead">
-            Hol dir den schnellen Ueberblick: aktuelle Rangliste, offene
+            Hol dir den schnellen Überblick: aktuelle Rangliste, offene
             Tippfenster und geplante Rennen. Alles im gleichen Look wie das
             Admin-Dashboard.
           </p>
@@ -133,14 +133,14 @@ function HomePage() {
       <section className="home-feature-grid">
         <article className="home-feature-card">
           <p className="home-eyebrow">Rangliste</p>
-          <h2>Wer fuehrt die Saison an?</h2>
-          <p>Oeffentliche Leaderboard-Seite mit allen Punkten und Platzierungen.</p>
+          <h2>Wer führt die Saison an?</h2>
+          <p>Öffentliche Leaderboard-Seite mit allen Punkten und Platzierungen.</p>
           <div className="home-feature-actions">
             <button
               type="button"
               onClick={() => navigate("/player/leaderboard")}
             >
-              Rangliste oeffnen
+              Rangliste öffnen
             </button>
             <button
               type="button"

@@ -2750,6 +2750,7 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   letter-spacing: 0.02em;
+  color: #ffffff;
 }
 
 .result-team-swatch {
@@ -2781,6 +2782,64 @@ button:focus-visible {
   color: var(--f1-muted);
   font-weight: 700;
   font-size: 0.95rem;
+}
+
+.result-row-official {
+  margin-top: 4px;
+  color: var(--f1-muted);
+  font-weight: 750;
+}
+
+.result-row-official strong {
+  color: #ffffff;
+}
+
+.result-row-official.is-match strong {
+  color: #38e07e;
+}
+
+.result-row-official.is-different strong {
+  color: #ffb347;
+}
+
+.result-row-official.is-missing strong {
+  color: #7d8194;
+}
+
+.result-row-badge {
+  padding: 0.35rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid #2c303d;
+  background: #161925;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.result-row.read-only {
+  cursor: default;
+}
+
+.result-row.read-only .result-row-actions {
+  display: none;
+}
+
+.result-row.is-off-position .result-row-position,
+.result-row.is-off-position .result-row-name,
+.result-row.is-off-position .result-row-team {
+  opacity: 0.72;
+  filter: saturate(0.75);
+}
+
+.result-row.is-missing-position .result-row-position,
+.result-row.is-missing-position .result-row-name,
+.result-row.is-missing-position .result-row-team {
+  opacity: 0.58;
+  filter: saturate(0.62);
+}
+
+.result-row.is-correct-position .result-row-official strong {
+  color: #38e07e;
 }
 
 .result-row-actions {

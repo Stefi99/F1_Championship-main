@@ -142,6 +142,22 @@ function PlayerRaceTipsPage() {
     [race?.track]
   );
 
+  const officialOrder = useMemo(
+    () =>
+      Array.isArray(race?.resultsOrder)
+        ? race.resultsOrder.filter(Boolean)
+        : [],
+    [race?.resultsOrder]
+  );
+
+  const officialTopTen = useMemo(
+    () => officialOrder.slice(0, 10),
+    [officialOrder]
+  );
+
+  const hasOfficialResults =
+    race?.status === "closed" && officialOrder.length > 0;
+
   const canTip = race?.status === "voting";
   const statusText = statusLabel[race?.status] || statusLabel.open;
   const lastSavedText = formatDateTime(lastSavedAt);
@@ -199,7 +215,7 @@ function PlayerRaceTipsPage() {
       return;
     }
     if (selection.length === 0) {
-      setError("Bitte mindestens einen Fahrer fuer die Top 10 auswaehlen.");
+      setError("Bitte mindestens einen Fahrer für die Top 10 auswählen.");
       return;
     }
     const entry = persistRaceTip(raceId, selection);
@@ -229,7 +245,7 @@ function PlayerRaceTipsPage() {
           <h1>{race.track || "Rennen"}</h1>
           <p className="player-sub">
             Ordne deine Top 10 wie beim Admin-Ergebnis ein, nur dass hier
-            hoechstens die Plaetze 1 bis 10 vergeben werden koennen.
+            höchstens die Plätze 1 bis 10 vergeben werden können.
           </p>
           <div className="player-badge-row">
             <span className="player-badge">Status: {statusText}</span>
@@ -294,7 +310,7 @@ function PlayerRaceTipsPage() {
               <h2>Fahrer platzieren</h2>
               <p className="player-sub">
                 Drag & Drop oder Up/Down wie im Admin-Bereich. Es werden nur die
-                Plaetze 1-10 gespeichert.
+                Plätze 1-10 gespeichert.
               </p>
             </div>
             <div className="player-tip-actions">
@@ -307,10 +323,10 @@ function PlayerRaceTipsPage() {
               </button>
               <button
                 type="button"
-                className="player-ghost-btn"
-                onClick={syncData}
-              >
-                Zuruecksetzen
+              className="player-ghost-btn"
+              onClick={syncData}
+            >
+                Zurücksetzen
               </button>
             </div>
           </div>
@@ -320,60 +336,97 @@ function PlayerRaceTipsPage() {
 
           {selection.length === 0 ? (
             <div className="player-empty">
-              <p>Kein Fahrer ausgewaehlt. Fuege Fahrer aus dem Pool hinzu.</p>
+              <p>Kein Fahrer ausgewählt. Füge Fahrer aus dem Pool hinzu.</p>
             </div>
           ) : (
             <div className="result-list">
-              {selection.map((driver, index) => (
-                <div
-                  key={driver}
-                  draggable={canTip}
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={handleDragOver}
-                  onDrop={() => handleDrop(index)}
-                  className={`result-row ${teamClass(driver)} ${
-                    index >= 10 ? "is-muted" : ""
-                  }`}
-                  style={{ "--result-accent": teamColor(driver) }}
-                >
-                  <div className="result-row-info">
-                    <div className="result-row-position">#{index + 1}</div>
-                    <span className="result-team-swatch" aria-hidden="true" />
-                    <div className="result-row-text">
-                      <div className="result-row-name">{driver}</div>
-                      <div className="result-row-team">
-                        {teamLabel(driver)}
+              {selection.map((driver, index) => {
+                const officialIndex = hasOfficialResults
+                  ? officialTopTen.indexOf(driver)
+                  : -1;
+                const isCorrectPosition =
+                  hasOfficialResults && officialIndex === index;
+                const isMissingOfficial =
+                  hasOfficialResults && officialIndex === -1;
+                const isDifferentPosition =
+                  hasOfficialResults &&
+                  officialIndex !== -1 &&
+                  officialIndex !== index;
+
+                return (
+                  <div
+                    key={driver}
+                    draggable={canTip}
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(index)}
+                    className={`result-row ${teamClass(driver)} ${
+                      index >= 10 ? "is-muted" : ""
+                    } ${isDifferentPosition ? "is-off-position" : ""} ${
+                      isMissingOfficial ? "is-missing-position" : ""
+                    } ${isCorrectPosition ? "is-correct-position" : ""}`}
+                    style={{ "--result-accent": teamColor(driver) }}
+                  >
+                    <div className="result-row-info">
+                      <div className="result-row-position">#{index + 1}</div>
+                      <span
+                        className="result-team-swatch"
+                        aria-hidden="true"
+                      />
+                      <div className="result-row-text">
+                        <div className="result-row-name">{driver}</div>
+                        <div className="result-row-team">
+                          {teamLabel(driver)}
+                        </div>
+                        {hasOfficialResults && (
+                          <div
+                            className={`result-row-official ${
+                              isCorrectPosition
+                                ? "is-match"
+                                : isMissingOfficial
+                                ? "is-missing"
+                                : "is-different"
+                            }`}
+                          >
+                            Offiziell:{" "}
+                            <strong>
+                              {officialIndex >= 0
+                                ? `P${officialIndex + 1}`
+                                : "kein Ergebnis"}
+                            </strong>
+                          </div>
+                        )}
                       </div>
                     </div>
+                    <div className="result-row-actions">
+                      <button
+                        type="button"
+                        className="result-row-btn"
+                        onClick={() => moveItem(index, index - 1)}
+                        disabled={!canTip || index === 0}
+                      >
+                        Up
+                      </button>
+                      <button
+                        type="button"
+                        className="result-row-btn"
+                        onClick={() => moveItem(index, index + 1)}
+                        disabled={!canTip || index === selection.length - 1}
+                      >
+                        Down
+                      </button>
+                      <button
+                        type="button"
+                        className="result-row-btn"
+                        onClick={() => handleRemoveDriver(driver)}
+                        disabled={!canTip}
+                      >
+                        Entfernen
+                      </button>
+                    </div>
                   </div>
-                  <div className="result-row-actions">
-                    <button
-                      type="button"
-                      className="result-row-btn"
-                      onClick={() => moveItem(index, index - 1)}
-                      disabled={!canTip || index === 0}
-                    >
-                      Up
-                    </button>
-                    <button
-                      type="button"
-                      className="result-row-btn"
-                      onClick={() => moveItem(index, index + 1)}
-                      disabled={!canTip || index === selection.length - 1}
-                    >
-                      Down
-                    </button>
-                    <button
-                      type="button"
-                      className="result-row-btn"
-                      onClick={() => handleRemoveDriver(driver)}
-                      disabled={!canTip}
-                    >
-                      Entfernen
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -382,15 +435,15 @@ function PlayerRaceTipsPage() {
           <div className="player-tip-panel-head">
             <div>
               <p className="player-eyebrow muted">Fahrerpool</p>
-              <h3>Weitere Fahrer hinzufuegen</h3>
+              <h3>Weitere Fahrer hinzufügen</h3>
               <p className="player-sub">
-                Waehle aus den restlichen Fahrern und fuege sie deinem Top-10
+                Wähle aus den restlichen Fahrern und füge sie deinem Top-10
                 Tipp hinzu.
-              </p>
-            </div>
-            <div className="player-tip-limit">
-              Verfuegbar: {available.length} Fahrer
-            </div>
+            </p>
+          </div>
+          <div className="player-tip-limit">
+            Verfügbar: {available.length} Fahrer
+          </div>
           </div>
 
           {available.length === 0 ? (
@@ -414,6 +467,55 @@ function PlayerRaceTipsPage() {
             </div>
           )}
         </section>
+
+        {hasOfficialResults && (
+          <section className="player-tip-panel">
+            <div className="player-tip-panel-head">
+              <div>
+                <p className="player-eyebrow muted">Referenz</p>
+                <h3>Offizielles Ergebnis</h3>
+                <p className="player-sub">
+                  Gespeichert vom Admin. Nutze die finale Reihenfolge, um deine
+                  Tipps für kommende Rennen zu verbessern.
+                </p>
+              </div>
+              <div className="player-tip-limit">
+                {officialTopTen.length} Fahrer mit Wertung
+              </div>
+            </div>
+
+            {officialTopTen.length === 0 ? (
+              <div className="player-empty">
+                <p>Kein offizielles Ergebnis hinterlegt.</p>
+              </div>
+            ) : (
+              <div className="result-list">
+                {officialTopTen.map((driver, index) => (
+                  <div
+                    key={`${driver}-${index}`}
+                    className={`result-row read-only ${teamClass(driver)}`}
+                    style={{ "--result-accent": teamColor(driver) }}
+                  >
+                    <div className="result-row-info">
+                      <div className="result-row-position">#{index + 1}</div>
+                      <span
+                        className="result-team-swatch"
+                        aria-hidden="true"
+                      />
+                      <div className="result-row-text">
+                        <div className="result-row-name">{driver}</div>
+                        <div className="result-row-team">
+                          {teamLabel(driver)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="result-row-badge">Offiziell</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ export const registerUser = ({ email, username, displayName, password }) => {
   const displayValue = normalize(displayName);
 
   if (!emailValue || !usernameValue || !displayValue || !password) {
-    return { error: "Bitte alle Pflichtfelder ausfuellen." };
+    return { error: "Bitte alle Pflichtfelder ausfüllen." };
   }
 
   const users = readUsers();
