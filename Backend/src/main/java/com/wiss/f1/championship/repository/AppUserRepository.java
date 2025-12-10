@@ -1,9 +1,10 @@
 package com.wiss.f1.championship.repository;
-import com.wiss.f1.championship.entity.AppUser;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.wiss.f1.championship.entity.AppUser;
 
 @Repository
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {

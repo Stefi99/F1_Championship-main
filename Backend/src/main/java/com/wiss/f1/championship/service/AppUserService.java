@@ -1,12 +1,13 @@
 package com.wiss.f1.championship.service;
 
-import com.wiss.f1.championship.entity.AppUser;
-import com.wiss.f1.championship.entity.Role;
-import com.wiss.f1.championship.repository.AppUserRepository;
+import java.util.Optional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.wiss.f1.championship.entity.AppUser;
+import com.wiss.f1.championship.entity.Role;
+import com.wiss.f1.championship.repository.AppUserRepository;
 
 @Service
 public class AppUserService {
@@ -48,6 +49,10 @@ public class AppUserService {
     }
 
     public AppUser registerUser(String username, String email, String rawPassword, Role role) {
+        return registerUser(username, email, rawPassword, role, null);
+    }
+
+    public AppUser registerUser(String username, String email, String rawPassword, Role role, String displayName) {
 
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("Username already exists");
@@ -58,7 +63,7 @@ public class AppUserService {
 
         String hashedPassword = passwordEncoder.encode(rawPassword);
 
-        AppUser user = new AppUser(username, email, hashedPassword, role);
+        AppUser user = new AppUser(username, email, hashedPassword, role, displayName);
         return userRepository.save(user);
     }
 
