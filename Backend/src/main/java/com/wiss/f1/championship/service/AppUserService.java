@@ -84,4 +84,33 @@ public class AppUserService {
 
         return user;
     }
+
+    /**
+     * Aktualisiert die Profilfelder eines Users.
+     * @param user Der zu aktualisierende User
+     * @param displayName Neuer Anzeigename (optional)
+     * @param favoriteTeam Neues Lieblings-Team (optional)
+     * @param country Neues Land (optional)
+     * @param bio Neue Biografie (optional)
+     * @return Der aktualisierte User
+     */
+    public AppUser updateUserProfile(AppUser user, String displayName, String favoriteTeam, String country, String bio) {
+        if (displayName != null && !displayName.trim().isEmpty()) {
+            user.setDisplayName(displayName);
+        }
+        
+        if (favoriteTeam != null) {
+            user.setFavoriteTeam(favoriteTeam.trim().isEmpty() ? null : favoriteTeam);
+        }
+        
+        if (country != null) {
+            user.setCountry(country.trim().isEmpty() ? null : country);
+        }
+        
+        if (bio != null) {
+            user.setBio(bio.trim().isEmpty() ? null : bio);
+        }
+        
+        return userRepository.save(user);
+    }
 }
