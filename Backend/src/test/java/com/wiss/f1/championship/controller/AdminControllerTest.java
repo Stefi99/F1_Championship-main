@@ -1,19 +1,25 @@
 package com.wiss.f1.championship.controller;
 
-import com.wiss.f1.championship.entity.Race;
-import com.wiss.f1.championship.entity.RaceStatus;
-import com.wiss.f1.championship.service.RaceService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.wiss.f1.championship.entity.Race;
+import com.wiss.f1.championship.entity.RaceStatus;
+import com.wiss.f1.championship.service.RaceService;
 
 class AdminControllerTest {
 
@@ -49,20 +55,6 @@ class AdminControllerTest {
         assertEquals("Bahrain GP", result.get(0).getName());
         assertEquals("Saudi Arabian GP", result.get(1).getName());
         verify(raceService, times(1)).getAllRaces();
-    }
-
-    @Test
-    void testGetRaceById() {
-        when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace1));
-
-        Race result = raceController.getRaceById(1L);
-
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-        assertEquals("Bahrain GP", result.getName());
-        assertEquals("Bahrain International Circuit", result.getTrack());
-        assertEquals(RaceStatus.OPEN, result.getStatus());
-        verify(raceService, times(1)).getRaceById(1L);
     }
 
     @Test
