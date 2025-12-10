@@ -40,6 +40,15 @@ public class AppUser implements UserDetails {
     @Column(length = 100)
     private String displayName;  // Anzeigename (optional, falls nicht gesetzt wird username verwendet)
 
+    @Column(length = 100)
+    private String favoriteTeam;  // Lieblings-Team (optional)
+
+    @Column(length = 100)
+    private String country;      // Land (optional)
+
+    @Column(length = 500)
+    private String bio;          // Biografie (optional)
+
     public AppUser() {}
 
     public AppUser(String username, String email, String password, Role role) {
@@ -95,5 +104,29 @@ public class AppUser implements UserDetails {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getFavoriteTeam() {
+        return favoriteTeam;
+    }
+
+    public void setFavoriteTeam(String favoriteTeam) {
+        this.favoriteTeam = favoriteTeam;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }
