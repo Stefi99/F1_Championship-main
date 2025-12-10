@@ -62,6 +62,7 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    //WebConfig
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
