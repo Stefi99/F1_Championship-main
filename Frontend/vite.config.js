@@ -9,4 +9,7 @@ export default defineConfig({
     globals: true,
     setupFiles: "./src/setupTests.js",
   },
+  // Environment-Variablen werden automatisch von Vite geladen
+  // Alle Variablen die mit VITE_ beginnen sind im Client-Code verfügbar
+  // via import.meta.env.VITE_API_BASE_URL
 });
