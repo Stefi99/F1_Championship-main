@@ -119,4 +119,43 @@ public class LeaderboardService {
 
         return points;
     }
+
+    /**
+     * Berechnet die Gesamtpunkte für einen einzelnen User.
+     * @param user Der User, für den die Punkte berechnet werden sollen
+     * @return Die Gesamtpunkte des Users
+     */
+    public int calculateUserPoints(AppUser user) {
+        List<Race> races = raceRepository.findAll();
+        int totalPoints = 0;
+
+        for (Race race : races) {
+            // Nur geschlossene Rennen zählen
+            if (!"CLOSED".equalsIgnoreCase(race.getStatus().name())) continue;
+
+            // Tipps des Users für dieses Rennen
+            List<Tip> userTips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
+            if (userTips.isEmpty()) continue;
+
+            // Offizielle Ergebnisse
+            List<OfficialResult> results = officialResultRepository.findByRaceId(race.getId());
+            if (results.isEmpty()) continue;
+
+            // Map: finalPosition → driverId
+            Map<Integer, Long> officialPosMap = new HashMap<>();
+            for (OfficialResult r : results) {
+                officialPosMap.put(r.getFinalPosition(), r.getDriver().getId());
+            }
+
+            // Map: predictedPosition → driverId
+            Map<Integer, Long> predictedPosMap = new HashMap<>();
+            for (Tip t : userTips) {
+                predictedPosMap.put(t.getPredictedPosition(), t.getDriver().getId());
+            }
+
+            totalPoints += calculateRacePoints(predictedPosMap, officialPosMap);
+        }
+
+        return totalPoints;
+    }
 }

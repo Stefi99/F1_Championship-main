@@ -1,14 +1,20 @@
 package com.wiss.f1.championship.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+
 import com.wiss.f1.championship.dto.AuthRequestDTO;
 import com.wiss.f1.championship.dto.AuthResponseDTO;
 import com.wiss.f1.championship.entity.AppUser;
 import com.wiss.f1.championship.entity.Role;
 import com.wiss.f1.championship.security.JwtService;
 import com.wiss.f1.championship.service.AppUserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@RequestBody AuthRequestDTO request) {
+    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody AuthRequestDTO request) {
         try {
             Role role = Role.PLAYER;
 
@@ -35,7 +41,8 @@ public class AuthController {
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
-                    role
+                    role,
+                    request.getDisplayName()
             );
 
             String token = jwtService.generateToken(user);
@@ -50,10 +57,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody AuthRequestDTO request) {
         try {
+            // identifier kann Email oder Username sein
+            String identifier = request.getIdentifier();
+            if (identifier == null || identifier.trim().isEmpty()) {
+                // Fallback auf username für Rückwärtskompatibilität
+                identifier = request.getUsername();
+            }
+            
+            if (identifier == null || identifier.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new AuthResponseDTO(null, null, null, "ERROR: identifier or username required"));
+            }
+
             AppUser user = userService.authenticate(
-                    request.getUsername(),
+                    identifier.trim(),
                     request.getPassword()
             );
 

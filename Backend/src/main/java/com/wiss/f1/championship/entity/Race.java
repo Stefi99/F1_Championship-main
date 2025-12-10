@@ -1,6 +1,8 @@
 package com.wiss.f1.championship.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "races")
@@ -25,6 +27,11 @@ public class Race {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RaceStatus status;
+
+    @ElementCollection
+    @CollectionTable(name = "race_results_order", joinColumns = @JoinColumn(name = "race_id"))
+    @Column(name = "driver_name", length = 100)
+    private List<String> resultsOrder = new ArrayList<>();
 
     // Leerer Konstruktor
     public Race() {
@@ -85,7 +92,15 @@ public class Race {
         this.status = status;
     }
 
-    public void setId(Long id) {
+    public List<String> getResultsOrder() {
+        return resultsOrder;
+    }
 
+    public void setResultsOrder(List<String> resultsOrder) {
+        this.resultsOrder = resultsOrder != null ? resultsOrder : new ArrayList<>();
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

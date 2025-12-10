@@ -1,12 +1,20 @@
 package com.wiss.f1.championship.entity;
 
-import jakarta.persistence.*;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
 import java.util.Collection;
 import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "app_users")
@@ -29,6 +37,18 @@ public class AppUser implements UserDetails {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(length = 100)
+    private String displayName;  // Anzeigename (optional, falls nicht gesetzt wird username verwendet)
+
+    @Column(length = 100)
+    private String favoriteTeam;  // Lieblings-Team (optional)
+
+    @Column(length = 100)
+    private String country;      // Land (optional)
+
+    @Column(length = 500)
+    private String bio;          // Biografie (optional)
+
     public AppUser() {}
 
     public AppUser(String username, String email, String password, Role role) {
@@ -36,6 +56,15 @@ public class AppUser implements UserDetails {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.displayName = username;  // Standard: displayName = username
+    }
+
+    public AppUser(String username, String email, String password, Role role, String displayName) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.displayName = displayName != null && !displayName.trim().isEmpty() ? displayName : username;
     }
 
     @Override
@@ -70,6 +99,34 @@ public class AppUser implements UserDetails {
     public void setRole(Role role) { this.role = role; }
 
     public String getDisplayName() {
-        return username;
+        return displayName != null && !displayName.trim().isEmpty() ? displayName : username;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getFavoriteTeam() {
+        return favoriteTeam;
+    }
+
+    public void setFavoriteTeam(String favoriteTeam) {
+        this.favoriteTeam = favoriteTeam;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }
