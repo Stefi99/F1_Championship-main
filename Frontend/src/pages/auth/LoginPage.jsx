@@ -2,8 +2,7 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
-import { authenticateUser, registerUser } from "../../utils/authStorage";
-import { persistPlayerProfile } from "../../utils/profile";
+import api, { ApiError } from "../../utils/api.js";
 
 // Initialzustände für Login- und Registrierungsformulare.
 const initialLogin = { identifier: "", password: "" };
@@ -29,6 +28,8 @@ function AuthPage({ defaultMode = "login" }) {
   const [loginMessage, setLoginMessage] = useState("");
   const [registerError, setRegisterError] = useState("");
   const [registerMessage, setRegisterMessage] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
 
   // Formulareingaben aktualisieren. Separate Handler für Login- und Registrierfelder
   const handleLoginChange = (field) => (event) => {
@@ -41,66 +42,137 @@ function AuthPage({ defaultMode = "login" }) {
     setRegisterForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Startet Nutzersession
-  const startSession = (userData, successMessage) => {
-    const profile = persistPlayerProfile({
-      ...userData,
-      lastPasswordChange:
-        userData.lastPasswordChange ||
-        userData.createdAt ||
-        userData.lastUpdated,
-    });
-
-    login(profile);
-    if (successMessage) {
-      setLoginMessage(successMessage);
-    }
-    navigate(profile.role === "ADMIN" ? "/admin" : "/player");
-  };
-
   // Login-Flow
-  const handleLoginSubmit = (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault();
     setLoginError("");
     setLoginMessage("");
+    setLoginLoading(true);
 
-    const { user, error } = authenticateUser(
-      loginForm.identifier.trim(),
-      loginForm.password
-    );
+    try {
+      // API-Call zum Backend
+      const response = await api.post("/auth/login", {
+        identifier: loginForm.identifier.trim(),
+        password: loginForm.password,
+      });
 
-    if (error) {
-      setLoginError(error);
-      return;
+      // Prüfe ob Response ein Error enthält (Backend sendet manchmal Error im Response-Body)
+      if (response.token && response.token.startsWith("ERROR:")) {
+        setLoginError(response.token.replace("ERROR: ", ""));
+        setLoginLoading(false);
+        return;
+      }
+
+      if (!response.token) {
+        setLoginError("Kein Token erhalten. Bitte versuche es erneut.");
+        setLoginLoading(false);
+        return;
+      }
+
+      // Token und AuthResponse an AuthProvider übergeben
+      // AuthProvider lädt dann automatisch die vollständigen User-Daten
+      await login(response.token, {
+        id: response.id,
+        username: response.username,
+        role: response.role,
+      });
+
+      setLoginMessage("Willkommen zurück.");
+      setLoginForm(initialLogin);
+
+      // Warte kurz, damit User die Erfolgsmeldung sieht
+      setTimeout(() => {
+        // Navigation basierend auf Rolle
+        // User-Daten werden vom AuthProvider geladen, daher kurz warten
+        const role = response.role;
+        navigate(role === "ADMIN" ? "/admin" : "/player");
+      }, 500);
+    } catch (error) {
+      // Error-Handling
+      if (error instanceof ApiError) {
+        // Backend-Fehler
+        const errorMessage =
+          error.data?.message || error.message || "Login fehlgeschlagen";
+        setLoginError(errorMessage);
+      } else {
+        // Netzwerk-Fehler oder andere Fehler
+        setLoginError(
+          "Verbindungsfehler. Bitte überprüfe deine Internetverbindung."
+        );
+      }
+    } finally {
+      setLoginLoading(false);
     }
-
-    startSession(user, "Willkommen zurück.");
-    setLoginForm(initialLogin);
   };
 
   // Registrierungs-Flow
-  const handleRegisterSubmit = (event) => {
+  const handleRegisterSubmit = async (event) => {
     event.preventDefault();
     setRegisterError("");
     setRegisterMessage("");
     setLoginError("");
+    setRegisterLoading(true);
 
-    const { user, error } = registerUser({
-      email: registerForm.email,
-      username: registerForm.username,
-      displayName: registerForm.displayName,
-      password: registerForm.password,
-    });
+    try {
+      // API-Call zum Backend
+      const response = await api.post("/auth/register", {
+        email: registerForm.email.trim(),
+        username: registerForm.username.trim(),
+        displayName: registerForm.displayName.trim(),
+        password: registerForm.password,
+      });
 
-    if (error) {
-      setRegisterError(error);
-      return;
+      // Prüfe ob Response ein Error enthält
+      if (response.token && response.token.startsWith("ERROR:")) {
+        setRegisterError(response.token.replace("ERROR: ", ""));
+        setRegisterLoading(false);
+        return;
+      }
+
+      if (!response.token) {
+        setRegisterError(
+          "Registrierung fehlgeschlagen. Bitte versuche es erneut."
+        );
+        setRegisterLoading(false);
+        return;
+      }
+
+      // Token und AuthResponse an AuthProvider übergeben
+      // AuthProvider lädt dann automatisch die vollständigen User-Daten
+      await login(response.token, {
+        id: response.id,
+        username: response.username,
+        role: response.role,
+      });
+
+      setRegisterMessage("Account erstellt. Du bist jetzt angemeldet.");
+      setRegisterForm(initialRegister);
+      setHighlight("login");
+
+      // Warte kurz, damit User die Erfolgsmeldung sieht
+      setTimeout(() => {
+        // Navigation basierend auf Rolle
+        const role = response.role;
+        navigate(role === "ADMIN" ? "/admin" : "/player");
+      }, 500);
+    } catch (error) {
+      // Error-Handling
+      if (error instanceof ApiError) {
+        // Backend-Fehler
+        const errorMessage =
+          error.data?.message ||
+          error.message ||
+          "Registrierung fehlgeschlagen";
+        setRegisterError(errorMessage);
+      } else {
+        // Netzwerk-Fehler oder andere Fehler
+        setRegisterError(
+          "Verbindungsfehler. Bitte überprüfe deine Internetverbindung."
+        );
+      }
+    } finally {
+      setRegisterLoading(false);
     }
-
-    startSession(user, "Account erstellt und eingeloggt.");
-    setRegisterMessage("Account erstellt. Du bist jetzt angemeldet.");
-    setRegisterForm(initialRegister);
-    setHighlight("login");
   };
 
   // Darstellung beider Auth-Formulare
@@ -158,7 +230,9 @@ function AuthPage({ defaultMode = "login" }) {
             <div className="auth-alert is-success">{loginMessage}</div>
           )}
 
-          <button type="submit">Einloggen</button>
+          <button type="submit" disabled={loginLoading}>
+            {loginLoading ? "Wird eingeloggt..." : "Einloggen"}
+          </button>
           <p className="auth-hint">
             Login geht mit Mail oder Benutzername + Passwort.
           </p>
@@ -237,7 +311,9 @@ function AuthPage({ defaultMode = "login" }) {
             <div className="auth-alert is-success">{registerMessage}</div>
           )}
 
-          <button type="submit">Account erstellen</button>
+          <button type="submit" disabled={registerLoading}>
+            {registerLoading ? "Wird erstellt..." : "Account erstellen"}
+          </button>
           <p className="auth-hint">
             Mail, Benutzername und Anzeigename dürfen nur einmal vorkommen.
           </p>
