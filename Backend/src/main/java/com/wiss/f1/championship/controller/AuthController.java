@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.wiss.f1.championship.dto.AuthRequestDTO;
 import com.wiss.f1.championship.dto.AuthResponseDTO;
 import com.wiss.f1.championship.entity.AppUser;
@@ -27,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@RequestBody AuthRequestDTO request) {
+    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody AuthRequestDTO request) {
         try {
             Role role = Role.PLAYER;
 
@@ -55,7 +57,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody AuthRequestDTO request) {
         try {
             // identifier kann Email oder Username sein
             String identifier = request.getIdentifier();
