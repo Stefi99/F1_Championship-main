@@ -10,4 +10,6 @@ import java.util.List;
 public interface OfficialResultRepository extends JpaRepository<OfficialResult, Long> {
 
     List<OfficialResult> findByRace(Race race);
+
+    List<OfficialResult> findByRaceId(Long id);
 }

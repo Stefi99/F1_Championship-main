@@ -12,6 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @EnableMethodSecurity
 @Configuration
@@ -32,6 +34,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()    // Register + Login erlaubt
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin muss eingeloggt + ADMIN-Rolle
                         .requestMatchers("/api/player/**").hasRole("PLAYER") // Player-Routen
+                        .requestMatchers("/api/leaderboard/**").authenticated()
+                        .requestMatchers("/api/tips/**").authenticated()
+                        .requestMatchers("/api/races/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -43,5 +48,18 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173") // oder dein FE-Port
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+            }
+        };
     }
 }

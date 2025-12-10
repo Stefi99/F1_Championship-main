@@ -1,9 +1,11 @@
 package com.wiss.f1.championship.controller;
 import com.wiss.f1.championship.entity.*;
+import com.wiss.f1.championship.repository.TipRepository;
 import com.wiss.f1.championship.service.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Scanner;
 
 @RestController
 @RequestMapping("/api/tips")
@@ -13,13 +15,15 @@ public class TipController {
     private final AppUserService userService;
     private final RaceService raceService;
     private final DriverService driverService;
+    private final TipRepository tipRepository;
 
     public TipController(TipService tipService, AppUserService userService,
-                         RaceService raceService, DriverService driverService) {
+                         RaceService raceService, DriverService driverService, TipRepository tipRepository) {
         this.tipService = tipService;
         this.userService = userService;
         this.raceService = raceService;
         this.driverService = driverService;
+        this.tipRepository = tipRepository;
     }
 
     @GetMapping("/race/{raceId}")
@@ -43,4 +47,10 @@ public class TipController {
                 new Tip(user, race, driver, position)
         );
     }
+
+    @GetMapping
+    public List<Tip> getAllTips() {
+        return tipRepository.findAll();
+    }
+
 }
