@@ -48,6 +48,7 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
