@@ -34,4 +34,8 @@ public class DriverService {
     public void deleteDriver(Long id) {
         driverRepository.deleteById(id);
     }
+
+    public Optional<Driver> getDriverByName(String name) {
+        return driverRepository.findByName(name);
+    }
 }
