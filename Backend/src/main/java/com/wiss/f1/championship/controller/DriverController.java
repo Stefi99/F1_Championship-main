@@ -15,6 +15,10 @@ public class DriverController {
         this.driverService = driverService;
     }
 
+    /**
+     * Gibt alle Fahrer mit Team-Informationen zurück.
+     * @return Liste aller Fahrer im Format: [{ name: "Max Verstappen", team: "Red Bull Racing", id: 1 }, ...]
+     */
     @GetMapping
     public List<Driver> getAllDrivers() {
         return driverService.getAllDrivers();

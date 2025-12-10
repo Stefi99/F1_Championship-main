@@ -79,6 +79,21 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Behandelt RaceNotFoundException.
+     * Wird geworfen wenn ein Rennen nicht gefunden wird.
+     */
+    @ExceptionHandler(RaceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleRaceNotFoundException(RaceNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Race Not Found",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
      * Behandelt IllegalArgumentException (Business-Logic-Fehler).
      * Wird z.B. geworfen für allgemeine ungültige Argumente.
      * Wird als Fallback für Legacy-Code verwendet.

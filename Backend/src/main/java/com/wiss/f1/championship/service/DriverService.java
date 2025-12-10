@@ -3,8 +3,10 @@ import com.wiss.f1.championship.entity.Driver;
 import com.wiss.f1.championship.repository.DriverRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class DriverService {
@@ -15,8 +17,14 @@ public class DriverService {
         this.driverRepository = driverRepository;
     }
 
+    /**
+     * Gibt alle Fahrer sortiert nach Name zurück.
+     * @return Liste aller Fahrer mit Name und Team-Informationen
+     */
     public List<Driver> getAllDrivers() {
-        return driverRepository.findAll();
+        return driverRepository.findAll().stream()
+                .sorted(Comparator.comparing(Driver::getName))
+                .collect(Collectors.toList());
     }
 
     public Optional<Driver> getDriverById(Long id) {
