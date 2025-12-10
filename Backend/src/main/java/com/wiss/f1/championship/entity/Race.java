@@ -101,6 +101,6 @@ public class Race {
     }
 
     public void setId(Long id) {
-
+        this.id = id;
     }
 }

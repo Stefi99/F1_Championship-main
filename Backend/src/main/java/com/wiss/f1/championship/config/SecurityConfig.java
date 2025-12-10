@@ -32,9 +32,23 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()    // Register + Login erlaubt
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin muss eingeloggt + ADMIN-Rolle
                         .requestMatchers("/api/player/**").hasRole("PLAYER") // Player-Routen
+                        // Drivers: GET öffentlich, POST/PUT/DELETE nur für Admin
+                        .requestMatchers("GET", "/api/drivers/**").permitAll()
+                        .requestMatchers("POST", "/api/drivers/**").hasRole("ADMIN")
+                        .requestMatchers("PUT", "/api/drivers/**").hasRole("ADMIN")
+                        .requestMatchers("DELETE", "/api/drivers/**").hasRole("ADMIN")
+                        // Races: GET authentifiziert, POST/PUT/DELETE nur für Admin
+                        .requestMatchers("GET", "/api/races/**").authenticated()
+                        .requestMatchers("POST", "/api/races/**").hasRole("ADMIN")
+                        .requestMatchers("PUT", "/api/races/**").hasRole("ADMIN")
+                        .requestMatchers("DELETE", "/api/races/**").hasRole("ADMIN")
+                        // Results: Nur Admin
+                        .requestMatchers("/api/results/**").hasRole("ADMIN")
+                        // Leaderboard und Tips: Authentifizierte User
                         .requestMatchers("/api/leaderboard/**").authenticated()
                         .requestMatchers("/api/tips/**").authenticated()
-                        .requestMatchers("/api/races/**").authenticated()
+                        // User-Profile: Authentifizierte User
+                        .requestMatchers("/api/users/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
