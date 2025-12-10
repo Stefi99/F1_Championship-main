@@ -28,6 +28,25 @@ public class AppUserService {
         return userRepository.findByUsername(username);
     }
 
+    public Optional<AppUser> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    /**
+     * Sucht einen User anhand von Email oder Username.
+     * @param identifier Email oder Username
+     * @return Optional mit dem gefundenen User, oder empty wenn nicht gefunden
+     */
+    public Optional<AppUser> getUserByIdentifier(String identifier) {
+        // Versuche zuerst per Email zu finden
+        Optional<AppUser> userByEmail = userRepository.findByEmail(identifier);
+        if (userByEmail.isPresent()) {
+            return userByEmail;
+        }
+        // Falls nicht gefunden, versuche per Username
+        return userRepository.findByUsername(identifier);
+    }
+
     public AppUser registerUser(String username, String email, String rawPassword, Role role) {
 
         if (userRepository.existsByUsername(username)) {
@@ -43,9 +62,15 @@ public class AppUserService {
         return userRepository.save(user);
     }
 
-    public AppUser authenticate(String username, String rawPassword) {
-
-        AppUser user = userRepository.findByUsername(username)
+    /**
+     * Authentifiziert einen User anhand von Email oder Username und Passwort.
+     * @param identifier Email oder Username
+     * @param rawPassword Das Klartext-Passwort
+     * @return Der authentifizierte User
+     * @throws IllegalArgumentException Wenn User nicht gefunden oder Passwort falsch
+     */
+    public AppUser authenticate(String identifier, String rawPassword) {
+        AppUser user = getUserByIdentifier(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {

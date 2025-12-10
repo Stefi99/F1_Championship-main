@@ -52,8 +52,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
         try {
+            // identifier kann Email oder Username sein
+            String identifier = request.getIdentifier();
+            if (identifier == null || identifier.trim().isEmpty()) {
+                // Fallback auf username für Rückwärtskompatibilität
+                identifier = request.getUsername();
+            }
+            
+            if (identifier == null || identifier.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new AuthResponseDTO(null, null, null, "ERROR: identifier or username required"));
+            }
+
             AppUser user = userService.authenticate(
-                    request.getUsername(),
+                    identifier.trim(),
                     request.getPassword()
             );
 

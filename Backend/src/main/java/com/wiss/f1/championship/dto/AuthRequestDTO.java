@@ -4,6 +4,7 @@ public class AuthRequestDTO {
 
     private String email;
     private String username;
+    private String identifier;  // Für Login: kann Email oder Username sein
     private String password;
     private String role;
 
@@ -12,6 +13,9 @@ public class AuthRequestDTO {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public String getIdentifier() { return identifier; }
+    public void setIdentifier(String identifier) { this.identifier = identifier; }
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
