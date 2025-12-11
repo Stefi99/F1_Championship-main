@@ -1,4 +1,4 @@
-//Zuordnung für CSS-Teamfarben
+// Zuordnung für CSS-Teamfarben
 export const TEAM_CLASS_MAP = {
   "Red Bull": "team-red-bull",
   Ferrari: "team-ferrari",
@@ -46,33 +46,94 @@ function withIds(driversList) {
   }));
 }
 
-//ladet Fahrer aus localStorage oder Default-Daten
-export function getStoredDrivers() {
+// Cache für Fahrer-Daten (wird beim Laden gesetzt)
+let driversCache = null;
+
+/**
+ * Lädt alle Fahrer vom Backend
+ * @returns {Promise<Array>} Liste aller Fahrer mit IDs
+ */
+export async function getStoredDrivers() {
+  // Wenn Cache vorhanden, verwende diesen (kann später für Refreshing erweitert werden)
+  if (driversCache) {
+    return withIds(driversCache);
+  }
+
   try {
-    const raw = localStorage.getItem("driversData");
-    if (!raw) return withIds(defaultDrivers);
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0)
+    const { getAllDrivers } = await import("../services/driverService.js");
+    const drivers = await getAllDrivers();
+
+    // Fallback auf defaultDrivers wenn Backend leer ist
+    if (!Array.isArray(drivers) || drivers.length === 0) {
       return withIds(defaultDrivers);
-    return withIds(parsed);
-  } catch (err) {
-    console.error("driversData parse error", err);
+    }
+
+    // Cache setzen
+    driversCache = drivers;
+    return withIds(drivers);
+  } catch (error) {
+    console.error("Fehler beim Laden der Fahrer vom Backend:", error);
+    // Fallback auf defaultDrivers bei Fehler
     return withIds(defaultDrivers);
   }
 }
 
-//Speichert Fahreränderungen lokal
-export function saveDrivers(drivers) {
+/**
+ * Synchronisiert den Cache (für nach dem Speichern)
+ */
+export function clearDriversCache() {
+  driversCache = null;
+}
+
+/**
+ * Speichert Fahrer-Änderungen im Backend
+ * @param {Array<Object>} drivers - Array von Fahrern
+ * @returns {Promise<Array>} Array der gespeicherten Fahrer
+ */
+export async function saveDrivers(drivers) {
   try {
-    localStorage.setItem("driversData", JSON.stringify(drivers));
-  } catch (err) {
-    console.error("driversData save error", err);
+    const { saveDriversBatch } = await import("../services/driverService.js");
+    const saved = await saveDriversBatch(drivers);
+
+    // Cache aktualisieren
+    driversCache = saved;
+
+    return saved;
+  } catch (error) {
+    console.error("Fehler beim Speichern der Fahrer:", error);
+    throw error;
   }
 }
 
-//Liefert das Team eines Fahrers
+/**
+ * Liefert das Team eines Fahrers (synchron, verwendet Cache)
+ * Für async-Version siehe getDriverTeamAsync
+ * @param {string} name - Name des Fahrers
+ * @returns {string|undefined} Team-Name oder undefined
+ */
 export function getDriverTeam(name) {
-  const drivers = getStoredDrivers();
-  const found = drivers.find((d) => d.name === name);
+  if (driversCache) {
+    const found = driversCache.find((d) => d.name === name);
+    return found?.team;
+  }
+
+  // Fallback: Suche in defaultDrivers
+  const found = defaultDrivers.find((d) => d.name === name);
   return found?.team;
+}
+
+/**
+ * Async-Version von getDriverTeam (lädt vom Backend)
+ * @param {string} name - Name des Fahrers
+ * @returns {Promise<string|undefined>} Team-Name oder undefined
+ */
+export async function getDriverTeamAsync(name) {
+  try {
+    const drivers = await getStoredDrivers();
+    const found = drivers.find((d) => d.name === name);
+    return found?.team;
+  } catch (error) {
+    console.error("Fehler beim Abrufen des Teams:", error);
+    return undefined;
+  }
 }
