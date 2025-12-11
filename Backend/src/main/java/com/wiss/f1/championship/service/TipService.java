@@ -5,6 +5,7 @@ import com.wiss.f1.championship.repository.TipRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,7 +79,7 @@ public class TipService {
             Driver driver = driverOpt.get();
             int position = i + 1; // Position 1-10
 
-            Tip tip = new Tip(user, race, driver, position);
+            Tip tip = new Tip(user, race, driver, position, LocalDateTime.now());
             newTips.add(tip);
         }
 
@@ -126,8 +127,16 @@ public class TipService {
                             .sorted((t1, t2) -> Integer.compare(t1.getPredictedPosition(), t2.getPredictedPosition()))
                             .map(tip -> tip.getDriver().getName())
                             .collect(Collectors.toList());
-                    return new TipResponseDTO(race.getId(), order);
+                    return new TipResponseDTO(race.getId(), order, entry.getValue().getFirst().getUpdatedAt());
                 })
                 .collect(Collectors.toList());
+    }
+
+    public LocalDateTime getTipUpdatedAtForUserAndRace(AppUser user, Race race) {
+        List<Tip> tips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
+        if(tips.isEmpty()) {
+            return LocalDateTime.now();
+        }
+        return tips.getFirst().getUpdatedAt();
     }
 }

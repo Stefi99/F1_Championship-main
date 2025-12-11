@@ -1,8 +1,19 @@
 package com.wiss.f1.championship.entity;
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "races")
@@ -23,6 +34,9 @@ public class Race {
 
     @Column(nullable = false, length = 50)
     private String weather;   // vorerst String, später evtl Enum
+
+    @Column(length = 50)
+    private String tyres;     // Reifenwahl (soft, medium, hard)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -82,6 +96,14 @@ public class Race {
 
     public void setWeather(String weather) {
         this.weather = weather;
+    }
+
+    public String getTyres() {
+        return tyres;
+    }
+
+    public void setTyres(String tyres) {
+        this.tyres = tyres;
     }
 
     public RaceStatus getStatus() {

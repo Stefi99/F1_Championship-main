@@ -50,7 +50,7 @@ function HomePage() {
   // UI-Labels für Status und Wetteranzeigen.
   const statusLabel = {
     open: "Geplant",
-    voting: "Tippen möglich",
+    voting: "Voting",
     closed: "Ergebnis steht",
   };
 
@@ -336,7 +336,7 @@ function HomePage() {
           <p>
             {plannedRaces.length === 0
               ? "Noch keine geplanten Rennen eingetragen."
-              : `${plannedRaces.length} Rennen in Planung, ${votingRaces.length} Tippfenster offen.`}
+              : `${plannedRaces.length} Rennen in Planung, ${votingRaces.length} Voting offen.`}
           </p>
         </div>
         <div className="home-summary-card">

@@ -5,6 +5,8 @@ import {
   setToken,
   removeToken,
   hasToken,
+  setUserId,
+  getUserId,
 } from "../utils/tokenStorage.js";
 import api from "../utils/api.js";
 import { normalizeUserFromBackend } from "../utils/userMapper.js";
@@ -15,7 +17,7 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // Lädt User-Daten vom Backend basierend auf gespeichertem Token
-  const loadUserFromToken = async () => {
+  const loadUserFromToken = async (preserveId = null) => {
     if (!hasToken()) {
       setLoading(false);
       return;
@@ -27,6 +29,17 @@ function AuthProvider({ children }) {
 
       // User-Objekt für Frontend normalisieren
       const userData = normalizeUserFromBackend(userProfile);
+
+      // ID beibehalten, falls vorhanden (UserProfileDTO enthält keine ID)
+      // Priorität: preserveId > gespeicherte ID > aktuelle User-ID
+      const idToPreserve =
+        preserveId !== null ? preserveId : getUserId() || user?.id || null;
+
+      if (idToPreserve !== null) {
+        userData.id = idToPreserve;
+        // ID auch im Storage speichern für zukünftige Seitenladevorgänge
+        setUserId(idToPreserve);
+      }
 
       setUser(userData);
     } catch (error) {
@@ -42,7 +55,8 @@ function AuthProvider({ children }) {
   // Prüft beim Laden der App, ob bereits ein Token gespeichert ist
   // und lädt dann die User-Daten vom Backend
   useEffect(() => {
-    loadUserFromToken();
+    // Beim initialen Laden versuche die ID aus dem Storage zu laden
+    loadUserFromToken(null);
   }, []);
 
   // Event-Listener für 401 Unauthorized (wenn Token ungültig wird)
@@ -62,15 +76,15 @@ function AuthProvider({ children }) {
   // @param {string} token - Das JWT-Token vom Backend
   // @param {object} authResponse - Optional: AuthResponseDTO mit id, username, role (für schnelleres Setzen)
   const login = async (token, authResponse = null) => {
-    // Token speichern
-    setToken(token);
+    // ID aus authResponse speichern (wird später benötigt, da UserProfileDTO keine ID enthält)
+    const userId = authResponse?.id || null;
 
     // Wenn AuthResponse vorhanden, User-Daten teilweise vorladen
     // (vollständige Daten werden dann vom Backend geladen)
     if (authResponse) {
       // Temporäres User-Objekt mit Daten aus AuthResponse
       const tempUser = {
-        id: authResponse.id || null,
+        id: userId,
         username: authResponse.username,
         role: authResponse.role,
         // Andere Felder werden beim Laden vom Backend ergänzt
@@ -84,15 +98,28 @@ function AuthProvider({ children }) {
       setUser(tempUser);
     }
 
-    // Vollständige User-Daten vom Backend laden
+    // Token speichern
+    setToken(token);
+
+    // User-ID speichern (falls vorhanden)
+    if (userId) {
+      setUserId(userId);
+    }
+
+    // Vollständige User-Daten vom Backend laden (ID beibehalten)
     setLoading(true);
-    await loadUserFromToken();
+    await loadUserFromToken(userId);
   };
 
   // Logout-Funktion: Entfernt Token und User-Daten
   const logout = () => {
     setUser(null);
     removeToken();
+  };
+
+  // Aktualisiert die User-Daten vom Backend (z.B. nach Profil-Update)
+  const refreshUser = async () => {
+    await loadUserFromToken();
   };
 
   return (
@@ -105,6 +132,7 @@ function AuthProvider({ children }) {
         loading, // Loading-State für initiale Token-Validierung
         login,
         logout,
+        refreshUser, // Funktion zum Aktualisieren der User-Daten
       }}
     >
       {children}

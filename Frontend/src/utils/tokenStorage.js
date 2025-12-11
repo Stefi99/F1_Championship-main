@@ -9,7 +9,10 @@ const getSessionStore = () => {
     return typeof window !== "undefined" ? window.sessionStorage : null;
   } catch (err) {
     // Zugriff kann z.B. in Privacy- oder SSR-Umgebungen fehlschlagen
-    console.warn("SessionStorage nicht verfügbar, verwende In-Memory-Token.", err);
+    console.warn(
+      "SessionStorage nicht verfügbar, verwende In-Memory-Token.",
+      err
+    );
     return null;
   }
 };
@@ -57,6 +60,8 @@ export function removeToken() {
     store.removeItem(TOKEN_KEY);
   }
   memoryToken = null;
+  // User-ID auch entfernen
+  removeUserId();
 }
 
 /**
@@ -92,7 +97,7 @@ export function isTokenValid() {
     if (payload.exp) {
       const expirationTime = payload.exp * 1000; // In Millisekunden umwandeln
       const currentTime = Date.now();
-      
+
       // Token ist abgelaufen wenn aktuelle Zeit >= Ablaufzeit
       if (currentTime >= expirationTime) {
         return false;
@@ -108,3 +113,45 @@ export function isTokenValid() {
   }
 }
 
+// User-ID Storage (wird zusammen mit dem Token gespeichert)
+const USER_ID_KEY = "user_id";
+
+/**
+ * Speichert die User-ID
+ * @param {number|string|null} userId - Die User-ID
+ */
+export function setUserId(userId) {
+  const store = getSessionStore();
+  if (!userId) {
+    removeUserId();
+    return;
+  }
+
+  if (store) {
+    store.setItem(USER_ID_KEY, String(userId));
+    return;
+  }
+}
+
+/**
+ * Liest die gespeicherte User-ID
+ * @returns {string|null} Die User-ID oder null
+ */
+export function getUserId() {
+  const store = getSessionStore();
+  if (store) {
+    const userId = store.getItem(USER_ID_KEY);
+    return userId ? userId : null;
+  }
+  return null;
+}
+
+/**
+ * Entfernt die gespeicherte User-ID
+ */
+export function removeUserId() {
+  const store = getSessionStore();
+  if (store) {
+    store.removeItem(USER_ID_KEY);
+  }
+}

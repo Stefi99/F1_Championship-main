@@ -1,8 +1,9 @@
 package com.wiss.f1.championship.dto;
 
-import com.wiss.f1.championship.entity.RaceStatus;
 import java.time.LocalDate;
 import java.util.List;
+
+import com.wiss.f1.championship.entity.RaceStatus;
 
 public class RaceResponseDTO {
 
@@ -11,6 +12,7 @@ public class RaceResponseDTO {
     private LocalDate date;
     private String track;
     private String weather;
+    private String tyres;
     private RaceStatus status;
     private List<String> resultsOrder;
 
@@ -18,12 +20,13 @@ public class RaceResponseDTO {
     }
 
     public RaceResponseDTO(Long id, String name, LocalDate date, String track, 
-                          String weather, RaceStatus status, List<String> resultsOrder) {
+                          String weather, String tyres, RaceStatus status, List<String> resultsOrder) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.track = track;
         this.weather = weather;
+        this.tyres = tyres;
         this.status = status;
         this.resultsOrder = resultsOrder;
     }
@@ -66,6 +69,14 @@ public class RaceResponseDTO {
 
     public void setWeather(String weather) {
         this.weather = weather;
+    }
+
+    public String getTyres() {
+        return tyres;
+    }
+
+    public void setTyres(String tyres) {
+        this.tyres = tyres;
     }
 
     public RaceStatus getStatus() {

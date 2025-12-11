@@ -27,7 +27,7 @@ const TEAM_COLOR_PALETTE = {
 // UI-Beschriftungen für Rennstatus und Wetteranzeigen.
 const statusLabel = {
   open: "Geplant",
-  voting: "Tippen offen",
+  voting: "Voting",
   closed: "Geschlossen",
 };
 
@@ -100,6 +100,7 @@ function PlayerRaceTipsPage() {
       setLastSavedAt(tip?.updatedAt || null);
       setMessage("");
       setError("");
+      console.log(tip);
     } catch (error) {
       console.error("Fehler beim Laden des Rennens:", error);
       setError("Rennen konnte nicht geladen werden.");

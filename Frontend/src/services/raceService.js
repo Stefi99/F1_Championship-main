@@ -1,6 +1,10 @@
 // Race-Service für Backend-Kommunikation
 import api from "../utils/api.js";
-import { normalizeRacesFromBackend, normalizeRaceFromBackend, normalizeRaceToBackend } from "../utils/raceMapper.js";
+import {
+  normalizeRacesFromBackend,
+  normalizeRaceFromBackend,
+  normalizeRaceToBackend,
+} from "../utils/raceMapper.js";
 
 /**
  * Lädt alle Rennen vom Backend
@@ -38,7 +42,7 @@ export async function getRaceById(id) {
  * @param {string} raceData.track - Streckenname
  * @param {string} raceData.date - Datum (ISO-String oder YYYY-MM-DD)
  * @param {string} raceData.weather - Wetter (sunny, cloudy, rain)
- * @param {string} raceData.status - Status ("open", "voting", "closed" oder "OPEN", "TIPPABLE", "CLOSED")
+ * @param {string} raceData.status - Status ("open", "voting", "closed")
  * @returns {Promise<Object>} Das erstellte Rennen (normalisiert für Frontend)
  */
 export async function createRace(raceData) {
@@ -102,8 +106,10 @@ export async function updateRaceResults(id, resultsOrder) {
     const response = await api.put(`/races/${id}/results`, raceDTO);
     return normalizeRaceFromBackend(response);
   } catch (error) {
-    console.error(`Fehler beim Aktualisieren der Ergebnisse für Rennen ${id}:`, error);
+    console.error(
+      `Fehler beim Aktualisieren der Ergebnisse für Rennen ${id}:`,
+      error
+    );
     throw error;
   }
 }
-

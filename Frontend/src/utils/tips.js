@@ -84,7 +84,7 @@ export async function getRaceTip(raceId) {
 
     return {
       order: cleanOrder(tip.order || []),
-      updatedAt: null, // Backend liefert kein updatedAt
+      updatedAt: tip.updatedAt, // Backend liefert kein updatedAt
     };
   } catch (error) {
     // 404 bedeutet, dass noch kein Tipp vorhanden ist

@@ -20,6 +20,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.wiss.f1.championship.security.JwtAuthenticationFilter;
+
 @EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
@@ -48,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/drivers/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/drivers/**").hasRole("ADMIN")
                         // Races: GET authentifiziert, POST/PUT/DELETE nur für Admin
-                        .requestMatchers(HttpMethod.GET, "/api/races/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/races/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/races/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/races/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/races/**").hasRole("ADMIN")

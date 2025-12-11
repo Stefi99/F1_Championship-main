@@ -31,6 +31,7 @@ function AdminRaceFormPage() {
   const [date, setDate] = useState("");
   const [tyres, setTyres] = useState("");
   const [status, setStatus] = useState("");
+  const [originalStatus, setOriginalStatus] = useState(""); // Für Edit: ursprünglicher Status
   const [drivers, setDrivers] = useState([]);
   const [driverOptions, setDriverOptions] = useState([]);
   const [driverError, setDriverError] = useState("");
@@ -83,7 +84,9 @@ function AdminRaceFormPage() {
         setWeather(existing.weather || "");
         setDate(existing.date || "");
         setTyres(existing.tyres || "");
-        setStatus(existing.status || "");
+        const existingStatus = existing.status || "";
+        setStatus(existingStatus);
+        setOriginalStatus(existingStatus); // Speichere ursprünglichen Status
         setDrivers(existing.drivers || existing.resultsOrder || []);
       } catch (err) {
         console.error("Fehler beim Laden des Rennens:", err);
@@ -120,13 +123,29 @@ function AdminRaceFormPage() {
     setError(null);
 
     try {
+      // Status bestimmen: wenn Status ausgewählt wurde (nicht leer), diesen verwenden
+      // Sonst beim Edit den ursprünglichen Status beibehalten, beim Create "open"
+      let finalStatus;
+      if (status && status.trim() !== "") {
+        // Status wurde explizit ausgewählt
+        finalStatus = status.trim();
+      } else if (isEdit && originalStatus) {
+        // Beim Edit: Wenn kein neuer Status ausgewählt, ursprünglichen beibehalten
+        finalStatus = originalStatus;
+      } else {
+        // Beim Create: Default auf "open"
+        finalStatus = "open";
+      }
+
       const raceData = {
         name: track || "Unnamed Race", // Backend erwartet 'name'
         track: track,
         date: date,
         weather: weather || "sunny",
-        status: status || "open",
-        // drivers wird nicht direkt gespeichert, sondern über resultsOrder
+        tyres: tyres || null,
+        status: finalStatus,
+        // Fahrer werden als resultsOrder gespeichert
+        resultsOrder: drivers || [],
       };
 
       if (isEdit) {
@@ -253,7 +272,7 @@ function AdminRaceFormPage() {
             <label className="race-field-card">
               <span className="race-field-label">Status</span>
               <span className="race-field-help">
-                Steuert, ob Tippen erlaubt ist oder das Rennen geschlossen ist.
+                Steuert, ob Voting erlaubt ist oder das Rennen geschlossen ist.
               </span>
               <select
                 value={status}
@@ -262,7 +281,7 @@ function AdminRaceFormPage() {
               >
                 <option value="">Bitte wählen...</option>
                 <option value="open">Offen</option>
-                <option value="voting">Tippen möglich</option>
+                <option value="voting">Voting</option>
                 <option value="closed">Geschlossen</option>
               </select>
             </label>

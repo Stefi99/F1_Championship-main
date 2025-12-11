@@ -1,7 +1,12 @@
 //Seite zur Eingabe der offiziellen Rennergebnisse.
 import { useEffect, useState } from "react";
-import { getStoredDrivers, getDriverTeam, TEAM_CLASS_MAP } from "../../data/drivers";
+import {
+  getStoredDrivers,
+  getDriverTeam,
+  TEAM_CLASS_MAP,
+} from "../../data/drivers";
 import { getAllRaces, updateRaceResults } from "../../services/raceService.js";
+import { createResultsForRace } from "../../services/resultService.js";
 import { ApiError } from "../../utils/api.js";
 
 //Farbpalette für Teams zur visuellen Hervorhebung
@@ -125,8 +130,11 @@ function AdminOfficialResultsPage() {
     setMessage("");
 
     try {
-      // Ergebnisse über API speichern
+      // Ergebnisse über API speichern (resultsOrder im Race)
       const updatedRace = await updateRaceResults(selectedId, resultsOrder);
+
+      // Offizielle Ergebnisse (OfficialResult) erstellen
+      await createResultsForRace(selectedId, resultsOrder, driversByName);
 
       // Lokalen State aktualisieren
       const next = races.map((race) =>
@@ -134,16 +142,14 @@ function AdminOfficialResultsPage() {
           ? {
               ...race,
               resultsOrder: updatedRace.resultsOrder || resultsOrder,
-              status: updatedRace.status || "CLOSED",
+              status: updatedRace.status || "closed",
             }
           : race
       );
       setRaces(next);
 
       setMessage(
-        "Ergebnisse erfolgreich gespeichert (Status: " +
-          (updatedRace.status || "CLOSED") +
-          ")"
+        "Ergebnisse erfolgreich gespeichert. Rennen wurde automatisch geschlossen."
       );
     } catch (err) {
       console.error("Fehler beim Speichern der Ergebnisse:", err);

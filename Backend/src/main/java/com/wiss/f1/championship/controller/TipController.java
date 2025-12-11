@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,8 +60,9 @@ public class TipController {
 
         Race race = raceOpt.get();
         List<String> order = tipService.getTipOrderForUserAndRace(currentUser, race);
+        LocalDateTime updatedAt = tipService.getTipUpdatedAtForUserAndRace(currentUser, race);
 
-        TipResponseDTO response = new TipResponseDTO(raceId, order);
+        TipResponseDTO response = new TipResponseDTO(raceId, order, updatedAt);
         return ResponseEntity.ok(response);
     }
 
@@ -103,7 +105,8 @@ public class TipController {
             
             // Aktualisierten Tipp zurückgeben
             List<String> order = tipService.getTipOrderForUserAndRace(currentUser, race);
-            TipResponseDTO response = new TipResponseDTO(request.getRaceId(), order);
+            LocalDateTime updatedAt = tipService.getTipUpdatedAtForUserAndRace(currentUser, race);
+            TipResponseDTO response = new TipResponseDTO(request.getRaceId(), order, updatedAt);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();

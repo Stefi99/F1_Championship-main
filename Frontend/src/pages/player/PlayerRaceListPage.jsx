@@ -9,7 +9,7 @@ import { getAllRaces } from "../../services/raceService.js";
 // Übersetzungs-Tabellen für UI-Anzeige von Renn- und Wetterstatus
 const statusLabel = {
   open: "Geplant",
-  voting: "Tippen offen",
+  voting: "Voting",
   closed: "Geschlossen",
 };
 
@@ -234,7 +234,7 @@ function PlayerRaceListPage() {
           <div className="player-badge-row">
             <span className="player-badge">Gesamt: {sortedRaces.length}</span>
             <span className="player-badge accent">
-              Tippen offen: {votingRaces.length}
+              Voting: {votingRaces.length}
             </span>
             <span className="player-badge muted">
               Gespeicherte Tipps: {savedTipsCount}
@@ -244,7 +244,7 @@ function PlayerRaceListPage() {
         <div className="player-races-stats">
           <div className="player-races-stat">
             <strong>{votingRaces.length}</strong>
-            <span>Tippfenster offen</span>
+            <span>Voting offen</span>
           </div>
           <div className="player-races-stat">
             <strong>{races.length - closedRaces.length}</strong>
