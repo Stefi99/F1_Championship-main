@@ -4,44 +4,63 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
 import { TEAM_OPTIONS } from "../../data/drivers";
 import { loadPlayerProfile, persistPlayerProfile } from "../../utils/profile";
+import { ApiError } from "../../utils/api.js";
 
 function PlayerProfilePage() {
   const { user, login } = useContext(AuthContext);
   const navigate = useNavigate();
-  // Lädt bestehendes Profil aus LocalStorage.
-  const [profile, setProfile] = useState(() => loadPlayerProfile());
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   // Initialisiert das Formular mit den aktuellen Profildaten.
-  const [form, setForm] = useState(() => ({
-    displayName: profile.displayName || "",
-    email: profile.email || "",
-    username: profile.username || "",
-    favoriteTeam: profile.favoriteTeam || "",
-    country: profile.country || "",
-    bio: profile.bio || "",
-    points: profile.points ?? 0,
+  const [form, setForm] = useState({
+    displayName: "",
+    email: "",
+    username: "",
+    favoriteTeam: "",
+    country: "",
+    bio: "",
+    points: 0,
     password: "",
     confirmPassword: "",
-  }));
+  });
 
-  // Aktualisiert das Profil, wenn sich der angemeldete Benutzer ändert.
+  // Lädt Profil vom Backend beim Komponenten-Mount
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProfile(loadPlayerProfile());
-  }, [user]);
-
-  // Listener für Änderungen an playerProfile in anderen Tabs/Seiten.
-  useEffect(() => {
-    const handleStorage = (event) => {
-      if (event.key === "playerProfile" || event.key === null) {
-        setProfile(loadPlayerProfile());
+    const fetchProfile = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const profileData = await loadPlayerProfile();
+        setProfile(profileData);
+        setForm({
+          displayName: profileData.displayName || "",
+          email: profileData.email || "",
+          username: profileData.username || "",
+          favoriteTeam: profileData.favoriteTeam || "",
+          country: profileData.country || "",
+          bio: profileData.bio || "",
+          points: profileData.points ?? 0,
+          password: "",
+          confirmPassword: "",
+        });
+      } catch (error) {
+        console.error("Fehler beim Laden des Profils:", error);
+        setError("Profil konnte nicht geladen werden.");
+      } finally {
+        setLoading(false);
       }
     };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+
+    if (user) {
+      fetchProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   // Übernimmt neue Profildaten ins Formular,
   // ohne Passwortfelder zu verändern.
@@ -72,17 +91,38 @@ function PlayerProfilePage() {
 
   // Memoisierte Textversionen für Anzeige im Header
   const lastUpdateText = useMemo(
-    () => formatDateTime(profile.lastUpdated),
-    [profile.lastUpdated]
+    () => formatDateTime(profile?.lastUpdated),
+    [profile?.lastUpdated]
   );
 
   const passwordInfo = useMemo(
     () =>
-      profile.lastPasswordChange
+      profile?.lastPasswordChange
         ? `Zuletzt geändert am ${formatDateTime(profile.lastPasswordChange)}`
-        : "Noch kein Passwort gesetzt",
-    [profile.lastPasswordChange]
+        : "Passwort kann nicht hier geändert werden",
+    [profile?.lastPasswordChange]
   );
+
+  // Loading-State
+  if (loading) {
+    return (
+      <div className="player-profile-page">
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          <p>Profil wird geladen...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="player-profile-page">
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          <p>Kein Profil gefunden. Bitte melde dich an.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Generische Feld-Update-Funktion für das Formular
   const handleChange = (field) => (event) => {
@@ -91,47 +131,57 @@ function PlayerProfilePage() {
   };
 
   // Validiert und speichert das Profil
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
     setMessage("");
+    setSaving(true);
 
-    if (
-      !form.displayName.trim() ||
-      !form.email.trim() ||
-      !form.username.trim()
-    ) {
-      setError("Anzeigename, E-Mail und Benutzername sind Pflichtfelder.");
+    // Validierung
+    if (!form.displayName.trim()) {
+      setError("Anzeigename ist ein Pflichtfeld.");
+      setSaving(false);
       return;
     }
 
+    // HINWEIS: Email, Username und Passwort können nicht über /api/users/me geändert werden
+    // Diese Felder werden nur angezeigt, aber nicht gespeichert
     if (form.password && form.password !== form.confirmPassword) {
       setError("Passwörter stimmen nicht überein.");
+      setSaving(false);
       return;
     }
 
-    const updates = {
-      ...profile,
-      displayName: form.displayName.trim() || profile.displayName,
-      email: form.email.trim() || profile.email,
-      username: form.username.trim() || profile.username,
-      favoriteTeam: form.favoriteTeam.trim(),
-      country: form.country.trim(),
-      bio: form.bio.trim(),
-      points: Number.isNaN(Number(form.points))
-        ? profile.points || 0
-        : Number(form.points),
-    };
+    try {
+      // Nur die Felder, die das Backend akzeptiert
+      const updates = {
+        displayName: form.displayName.trim(),
+        favoriteTeam: form.favoriteTeam.trim() || "Keines",
+        country: form.country.trim(),
+        bio: form.bio.trim(),
+        // Punkte werden vom Backend berechnet, nicht manuell gesetzt
+        points: profile?.points || 0,
+      };
 
-    if (form.password) {
-      updates.password = form.password;
-      updates.lastPasswordChange = new Date().toISOString();
+      // API-Call zum Backend
+      const saved = await persistPlayerProfile(updates);
+
+      // Profil im AuthProvider aktualisieren (lädt User-Daten neu)
+      // Der AuthProvider wird automatisch die User-Daten neu laden
+      setProfile(saved);
+      setMessage("Profil erfolgreich gespeichert.");
+
+      // Optional: AuthProvider neu laden (falls nötig)
+      // Der AuthProvider sollte automatisch die neuen Daten haben
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setError(error.message || "Fehler beim Speichern des Profils.");
+      } else {
+        setError("Ein unerwarteter Fehler ist aufgetreten.");
+      }
+    } finally {
+      setSaving(false);
     }
-
-    const saved = persistPlayerProfile(updates);
-    login(saved);
-    setProfile(saved);
-    setMessage("Profil gespeichert.");
   };
 
   // Darstellung des Profilbearbeitungsformulars
@@ -185,10 +235,13 @@ function PlayerProfilePage() {
               <input
                 type="email"
                 value={form.email}
-                onChange={handleChange("email")}
+                disabled
                 placeholder="player@example.com"
-                required
+                style={{ opacity: 0.6, cursor: "not-allowed" }}
               />
+              <small style={{ fontSize: "0.875rem", color: "#888" }}>
+                E-Mail kann nicht geändert werden
+              </small>
             </label>
 
             <label className="player-field-card">
@@ -196,10 +249,13 @@ function PlayerProfilePage() {
               <input
                 type="text"
                 value={form.username}
-                onChange={handleChange("username")}
+                disabled
                 placeholder="player"
-                required
+                style={{ opacity: 0.6, cursor: "not-allowed" }}
               />
+              <small style={{ fontSize: "0.875rem", color: "#888" }}>
+                Benutzername kann nicht geändert werden
+              </small>
             </label>
 
             <label className="player-field-card">
@@ -208,9 +264,13 @@ function PlayerProfilePage() {
                 type="number"
                 min="0"
                 value={form.points}
-                onChange={handleChange("points")}
+                disabled
                 placeholder="0"
+                style={{ opacity: 0.6, cursor: "not-allowed" }}
               />
+              <small style={{ fontSize: "0.875rem", color: "#888" }}>
+                Punkte werden automatisch berechnet
+              </small>
             </label>
 
             <label className="player-field-card">
@@ -257,8 +317,8 @@ function PlayerProfilePage() {
               <p className="player-eyebrow">Login</p>
               <h2>Passwort anpassen</h2>
               <p className="player-sub">
-                Neues Passwort setzen, um deine Tipps zu schützen. Wird lokal
-                gespeichert.
+                Passwort-Änderung ist aktuell nicht über dieses Formular
+                möglich.
               </p>
             </div>
           </div>
@@ -295,7 +355,9 @@ function PlayerProfilePage() {
         )}
 
         <div className="player-profile-actions">
-          <button type="submit">Speichern</button>
+          <button type="submit" disabled={saving}>
+            {saving ? "Wird gespeichert..." : "Speichern"}
+          </button>
           <button
             type="button"
             className="player-ghost-btn"

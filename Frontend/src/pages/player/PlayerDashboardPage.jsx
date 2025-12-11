@@ -4,7 +4,6 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
 import { getTrackVisual } from "../../data/tracks";
-import { loadPlayerProfile } from "../../utils/profile";
 
 // Mapping-Tabellen für die UI-Anzeige der Renn- und Wetterstatus-Werte.
 const statusLabel = {
@@ -21,15 +20,23 @@ const weatherLabel = {
 
 function PlayerDashboardPage() {
   // Zugriff auf aktuellen Benutzer aus dem globalen Auth-Kontext.
+  // User-Daten kommen bereits vom Backend über AuthProvider
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(() => loadPlayerProfile());
   const [races, setRaces] = useState([]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProfile(loadPlayerProfile());
-  }, [user]);
+  // Profil-Daten aus User-Context verwenden (kommt bereits vom Backend)
+  const profile = user || {
+    username: "",
+    displayName: "",
+    email: "",
+    favoriteTeam: "Keines",
+    country: "",
+    bio: "",
+    points: 0,
+    lastUpdated: null,
+    lastPasswordChange: null,
+  };
 
   useEffect(() => {
     const readRaces = () => {
@@ -45,13 +52,9 @@ function PlayerDashboardPage() {
     setRaces(readRaces());
 
     const handleStorage = (event) => {
-      if (
-        event.key === "races" ||
-        event.key === "playerProfile" ||
-        event.key === null
-      ) {
+      if (event.key === "races" || event.key === null) {
         setRaces(readRaces());
-        setProfile(loadPlayerProfile());
+        // Profil wird nicht mehr aus LocalStorage geladen, kommt vom AuthProvider
       }
     };
 
