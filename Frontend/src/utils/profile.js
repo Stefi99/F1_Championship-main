@@ -1,76 +1,67 @@
-// Verwaltet das Spielerprofil im LocalStorage
-import { upsertUserProfile } from "./authStorage";
+// Verwaltet das Spielerprofil über Backend-API
+import api, { ApiError } from "./api.js";
+import { normalizeUserFromBackend } from "./userMapper.js";
 
-// Standardprofil für Spieler (Fallback, falls nichts gespeichert ist)
-const DEFAULT_PLAYER_PROFILE = {
-  username: "player",
-  displayName: "Racing Fan",
-  email: "player@example.com",
-  favoriteTeam: "Ferrari",
-  country: "Schweiz",
-  bio: "Bereit für die nächste Session.",
-  points: 0,
-  lastUpdated: null,
-  lastPasswordChange: null,
-  role: "PLAYER",
-};
-
-// Sicheres JSON-Parsing für Spielerprofile.
-function safeParseProfile(raw) {
+/**
+ * Lädt das Spielerprofil vom Backend
+ * @returns {Promise<Object>} UserProfileDTO mit allen Profildaten (normalisiert für Frontend)
+ */
+export async function loadPlayerProfile() {
   try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") {
-      return parsed;
+    const userProfile = await api.get("/users/me");
+    return normalizeUserFromBackend(userProfile);
+  } catch (error) {
+    console.error("Fehler beim Laden des Profils:", error);
+
+    // Fallback bei Fehler
+    return {
+      username: "",
+      displayName: "",
+      email: "",
+      role: "PLAYER",
+      favoriteTeam: "Keines",
+      country: "",
+      bio: "",
+      points: 0,
+      lastUpdated: null,
+      lastPasswordChange: null,
+    };
+  }
+}
+
+/**
+ * Speichert das Spielerprofil im Backend
+ * @param {Object} profile - Profil-Daten (nur displayName, favoriteTeam, country, bio werden gespeichert)
+ * @returns {Promise<Object>} Aktualisiertes UserProfileDTO (normalisiert für Frontend)
+ */
+export async function persistPlayerProfile(profile) {
+  try {
+    // UpdateProfileDTO: nur displayName, favoriteTeam, country, bio
+    const updateData = {
+      displayName: profile.displayName?.trim() || "",
+      favoriteTeam: profile.favoriteTeam?.trim() || "Keines",
+      country: profile.country?.trim() || "",
+      bio: profile.bio?.trim() || "",
+    };
+
+    // API-Call zum Backend
+    const updatedProfile = await api.put("/users/me", updateData);
+
+    // UserProfileDTO in Frontend-Format konvertieren
+    const normalized = normalizeUserFromBackend(updatedProfile);
+
+    // Behalte lokale Felder, die nicht vom Backend kommen
+    return {
+      ...normalized,
+      lastPasswordChange: profile.lastPasswordChange || null,
+    };
+  } catch (error) {
+    console.error("Fehler beim Speichern des Profils:", error);
+
+    if (error instanceof ApiError) {
+      throw error; // ApiError weiterwerfen für Error-Handling in Komponenten
     }
-    return {};
-  } catch (err) {
-    console.error("playerProfile parse error", err);
-    return {};
+
+    throw new Error("Profil konnte nicht gespeichert werden");
   }
-}
-
-// Lädt Spielerprofil aus localStorage
-export function loadPlayerProfile() {
-  const stored = safeParseProfile(localStorage.getItem("playerProfile"));
-  const fallbackLastUpdated =
-    stored.lastUpdated ||
-    DEFAULT_PLAYER_PROFILE.lastUpdated ||
-    new Date().toISOString();
-  const parsedPoints = Number.isNaN(Number(stored.points))
-    ? DEFAULT_PLAYER_PROFILE.points
-    : Number(stored.points);
-  return {
-    ...DEFAULT_PLAYER_PROFILE,
-    ...stored,
-    username: stored.username || DEFAULT_PLAYER_PROFILE.username,
-    role: stored.role || DEFAULT_PLAYER_PROFILE.role || "PLAYER",
-    lastUpdated: fallbackLastUpdated,
-    points: parsedPoints,
-  };
-}
-
-// Speichert Profil
-export function persistPlayerProfile(profile) {
-  const parsedPoints = Number.isNaN(Number(profile.points))
-    ? DEFAULT_PLAYER_PROFILE.points
-    : Number(profile.points);
-  const next = {
-    ...DEFAULT_PLAYER_PROFILE,
-    ...profile,
-    username: profile.username || DEFAULT_PLAYER_PROFILE.username,
-    role: profile.role || DEFAULT_PLAYER_PROFILE.role || "PLAYER",
-    lastUpdated: new Date().toISOString(),
-    points: parsedPoints,
-  };
-
-  try {
-    const synced = upsertUserProfile(next);
-    localStorage.setItem("playerProfile", JSON.stringify(synced));
-    localStorage.setItem("user", JSON.stringify(synced));
-    return synced;
-  } catch (err) {
-    console.error("playerProfile save error", err);
-  }
-
-  return next;
 }

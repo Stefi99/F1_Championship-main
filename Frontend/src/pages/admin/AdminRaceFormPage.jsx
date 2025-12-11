@@ -3,10 +3,18 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getStoredDrivers,
-  getDriverTeam,
+  getDriverTeamSync,
   TEAM_CLASS_MAP,
 } from "../../data/drivers";
 import { TRACK_OPTIONS } from "../../data/tracks";
+import {
+  getRaceById,
+  createRace,
+  updateRace,
+} from "../../services/raceService.js";
+import { ApiError } from "../../utils/api.js";
+import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
+import ErrorMessage from "../../components/common/ErrorMessage.jsx";
 
 //Limit und Team-Farbzuordnung
 const DRIVER_LIMIT = 20;
@@ -26,21 +34,27 @@ function AdminRaceFormPage() {
   const [drivers, setDrivers] = useState([]);
   const [driverOptions, setDriverOptions] = useState([]);
   const [driverError, setDriverError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   const missingTrackOption =
     track &&
     !TRACK_OPTIONS.some((option) => String(option.value) === String(track))
       ? track
       : null;
 
-  // Hilfsfunktionen zum Zugriff auf gespeicherte Rennen
-  const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
-  const saveRaces = (list) =>
-    localStorage.setItem("races", JSON.stringify(list));
-
   // Fahrer laden (inkl. Teams aus Verwaltung)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDriverOptions(getStoredDrivers());
+    const loadDrivers = async () => {
+      try {
+        const drivers = await getStoredDrivers();
+        setDriverOptions(drivers);
+      } catch (error) {
+        console.error("Fehler beim Laden der Fahrer:", error);
+        setDriverOptions([]);
+      }
+    };
+    loadDrivers();
   }, []);
 
   // Bei neuem Rennen alle Fahrer vorselektieren
@@ -51,25 +65,36 @@ function AdminRaceFormPage() {
     }
   }, [driverOptions, isEdit, drivers.length]);
 
-  // Bei Edit: vorhandene Daten laden
+  // Bei Edit: vorhandene Daten vom Backend laden
   useEffect(() => {
     if (!isEdit) return;
 
-    const stored = loadRaces();
-    const existing = stored.find((race) => String(race.id) === String(raceId));
+    const loadRaceData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const existing = await getRaceById(raceId);
+        if (!existing) {
+          navigate("/admin/races");
+          return;
+        }
 
-    if (!existing) {
-      navigate("/admin/races");
-      return;
-    }
+        setTrack(existing.track || existing.name || "");
+        setWeather(existing.weather || "");
+        setDate(existing.date || "");
+        setTyres(existing.tyres || "");
+        setStatus(existing.status || "");
+        setDrivers(existing.drivers || existing.resultsOrder || []);
+      } catch (err) {
+        console.error("Fehler beim Laden des Rennens:", err);
+        setError(err);
+        navigate("/admin/races");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTrack(existing.track || "");
-    setWeather(existing.weather || "");
-    setDate(existing.date || "");
-    setTyres(existing.tyres || "");
-    setStatus(existing.status || "");
-    setDrivers(existing.drivers || []);
+    loadRaceData();
   }, [isEdit, raceId, navigate]);
 
   // Fügt einen Fahrer hinzu oder entfernt ihn aus der Fahrer-Liste
@@ -88,34 +113,39 @@ function AdminRaceFormPage() {
     });
   };
 
-  // Speichert das Rennen (Bearbeitung und Neue Rennen)
-  const handleSubmit = (e) => {
+  // Speichert das Rennen (Bearbeitung und Neue Rennen) über API
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    setError(null);
 
-    const stored = loadRaces();
-
-    if (isEdit) {
-      const updated = stored.map((race) =>
-        String(race.id) === String(raceId)
-          ? { ...race, track, weather, date, tyres, status, drivers }
-          : race
-      );
-      saveRaces(updated);
-    } else {
-      const newRace = {
-        id: Date.now(),
-        track,
-        weather,
-        date,
-        tyres,
-        status,
-        drivers,
+    try {
+      const raceData = {
+        name: track || "Unnamed Race", // Backend erwartet 'name'
+        track: track,
+        date: date,
+        weather: weather || "sunny",
+        status: status || "open",
+        // drivers wird nicht direkt gespeichert, sondern über resultsOrder
       };
-      stored.push(newRace);
-      saveRaces(stored);
-    }
 
-    navigate("/admin/races");
+      if (isEdit) {
+        await updateRace(raceId, raceData);
+      } else {
+        await createRace(raceData);
+      }
+
+      navigate("/admin/races");
+    } catch (err) {
+      console.error("Fehler beim Speichern des Rennens:", err);
+      if (err instanceof ApiError) {
+        setError(err);
+      } else {
+        setError(new Error("Netzwerkfehler oder Server nicht erreichbar."));
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Darstellung des vollständigen Renn-Formulars
@@ -269,7 +299,7 @@ function AdminRaceFormPage() {
             {driverOptions.map((driver) => {
               const isSelected = drivers.includes(driver.name);
               const teamClass = TEAM_COLOR_CLASS(
-                getDriverTeam(driver.name) || driver.team
+                getDriverTeamSync(driver.name) || driver.team
               );
 
               return (
@@ -304,8 +334,8 @@ function AdminRaceFormPage() {
         </section>
 
         <div className="race-form-actions">
-          <button type="submit">
-            {isEdit ? "Aktualisieren" : "Speichern"}
+          <button type="submit" disabled={saving}>
+            {saving ? "Speichern..." : isEdit ? "Aktualisieren" : "Speichern"}
           </button>
           <button
             type="button"

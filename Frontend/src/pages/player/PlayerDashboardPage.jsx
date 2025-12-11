@@ -4,7 +4,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
 import { getTrackVisual } from "../../data/tracks";
-import { loadPlayerProfile } from "../../utils/profile";
+import { getAllRaces } from "../../services/raceService.js";
 
 // Mapping-Tabellen für die UI-Anzeige der Renn- und Wetterstatus-Werte.
 const statusLabel = {
@@ -21,42 +21,40 @@ const weatherLabel = {
 
 function PlayerDashboardPage() {
   // Zugriff auf aktuellen Benutzer aus dem globalen Auth-Kontext.
+  // User-Daten kommen bereits vom Backend über AuthProvider
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(() => loadPlayerProfile());
   const [races, setRaces] = useState([]);
+  const [racesLoading, setRacesLoading] = useState(true);
+
+  // Profil-Daten aus User-Context verwenden (kommt bereits vom Backend)
+  const profile = user || {
+    username: "",
+    displayName: "",
+    email: "",
+    favoriteTeam: "Keines",
+    country: "",
+    bio: "",
+    points: 0,
+    lastUpdated: null,
+    lastPasswordChange: null,
+  };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProfile(loadPlayerProfile());
-  }, [user]);
-
-  useEffect(() => {
-    const readRaces = () => {
+    const fetchRaces = async () => {
+      setRacesLoading(true);
       try {
-        return JSON.parse(localStorage.getItem("races") || "[]");
-      } catch (err) {
-        console.error("races parse error", err);
-        return [];
+        const racesData = await getAllRaces();
+        setRaces(racesData);
+      } catch (error) {
+        console.error("Fehler beim Laden der Rennen:", error);
+        setRaces([]);
+      } finally {
+        setRacesLoading(false);
       }
     };
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRaces(readRaces());
-
-    const handleStorage = (event) => {
-      if (
-        event.key === "races" ||
-        event.key === "playerProfile" ||
-        event.key === null
-      ) {
-        setRaces(readRaces());
-        setProfile(loadPlayerProfile());
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    fetchRaces();
   }, []);
 
   // Berechnet Statistiken über alle Rennen

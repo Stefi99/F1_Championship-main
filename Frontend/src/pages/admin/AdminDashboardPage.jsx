@@ -2,13 +2,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStoredDrivers } from "../../data/drivers";
+import { getAllRaces } from "../../services/raceService.js";
 import driversImg from "../../assets/drivers.svg";
 import raceImg from "../../assets/race.svg";
 import resultsImg from "../../assets/results.svg";
+import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
 
 function AdminDashboardPage() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ races: 0, drivers: 0, tasks: 0 });
+  const [loading, setLoading] = useState(true);
 
   //Definiert alle Verwaltungsaktionen
   // wird als Klickbare Karte angezeigt
@@ -39,39 +42,48 @@ function AdminDashboardPage() {
     },
   ];
 
-  // Lädt aktuelle Statistikdaten aus dem LocalStorage (Anzahl Rennen, Fahrer und offene Tasks/Rennen)
-  const refreshStats = useCallback(() => {
-    const races = JSON.parse(localStorage.getItem("races") || "[]");
-    const drivers = getStoredDrivers();
-    const openTasks = races.filter((race) => {
-      const closed = race.status === "closed";
-      const hasResults =
-        Array.isArray(race.resultsOrder) && race.resultsOrder.length > 0;
-      return !closed || !hasResults;
-    }).length;
-    setStats({
-      races: races.length,
-      drivers: drivers.length,
-      tasks: openTasks,
-    });
+  // Lädt aktuelle Statistikdaten vom Backend
+  const refreshStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [racesData, driversData] = await Promise.all([
+        getAllRaces(),
+        getStoredDrivers(),
+      ]);
+
+      const openTasks = racesData.filter((race) => {
+        const closed = race.status === "closed" || race.status === "CLOSED";
+        const hasResults =
+          Array.isArray(race.resultsOrder) && race.resultsOrder.length > 0;
+        return !closed || !hasResults;
+      }).length;
+
+      setStats({
+        races: racesData.length,
+        drivers: driversData.length,
+        tasks: openTasks,
+      });
+    } catch (error) {
+      console.error("Fehler beim Laden der Statistiken:", error);
+      setStats({ races: 0, drivers: 0, tasks: 0 });
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Ladet und übernimmt sofort änderungen die aus anderen Browsertabs gemacht wurden.
+  // Lädt Statistiken beim ersten Rendern
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshStats();
-    const handleStorage = (event) => {
-      if (
-        event.key === "races" ||
-        event.key === "driversData" ||
-        event.key === null
-      ) {
-        refreshStats();
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
   }, [refreshStats]);
+
+  // Loading-State
+  if (loading) {
+    return (
+      <div className="admin-dashboard-page">
+        <LoadingSpinner message="Statistiken werden geladen..." />
+      </div>
+    );
+  }
 
   // Layout der Admin-Dashboard-Seite
   return (

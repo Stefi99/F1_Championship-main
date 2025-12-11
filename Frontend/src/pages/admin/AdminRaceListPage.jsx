@@ -1,29 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getDriverTeam, TEAM_CLASS_MAP } from "../../data/drivers";
+import { getDriverTeamSync, TEAM_CLASS_MAP } from "../../data/drivers";
 import { getTrackVisual } from "../../data/tracks";
+import { getAllRaces, deleteRace } from "../../services/raceService.js";
+import { ApiError } from "../../utils/api.js";
+import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
+import ErrorMessage from "../../components/common/ErrorMessage.jsx";
 
 // Seite für die Verwaltung aller Rennen (Admin-Bereich)
 function AdminRaceListPage() {
   const navigate = useNavigate();
   const [races, setRaces] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
-
-  // LocalStorage-Hilfsfunktionen zum Laden und Speichern der Rennen
-  const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
-  const persist = (list) => {
-    setRaces(list);
-    localStorage.setItem("races", JSON.stringify(list));
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Team-Informationen für Fahrerchips in der Detailansicht
   const teamClass = (driverName) => {
-    const team = getDriverTeam(driverName);
+    const team = getDriverTeamSync(driverName);
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
   const teamLabel = (driverName) =>
-    getDriverTeam(driverName) || "Team unbekannt";
+    getDriverTeamSync(driverName) || "Team unbekannt";
 
   // Mapping-Tabellen für die Übersetzung technischer Werte
   const statusLabel = {
@@ -44,10 +43,24 @@ function AdminRaceListPage() {
     hard: "Hard",
   };
 
-  // Lädt alle gespeicherten Rennen beim ersten Rendern.
+  // Lädt alle Rennen vom Backend
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRaces(loadRaces());
+    const fetchRaces = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const racesData = await getAllRaces();
+        setRaces(racesData);
+      } catch (err) {
+        console.error("Fehler beim Laden der Rennen:", err);
+        setError(err);
+        setRaces([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRaces();
   }, []);
 
   // Berechnet Statistiken (Anzahl offen, voting, geschlossen)
@@ -60,11 +73,22 @@ function AdminRaceListPage() {
   }, [races]);
 
   // Löscht ein Rennen nach Bestätigung durch den Benutzer.
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Rennen wirklich löschen?");
     if (!confirmDelete) return;
-    const next = races.filter((race) => String(race.id) !== String(id));
-    persist(next);
+
+    try {
+      await deleteRace(id);
+      // Rennen aus lokaler Liste entfernen
+      setRaces((prev) => prev.filter((race) => String(race.id) !== String(id)));
+    } catch (err) {
+      console.error("Fehler beim Löschen des Rennens:", err);
+      if (err instanceof ApiError) {
+        alert(err.message || "Fehler beim Löschen des Rennens.");
+      } else {
+        alert("Netzwerkfehler oder Server nicht erreichbar.");
+      }
+    }
   };
 
   // Öffnet oder schließt die Detailansicht einer Rennkarte
@@ -86,9 +110,23 @@ function AdminRaceListPage() {
     };
   };
 
+  // Loading-State
+  if (loading) {
+    return (
+      <div className="races-admin-page">
+        <LoadingSpinner message="Rennen werden geladen..." />
+      </div>
+    );
+  }
+
   // Darstellung der kompletten Rennen-Übersicht
   return (
     <div className="races-admin-page">
+      {error && (
+        <div style={{ padding: "1rem", maxWidth: "800px", margin: "0 auto" }}>
+          <ErrorMessage error={error} />
+        </div>
+      )}
       <header className="races-hero">
         <div className="races-hero-copy">
           <p className="admin-eyebrow">Rennen</p>

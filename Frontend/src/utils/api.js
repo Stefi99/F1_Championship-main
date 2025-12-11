@@ -38,11 +38,30 @@ async function checkResponse(response) {
       errorData = { message: response.statusText };
     }
 
-    // Bei 401 (Unauthorized) Token entfernen
+    // Spezielle Behandlung für verschiedene HTTP-Status-Codes
     if (response.status === 401) {
+      // 401 Unauthorized: Token entfernen und User ausloggen
       removeToken();
-      // Event für AuthProvider, damit User ausgeloggt wird
       window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      // TODO: Token-Refresh-Logik hier implementieren, falls Backend Refresh-Token unterstützt
+    } else if (response.status === 403) {
+      // 403 Forbidden: User hat keine Berechtigung
+      // Event für mögliche Weiterleitung (z.B. zu Admin-Bereich)
+      window.dispatchEvent(
+        new CustomEvent("auth:forbidden", { detail: { endpoint, errorData } })
+      );
+    } else if (response.status === 404) {
+      // 404 Not Found: Ressource existiert nicht
+      window.dispatchEvent(
+        new CustomEvent("api:not-found", { detail: { endpoint, errorData } })
+      );
+    } else if (response.status >= 500) {
+      // 5xx Server Errors: Server-Fehler
+      window.dispatchEvent(
+        new CustomEvent("api:server-error", {
+          detail: { status: response.status, endpoint, errorData },
+        })
+      );
     }
 
     throw new ApiError(

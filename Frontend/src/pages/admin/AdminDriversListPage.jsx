@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   getStoredDrivers,
   saveDrivers,
+  clearDriversCache,
   TEAM_OPTIONS,
   defaultDrivers,
 } from "../../data/drivers";
@@ -9,17 +10,28 @@ import {
 // Seite für die Verwaltung der Fahrer (Admin-Bereich)
 function AdminDriversListPage() {
   const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  // Hilfsfunktionen zum Laden und Speichern der Rennen
-  const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
-  const saveRaces = (list) =>
-    localStorage.setItem("races", JSON.stringify(list));
-
-  // Lädt die gespeicherten Fahrer beim ersten Rendern.
+  // Lädt die Fahrer vom Backend beim ersten Rendern.
   useEffect(() => {
-    const stored = getStoredDrivers();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDrivers(stored);
+    const fetchDrivers = async () => {
+      setLoading(true);
+      try {
+        const driversData = await getStoredDrivers();
+        setDrivers(driversData);
+      } catch (error) {
+        console.error("Fehler beim Laden der Fahrer:", error);
+        setError("Fahrer konnten nicht geladen werden.");
+        setDrivers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrivers();
   }, []);
 
   //Ändert das Team eines Fahrers direkt, erst beim Speichern dauerhaft gespeichert
@@ -32,62 +44,66 @@ function AdminDriversListPage() {
     setDrivers((prev) => prev.map((d) => (d.id === id ? { ...d, name } : d)));
   };
 
-  //Synchronisiert Namensänderungen in allen Rennen
-  const applyRenamesToRaces = (updatedDrivers, previousDrivers) => {
-    const prevById = (previousDrivers || []).reduce((acc, d) => {
-      const key = d.id || d.name;
-      acc[key] = d.name;
-      return acc;
-    }, {});
+  // Speichert die Änderungen dauerhaft im Backend
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    setMessage("");
 
-    const nameMap = updatedDrivers.reduce((acc, d) => {
-      const key = d.id || d.name;
-      const prevName = prevById[key];
-      acc[key] = d.name;
-      acc[d.name] = d.name;
-      if (prevName) acc[prevName] = d.name; // map alter Name -> neuer Name
-      return acc;
-    }, {});
+    try {
+      // Speichere alle Fahrer im Backend
+      await saveDrivers(drivers);
 
-    const races = loadRaces();
-    const updatedRaces = races.map((race) => {
-      const driversNew = (race.drivers || []).map((n) => nameMap[n] || n);
-      const orderNew = (race.resultsOrder || []).map((n) => nameMap[n] || n);
-      const resultsText =
-        orderNew.length > 0
-          ? orderNew.join(", ")
-          : (race.results || "")
-              .split(", ")
-              .map((n) => nameMap[n] || n)
-              .join(", ")
-              .trim();
+      // Cache aktualisieren
+      clearDriversCache();
 
-      return {
-        ...race,
-        drivers: driversNew,
-        resultsOrder: orderNew,
-        results: resultsText || race.results,
-      };
-    });
+      // Fahrer neu laden, um Backend-IDs zu erhalten
+      const updatedDrivers = await getStoredDrivers();
+      setDrivers(updatedDrivers);
 
-    saveRaces(updatedRaces);
-  };
-
-  //Speichert die Änderungen dauerhaft
-  const handleSave = () => {
-    const previousDrivers = getStoredDrivers();
-    // Persist drivers (mit stabilen IDs)
-    saveDrivers(drivers);
-    applyRenamesToRaces(drivers, previousDrivers);
-    alert("Fahrer gespeichert");
+      setMessage("Fahrer erfolgreich gespeichert.");
+    } catch (error) {
+      console.error("Fehler beim Speichern der Fahrer:", error);
+      setError(
+        "Fahrer konnten nicht gespeichert werden. Bitte versuche es erneut."
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Setzt die Fahrerliste auf die Standard-Fahrer zurück
-  const handleReset = () => {
-    const previousDrivers = getStoredDrivers();
-    setDrivers(defaultDrivers);
-    saveDrivers(defaultDrivers);
-    applyRenamesToRaces(defaultDrivers, previousDrivers);
+  const handleReset = async () => {
+    if (
+      !confirm(
+        "Möchtest du wirklich alle Fahrer auf die Standard-Liste zurücksetzen?"
+      )
+    ) {
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      // Standard-Fahrer im Backend speichern
+      await saveDrivers(defaultDrivers);
+
+      // Cache aktualisieren
+      clearDriversCache();
+
+      // Fahrer neu laden
+      const updatedDrivers = await getStoredDrivers();
+      setDrivers(updatedDrivers);
+
+      setMessage("Fahrerliste auf Standard zurückgesetzt.");
+    } catch (error) {
+      console.error("Fehler beim Zurücksetzen der Fahrer:", error);
+      setError("Fahrer konnten nicht zurückgesetzt werden.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const teamCount = new Set(drivers.map((d) => d.team)).size;
@@ -104,17 +120,30 @@ function AdminDriversListPage() {
             Ergebnissen und Farbcodierungen.
           </p>
           <div className="driver-hero-actions">
-            <button type="button" onClick={handleSave}>
-              Speichern
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || loading}
+            >
+              {saving ? "Wird gespeichert..." : "Speichern"}
             </button>
             <button
               type="button"
               className="admin-ghost-btn"
               onClick={handleReset}
+              disabled={saving || loading}
             >
               Auf Standard zurücksetzen
             </button>
           </div>
+          {(message || error) && (
+            <div
+              className={`admin-alert ${error ? "is-error" : "is-success"}`}
+              style={{ marginTop: "1rem" }}
+            >
+              {error || message}
+            </div>
+          )}
         </div>
 
         <div className="drivers-hero-stats">
@@ -133,50 +162,61 @@ function AdminDriversListPage() {
         </div>
       </header>
 
-      <section className="drivers-panel">
-        <div className="drivers-panel-head">
-          <div>
-            <p className="admin-eyebrow">Roster bearbeiten</p>
-            <h2>Namen & Teams anpassen</h2>
-            <p className="driver-panel-copy">
-              Saubere Schreibweisen halten Ergebnisse und Teamfarben konsistent.
-              Änderungen überschreiben alle gespeicherten Rennen.
-            </p>
-          </div>
+      {loading ? (
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          <p>Fahrer werden geladen...</p>
         </div>
-
-        <div className="driver-grid">
-          {drivers.map((driver) => (
-            <div key={driver.id} className="driver-card">
-              <label className="driver-field">
-                <span className="driver-field-label">Fahrername</span>
-                <input
-                  type="text"
-                  value={driver.name}
-                  onChange={(e) => handleChangeName(driver.id, e.target.value)}
-                />
-              </label>
-
-              <label className="driver-field">
-                <span className="driver-field-label">Team</span>
-                <span className="driver-field-help">
-                  Bestimmt Farbkodierung und Zuordnung in allen Rennen.
-                </span>
-                <select
-                  value={driver.team}
-                  onChange={(e) => handleChangeTeam(driver.id, e.target.value)}
-                >
-                  {TEAM_OPTIONS.map((team) => (
-                    <option key={team} value={team}>
-                      {team}
-                    </option>
-                  ))}
-                </select>
-              </label>
+      ) : (
+        <section className="drivers-panel">
+          <div className="drivers-panel-head">
+            <div>
+              <p className="admin-eyebrow">Roster bearbeiten</p>
+              <h2>Namen & Teams anpassen</h2>
+              <p className="driver-panel-copy">
+                Saubere Schreibweisen halten Ergebnisse und Teamfarben
+                konsistent. Änderungen werden im Backend gespeichert und wirken
+                sofort in allen Rennen.
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+
+          <div className="driver-grid">
+            {drivers.map((driver) => (
+              <div key={driver.id} className="driver-card">
+                <label className="driver-field">
+                  <span className="driver-field-label">Fahrername</span>
+                  <input
+                    type="text"
+                    value={driver.name}
+                    onChange={(e) =>
+                      handleChangeName(driver.id, e.target.value)
+                    }
+                  />
+                </label>
+
+                <label className="driver-field">
+                  <span className="driver-field-label">Team</span>
+                  <span className="driver-field-help">
+                    Bestimmt Farbkodierung und Zuordnung in allen Rennen.
+                  </span>
+                  <select
+                    value={driver.team}
+                    onChange={(e) =>
+                      handleChangeTeam(driver.id, e.target.value)
+                    }
+                  >
+                    {TEAM_OPTIONS.map((team) => (
+                      <option key={team} value={team}>
+                        {team}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
