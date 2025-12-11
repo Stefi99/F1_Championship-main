@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(using = RaceStatusDeserializer.class)
 public enum RaceStatus {
-    OPEN("open"),          // Rennen erstellt, noch keine Tipps möglich
-    TIPPABLE("voting"),   // Tippen möglich (Frontend verwendet "voting")
-    CLOSED("closed");     // Tippen geschlossen, Ergebnise eintragen
+    OPEN("open"),          // Rennen erstellt, noch keine Voting möglich
+    TIPPABLE("voting"),   // Voting möglich (Frontend verwendet "voting")
+    CLOSED("closed");     // Voting geschlossen, Ergebnisse eintragen
 
     private final String jsonValue;
 
@@ -31,6 +31,7 @@ public enum RaceStatus {
         String normalized = value.trim().toUpperCase();
         for (RaceStatus status : RaceStatus.values()) {
             if (status.name().equals(normalized) || status.jsonValue.equalsIgnoreCase(value)) {
+                System.out.println("Set status to " + status + " (" + status.name().equals(normalized) + ", " + status.jsonValue.equalsIgnoreCase(value) + ")");
                 return status;
             }
         }

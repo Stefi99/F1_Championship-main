@@ -1,39 +1,56 @@
 package com.wiss.f1.championship.controller;
 
-import com.wiss.f1.championship.entity.*;
-import com.wiss.f1.championship.service.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.wiss.f1.championship.dto.TipRequestDTO;
+import com.wiss.f1.championship.dto.TipResponseDTO;
+import com.wiss.f1.championship.entity.AppUser;
+import com.wiss.f1.championship.entity.Race;
+import com.wiss.f1.championship.entity.RaceStatus;
+import com.wiss.f1.championship.entity.Role;
+import com.wiss.f1.championship.service.AppUserService;
+import com.wiss.f1.championship.service.RaceService;
+import com.wiss.f1.championship.service.TipService;
 
 class PlayerControllerTest {
 
     private TipService tipService;
     private AppUserService userService;
     private RaceService raceService;
-    private DriverService driverService;
     private TipController tipController;
 
     private AppUser testPlayer;
     private Race testRace;
-    private Driver testDriver;
-    private Tip testTip1;
-    private Tip testTip2;
+    private Authentication authentication;
+    private SecurityContext securityContext;
 
     private void setId(Object entity, Long id, Class<?> clazz) {
         try {
             java.lang.reflect.Field idField = clazz.getDeclaredField("id");
             idField.setAccessible(true);
             idField.set(entity, id);
-        } catch (Exception e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
@@ -43,8 +60,7 @@ class PlayerControllerTest {
         tipService = mock(TipService.class);
         userService = mock(AppUserService.class);
         raceService = mock(RaceService.class);
-        driverService = mock(DriverService.class);
-        tipController = new TipController(tipService, userService, raceService, driverService);
+        tipController = new TipController(tipService, userService, raceService);
 
         testPlayer = new AppUser("player1", "player1@test.com", "encodedPassword", Role.PLAYER);
         setId(testPlayer, 1L, AppUser.class);
@@ -53,123 +69,156 @@ class PlayerControllerTest {
                 "Bahrain International Circuit", "Sunny", RaceStatus.TIPPABLE);
         testRace.setId(1L);
 
-        testDriver = new Driver("Max Verstappen", "Red Bull Racing");
-        testDriver.setId(1L);
-
-        testTip1 = new Tip(testPlayer, testRace, testDriver, 1);
-        setId(testTip1, 1L, Tip.class);
-
-        Driver driver2 = new Driver("Lewis Hamilton", "Mercedes");
-        driver2.setId(2L);
-        testTip2 = new Tip(testPlayer, testRace, driver2, 2);
-        setId(testTip2, 2L, Tip.class);
+        // Mock SecurityContext für Authentication
+        authentication = mock(Authentication.class);
+        securityContext = mock(SecurityContext.class);
+        SecurityContextHolder.setContext(securityContext);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(testPlayer);
     }
 
     @Test
-    void testGetTipsForRace() {
-        List<Tip> tips = Arrays.asList(testTip1, testTip2);
+    void testGetTipForRace() {
+        List<String> tipOrder = Arrays.asList("Max Verstappen", "Lewis Hamilton", "Charles Leclerc");
         
         when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace));
-        when(tipService.getTipsByRace(testRace)).thenReturn(tips);
+        when(tipService.getTipOrderForUserAndRace(testPlayer, testRace)).thenReturn(tipOrder);
 
-        List<Tip> result = tipController.getTipsForRace(1L);
+        ResponseEntity<TipResponseDTO> response = tipController.getTipForRace(1L);
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0).getPredictedPosition());
-        assertEquals(2, result.get(1).getPredictedPosition());
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1L, response.getBody().getRaceId());
+        assertEquals(3, response.getBody().getOrder().size());
+        assertEquals("Max Verstappen", response.getBody().getOrder().get(0));
 
         verify(raceService, times(1)).getRaceById(1L);
-        verify(tipService, times(1)).getTipsByRace(testRace);
+        verify(tipService, times(1)).getTipOrderForUserAndRace(testPlayer, testRace);
     }
 
     @Test
-    void testGetTipsForNonExistentRace() {
+    void testGetTipForNonExistentRace() {
         when(raceService.getRaceById(999L)).thenReturn(Optional.empty());
-        when(tipService.getTipsByRace(null)).thenReturn(List.of());
 
-        List<Tip> result = tipController.getTipsForRace(999L);
+        ResponseEntity<TipResponseDTO> response = tipController.getTipForRace(999L);
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
         verify(raceService, times(1)).getRaceById(999L);
-        verify(tipService, times(1)).getTipsByRace(null);
+        verify(tipService, never()).getTipOrderForUserAndRace(any(), any());
     }
 
     @Test
-    void testGetEmptyTipsListForRace() {
+    void testGetTipForRaceUnauthenticated() {
+        when(securityContext.getAuthentication()).thenReturn(null);
+
+        ResponseEntity<TipResponseDTO> response = tipController.getTipForRace(1L);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+
+        verify(raceService, never()).getRaceById(any());
+        verify(tipService, never()).getTipOrderForUserAndRace(any(), any());
+    }
+
+    @Test
+    void testCreateOrUpdateTip() {
+        List<String> tipOrder = Arrays.asList("Max Verstappen", "Lewis Hamilton", "Charles Leclerc");
+        TipRequestDTO request = new TipRequestDTO(1L, tipOrder);
+        
         when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace));
-        when(tipService.getTipsByRace(testRace)).thenReturn(List.of());
+        when(tipService.saveOrUpdateTip(testPlayer, testRace, tipOrder)).thenReturn(Arrays.asList());
+        when(tipService.getTipOrderForUserAndRace(testPlayer, testRace)).thenReturn(tipOrder);
 
-        List<Tip> result = tipController.getTipsForRace(1L);
+        ResponseEntity<TipResponseDTO> response = tipController.createOrUpdateTip(request);
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1L, response.getBody().getRaceId());
+        assertEquals(3, response.getBody().getOrder().size());
 
         verify(raceService, times(1)).getRaceById(1L);
-        verify(tipService, times(1)).getTipsByRace(testRace);
+        verify(tipService, times(1)).saveOrUpdateTip(testPlayer, testRace, tipOrder);
+        verify(tipService, times(1)).getTipOrderForUserAndRace(testPlayer, testRace);
     }
 
     @Test
-    void testCreateTip() {
-        Tip newTip = new Tip(testPlayer, testRace, testDriver, 3);
-        setId(newTip, 3L, Tip.class);
+    void testCreateOrUpdateTipWithInvalidRequest() {
+        TipRequestDTO request = new TipRequestDTO(null, Arrays.asList("Max Verstappen"));
 
+        ResponseEntity<TipResponseDTO> response = tipController.createOrUpdateTip(request);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        verify(raceService, never()).getRaceById(any());
+        verify(tipService, never()).saveOrUpdateTip(any(), any(), any());
+    }
+
+    @Test
+    void testCreateOrUpdateTipWithEmptyOrder() {
+        TipRequestDTO request = new TipRequestDTO(1L, Arrays.asList());
+
+        ResponseEntity<TipResponseDTO> response = tipController.createOrUpdateTip(request);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        verify(raceService, never()).getRaceById(any());
+        verify(tipService, never()).saveOrUpdateTip(any(), any(), any());
+    }
+
+    @Test
+    void testCreateOrUpdateTipWithNonExistentRace() {
+        List<String> tipOrder = Arrays.asList("Max Verstappen", "Lewis Hamilton");
+        TipRequestDTO request = new TipRequestDTO(999L, tipOrder);
+        
+        when(raceService.getRaceById(999L)).thenReturn(Optional.empty());
+
+        ResponseEntity<TipResponseDTO> response = tipController.createOrUpdateTip(request);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+
+        verify(raceService, times(1)).getRaceById(999L);
+        verify(tipService, never()).saveOrUpdateTip(any(), any(), any());
+    }
+
+    @Test
+    void testGetAllTipsForUser() {
+        List<TipResponseDTO> tips = Arrays.asList(
+            new TipResponseDTO(1L, Arrays.asList("Max Verstappen", "Lewis Hamilton"), LocalDateTime.now()),
+            new TipResponseDTO(2L, Arrays.asList("Charles Leclerc", "Carlos Sainz"), LocalDateTime.now())
+        );
+        
         when(userService.getUserById(1L)).thenReturn(Optional.of(testPlayer));
-        when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace));
-        when(driverService.getDriverById(1L)).thenReturn(Optional.of(testDriver));
-        when(tipService.createTip(any(Tip.class))).thenReturn(newTip);
+        when(tipService.getAllTipsForUser(testPlayer)).thenReturn(tips);
 
-        Tip result = tipController.createTip(1L, 1L, 1L, 3);
+        ResponseEntity<List<TipResponseDTO>> response = tipController.getAllTipsForUser(1L);
 
-        assertNotNull(result);
-        assertEquals(3, result.getPredictedPosition());
-        assertEquals(testPlayer, result.getUser());
-        assertEquals(testRace, result.getRace());
-        assertEquals(testDriver, result.getDriver());
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().size());
 
         verify(userService, times(1)).getUserById(1L);
-        verify(raceService, times(1)).getRaceById(1L);
-        verify(driverService, times(1)).getDriverById(1L);
-        verify(tipService, times(1)).createTip(any(Tip.class));
+        verify(tipService, times(1)).getAllTipsForUser(testPlayer);
     }
 
     @Test
-    void testCreateTipWithInvalidPosition() {
-        Tip newTip = new Tip(testPlayer, testRace, testDriver, 15);
-        setId(newTip, 4L, Tip.class);
-
-        when(userService.getUserById(1L)).thenReturn(Optional.of(testPlayer));
-        when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace));
-        when(driverService.getDriverById(1L)).thenReturn(Optional.of(testDriver));
-        when(tipService.createTip(any(Tip.class))).thenReturn(newTip);
-
-        Tip result = tipController.createTip(1L, 1L, 1L, 15);
-
-        assertNotNull(result);
-        assertEquals(15, result.getPredictedPosition());
-
-        verify(tipService, times(1)).createTip(any(Tip.class));
-    }
-
-    @Test
-    void testCreateTipWithNonExistentUser() {
-        Tip newTip = new Tip(null, testRace, testDriver, 1);
-        setId(newTip, 5L, Tip.class);
-
+    void testGetAllTipsForNonExistentUser() {
         when(userService.getUserById(999L)).thenReturn(Optional.empty());
-        when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace));
-        when(driverService.getDriverById(1L)).thenReturn(Optional.of(testDriver));
-        when(tipService.createTip(any(Tip.class))).thenReturn(newTip);
 
-        Tip result = tipController.createTip(999L, 1L, 1L, 1);
+        ResponseEntity<List<TipResponseDTO>> response = tipController.getAllTipsForUser(999L);
 
-        assertNotNull(result);
-        assertNull(result.getUser());
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
         verify(userService, times(1)).getUserById(999L);
-        verify(tipService, times(1)).createTip(any(Tip.class));
+        verify(tipService, never()).getAllTipsForUser(any());
     }
 
     @Test

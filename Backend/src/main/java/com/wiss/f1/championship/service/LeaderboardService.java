@@ -1,10 +1,7 @@
 package com.wiss.f1.championship.service;
 
 import com.wiss.f1.championship.dto.LeaderboardDTO;
-import com.wiss.f1.championship.entity.AppUser;
-import com.wiss.f1.championship.entity.OfficialResult;
-import com.wiss.f1.championship.entity.Race;
-import com.wiss.f1.championship.entity.Tip;
+import com.wiss.f1.championship.entity.*;
 import com.wiss.f1.championship.repository.AppUserRepository;
 import com.wiss.f1.championship.repository.OfficialResultRepository;
 import com.wiss.f1.championship.repository.RaceRepository;
@@ -44,13 +41,18 @@ public class LeaderboardService {
 
             for (Race race : races) {
 
+                System.out.println("Checking race " + race.getName());
                 // Nur geschlossene Rennen zählen
-                if (!"CLOSED".equalsIgnoreCase(race.getStatus().name())) continue;
+                if (race.getStatus() != RaceStatus.CLOSED) continue;
 
+                System.out.println("Race isnt closed");
                 // Tipps des Users für dieses Rennen
                 List<Tip> userTips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
                 if (userTips.isEmpty()) continue;
 
+                System.out.println("Tips arent empty");
+
+                System.out.println("Checking official results");
                 // Offizielle Ergebnisse
                 List<OfficialResult> results = officialResultRepository.findByRaceId(race.getId());
                 if (results.isEmpty()) continue;
@@ -67,6 +69,7 @@ public class LeaderboardService {
                     predictedPosMap.put(t.getPredictedPosition(), t.getDriver().getId());
                 }
 
+                System.out.println("Calculating race points");
                 totalPoints += calculateRacePoints(predictedPosMap, officialPosMap);
             }
 

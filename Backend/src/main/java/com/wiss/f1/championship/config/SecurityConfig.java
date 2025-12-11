@@ -50,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/drivers/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/drivers/**").hasRole("ADMIN")
                         // Races: GET authentifiziert, POST/PUT/DELETE nur für Admin
-                        .requestMatchers(HttpMethod.GET, "/api/races/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/races/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/races/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/races/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/races/**").hasRole("ADMIN")

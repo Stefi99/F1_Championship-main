@@ -1,11 +1,19 @@
 package com.wiss.f1.championship.controller;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.wiss.f1.championship.dto.RaceDTO;
 import com.wiss.f1.championship.dto.RaceResponseDTO;
 import com.wiss.f1.championship.entity.Race;
 import com.wiss.f1.championship.service.RaceService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/races")
@@ -36,6 +44,8 @@ public class RaceController {
     @PutMapping("/{id}")
     public Race updateRace(@PathVariable Long id, @RequestBody Race race) {
         race.setId(id);
+        System.out.println("UPDATING RACE");
+        System.out.println(race.getStatus());
         return raceService.updateRace(race);
     }
 
@@ -57,6 +67,7 @@ public class RaceController {
                 race.getDate(),
                 race.getTrack(),
                 race.getWeather(),
+                race.getTyres(),
                 race.getStatus(),
                 race.getResultsOrder()
         );
