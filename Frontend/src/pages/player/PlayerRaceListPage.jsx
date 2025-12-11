@@ -1,6 +1,7 @@
 // Zeigt alle Rennen aus Spielersicht in chronologischer Reihenfolge
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext.js";
 import { getTrackVisual } from "../../data/tracks";
 import { loadPlayerTips } from "../../utils/tips";
 import { getAllRaces } from "../../services/raceService.js";
@@ -27,6 +28,7 @@ const parseDate = (value) => {
 };
 
 function PlayerRaceListPage() {
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [races, setRaces] = useState([]);
   const [tips, setTips] = useState({});
@@ -37,8 +39,12 @@ function PlayerRaceListPage() {
       try {
         const racesData = await getAllRaces();
         setRaces(racesData);
-        const tipsData = loadPlayerTips();
-        setTips(tipsData);
+
+        // Tipps nur laden, wenn User eingeloggt ist
+        if (user?.id) {
+          const tipsData = await loadPlayerTips(user.id);
+          setTips(tipsData);
+        }
       } catch (error) {
         console.error("Fehler beim Laden der Daten:", error);
         setRaces([]);
@@ -47,7 +53,7 @@ function PlayerRaceListPage() {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
   // Sortiert die Rennen nach Datum (aufsteigend), sodass die nächste Strecke oben steht
   const sortedRaces = useMemo(() => {

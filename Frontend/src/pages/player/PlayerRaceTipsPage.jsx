@@ -81,7 +81,8 @@ function PlayerRaceTipsPage() {
       // Backend hat kein "drivers" Feld direkt, verwendet resultsOrder oder alle Fahrer
       const allDrivers = driverList.map((driver) => driver.name);
 
-      const tip = getRaceTip(raceId);
+      // Tipp vom Backend laden
+      const tip = await getRaceTip(raceId);
       const savedOrder = (tip?.order || []).filter((name) =>
         allDrivers.includes(name)
       );
@@ -203,7 +204,7 @@ function PlayerRaceTipsPage() {
   };
 
   // Speichert den Tipp des Spielers
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!race) {
       setError("Rennen wurde nicht gefunden.");
       return;
@@ -212,12 +213,22 @@ function PlayerRaceTipsPage() {
       setError("Bitte mindestens einen Fahrer für die Top 10 auswählen.");
       return;
     }
-    const entry = persistRaceTip(raceId, selection);
-    setLastSavedAt(entry.updatedAt);
-    setMessage(
-      "Tipp gespeichert. Nur die ersten 10 Positionen werden gewertet."
-    );
+
     setError("");
+    setMessage("");
+
+    try {
+      const entry = await persistRaceTip(raceId, selection);
+      setLastSavedAt(entry.updatedAt);
+      setMessage(
+        "Tipp gespeichert. Nur die ersten 10 Positionen werden gewertet."
+      );
+    } catch (error) {
+      console.error("Fehler beim Speichern des Tipps:", error);
+      setError(
+        "Tipp konnte nicht gespeichert werden. Bitte versuche es erneut."
+      );
+    }
   };
 
   if (!race) {

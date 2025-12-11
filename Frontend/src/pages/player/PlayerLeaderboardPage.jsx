@@ -1,10 +1,12 @@
 // Zeigt die komplette Saisonrangliste
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext.js";
 import { TEAM_CLASS_MAP } from "../../data/drivers";
 import { getTrackVisual } from "../../data/tracks";
 import { loadPlayerProfile } from "../../utils/profile";
 import { loadPlayerTips } from "../../utils/tips";
+import { getAllRaces } from "../../services/raceService.js";
 
 // Farbzuordnung für Teams zum Gestalten von Avataren, Chips und Row-Akzenten.
 const TEAM_COLOR_PALETTE = {
@@ -197,47 +199,47 @@ const buildSeedOpponents = (closedRaces) =>
   });
 
 function PlayerLeaderboardPage() {
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(() => loadPlayerProfile());
+  const [profile, setProfile] = useState(null);
   const [races, setRaces] = useState([]);
-  const [tips, setTips] = useState(() => loadPlayerTips());
+  const [tips, setTips] = useState({});
   const [roster, setRoster] = useState(() => loadPlayerRoster());
+  const [loading, setLoading] = useState(true);
 
-  // Lädt Rennen, Tipps, Spielerprofil und Roster initial.
+  // Lädt Rennen, Tipps, Spielerprofil und Roster vom Backend
   useEffect(() => {
-    const readRaces = () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        return JSON.parse(localStorage.getItem("races") || "[]");
-      } catch (err) {
-        console.error("races parse error", err);
-        return [];
-      }
-    };
+        // Rennen vom Backend laden
+        const racesData = await getAllRaces();
+        setRaces(racesData);
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRaces(readRaces());
-    setTips(loadPlayerTips());
-    setProfile(loadPlayerProfile());
-    setRoster(loadPlayerRoster());
+        // Profil vom Backend laden
+        const profileData = await loadPlayerProfile();
+        setProfile(profileData);
 
-    const handleStorage = (event) => {
-      if (
-        event.key === "races" ||
-        event.key === "playerTips" ||
-        event.key === "playerProfile" ||
-        event.key === "playerRoster" ||
-        event.key === null
-      ) {
-        setRaces(readRaces());
-        setTips(loadPlayerTips());
-        setProfile(loadPlayerProfile());
+        // Tipps vom Backend laden (nur wenn User eingeloggt ist)
+        if (user?.id) {
+          const tipsData = await loadPlayerTips(user.id);
+          setTips(tipsData);
+        }
+
+        // Roster bleibt lokal (wird später durch Backend ersetzt)
         setRoster(loadPlayerRoster());
+      } catch (error) {
+        console.error("Fehler beim Laden der Daten:", error);
+        setRaces([]);
+        setTips({});
+        setProfile(null);
+      } finally {
+        setLoading(false);
       }
     };
 
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+    fetchData();
+  }, [user]);
 
   // Filtert nur vollständig geschlossene Rennen, die offizielle Ergebnisse besitzen
   const closedRaces = useMemo(
@@ -284,12 +286,13 @@ function PlayerLeaderboardPage() {
 
   // Berechnet Gesamtsaisonpunkte:
   const seasonPoints = useMemo(() => {
+    if (!profile) return 0;
     const base = Number.isNaN(Number(profile.points))
       ? 0
       : Number(profile.points);
     const fromTips = raceStats.reduce((sum, race) => sum + race.score, 0);
     return base + fromTips;
-  }, [profile.points, raceStats]);
+  }, [profile?.points, raceStats]);
 
   // Durchschnittliche Trefferquote über alle Rennen.
   const accuracyAverage = raceStats.length
@@ -317,6 +320,8 @@ function PlayerLeaderboardPage() {
 
   // Baut die Ranglisteneinträge
   const leaderboardRows = useMemo(() => {
+    if (!profile) return [];
+
     const baseRoster =
       roster.length > 0 ? roster : buildSeedOpponents(closedRaces);
     const userEntry = {
