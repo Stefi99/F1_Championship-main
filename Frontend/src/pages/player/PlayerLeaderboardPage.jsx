@@ -7,6 +7,7 @@ import { getTrackVisual } from "../../data/tracks";
 import { loadPlayerProfile } from "../../utils/profile";
 import { loadPlayerTips } from "../../utils/tips";
 import { getAllRaces } from "../../services/raceService.js";
+import { getLeaderboard } from "../../services/leaderboardService.js";
 
 // Farbzuordnung für Teams zum Gestalten von Avataren, Chips und Row-Akzenten.
 const TEAM_COLOR_PALETTE = {
@@ -23,69 +24,7 @@ const TEAM_COLOR_PALETTE = {
   "team-default": "#e10600",
 };
 
-// Standardisierte KI-Gegner
-const SEED_PLAYERS = [
-  {
-    username: "gridfox",
-    displayName: "Grid Fox",
-    team: "Ferrari",
-    country: "ITA",
-    base: 240,
-  },
-  {
-    username: "polehunter",
-    displayName: "Pole Hunter",
-    team: "Red Bull",
-    country: "AUT",
-    base: 228,
-  },
-  {
-    username: "undercut",
-    displayName: "Undercut Pro",
-    team: "Mercedes",
-    country: "GER",
-    base: 214,
-  },
-  {
-    username: "drywet",
-    displayName: "Rain Whisperer",
-    team: "McLaren",
-    country: "GBR",
-    base: 205,
-  },
-  {
-    username: "latebraker",
-    displayName: "Late Braker",
-    team: "Aston Martin",
-    country: "ESP",
-    base: 192,
-  },
-];
-
-// Lädt gespeicherte Spielerprofile
-const loadPlayerRoster = () => {
-  try {
-    const raw = JSON.parse(localStorage.getItem("playerRoster") || "[]");
-    if (!Array.isArray(raw)) return [];
-    return raw
-      .map((entry) => ({
-        username: entry.username || entry.displayName || "user",
-        displayName: entry.displayName || entry.username || "Player",
-        team: entry.team || entry.favoriteTeam || "Eigenes Team",
-        country: entry.country || "CH",
-        points: Number.isNaN(Number(entry.points)) ? 0 : Number(entry.points),
-        form: Number.isNaN(Number(entry.form)) ? 0 : Number(entry.form),
-        lastRacePoints: Number.isNaN(Number(entry.lastRacePoints))
-          ? 0
-          : Number(entry.lastRacePoints),
-        isUser: false,
-      }))
-      .filter((entry) => entry.username);
-  } catch (err) {
-    console.error("playerRoster parse error", err);
-    return [];
-  }
-};
+// HINWEIS: Seed-Player und playerRoster wurden entfernt, da Leaderboard jetzt vom Backend kommt
 
 // F1-ähnliche Punkteskala für genaue Treffer
 const POSITION_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 3, 2];
@@ -172,31 +111,7 @@ const scoreTipAgainstResults = (tipOrder = [], resultsOrder = []) => {
   };
 };
 
-// Generiert deterministische Punktzahlen für Seed-Spieler,
-const deterministicRaceScore = (race, seedIndex) => {
-  const code = String(race.id || race.track || seedIndex)
-    .split("")
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return 14 + ((code + seedIndex * 17) % 18);
-};
-
-const buildSeedOpponents = (closedRaces) =>
-  SEED_PLAYERS.map((player, idx) => {
-    const perRace = closedRaces.map((race) =>
-      deterministicRaceScore(race, idx)
-    );
-    const raceTotal = perRace.reduce((sum, value) => sum + value, 0);
-    return {
-      ...player,
-      points: player.base + raceTotal,
-      form: Math.round(
-        perRace.slice(-3).reduce((sum, value) => sum + value, 0) /
-          Math.max(1, Math.min(perRace.length, 3))
-      ),
-      lastRacePoints: perRace.slice(-1)[0] || player.base / 10,
-      isUser: false,
-    };
-  });
+// HINWEIS: buildSeedOpponents wurde entfernt, da Leaderboard jetzt vom Backend kommt
 
 function PlayerLeaderboardPage() {
   const { user } = useContext(AuthContext);
@@ -204,10 +119,10 @@ function PlayerLeaderboardPage() {
   const [profile, setProfile] = useState(null);
   const [races, setRaces] = useState([]);
   const [tips, setTips] = useState({});
-  const [roster, setRoster] = useState(() => loadPlayerRoster());
+  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Lädt Rennen, Tipps, Spielerprofil und Roster vom Backend
+  // Lädt Rennen, Tipps, Spielerprofil und Leaderboard vom Backend
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -226,13 +141,15 @@ function PlayerLeaderboardPage() {
           setTips(tipsData);
         }
 
-        // Roster bleibt lokal (wird später durch Backend ersetzt)
-        setRoster(loadPlayerRoster());
+        // Leaderboard vom Backend laden
+        const leaderboardData = await getLeaderboard();
+        setLeaderboard(leaderboardData);
       } catch (error) {
         console.error("Fehler beim Laden der Daten:", error);
         setRaces([]);
         setTips({});
         setProfile(null);
+        setLeaderboard([]);
       } finally {
         setLoading(false);
       }
@@ -284,15 +201,11 @@ function PlayerLeaderboardPage() {
     });
   }, [raceStats]);
 
-  // Berechnet Gesamtsaisonpunkte:
+  // Saisonpunkte kommen direkt vom Backend (bereits berechnet)
   const seasonPoints = useMemo(() => {
     if (!profile) return 0;
-    const base = Number.isNaN(Number(profile.points))
-      ? 0
-      : Number(profile.points);
-    const fromTips = raceStats.reduce((sum, race) => sum + race.score, 0);
-    return base + fromTips;
-  }, [profile?.points, raceStats]);
+    return Number.isNaN(Number(profile.points)) ? 0 : Number(profile.points);
+  }, [profile?.points]);
 
   // Durchschnittliche Trefferquote über alle Rennen.
   const accuracyAverage = raceStats.length
@@ -318,39 +231,45 @@ function PlayerLeaderboardPage() {
   // Identifizieren das beste Rennen und das zuletzt abgeschlossene Rennen.
   const latestRace = sortedRaceStats[0] || null;
 
-  // Baut die Ranglisteneinträge
+  // Baut die Ranglisteneinträge aus Backend-Daten
   const leaderboardRows = useMemo(() => {
-    if (!profile) return [];
-
-    const baseRoster =
-      roster.length > 0 ? roster : buildSeedOpponents(closedRaces);
-    const userEntry = {
-      username: profile.username || "du",
-      displayName: profile.displayName || profile.username || "Du",
-      team: profile.favoriteTeam || "Eigenes Team",
-      country: profile.country || "CH",
-      points: seasonPoints,
-      form: formPoints,
-      lastRacePoints: latestRace?.score || seasonPoints / 5,
-      isUser: true,
-    };
-
-    const merged = [...baseRoster];
-    const alreadyHasUser = merged.some(
-      (entry) =>
-        entry.username === userEntry.username ||
-        entry.displayName === userEntry.displayName
-    );
-    if (!alreadyHasUser) {
-      merged.push(userEntry);
-    } else {
-      merged.push({ ...userEntry, username: `${userEntry.username}-self` });
+    if (!leaderboard || leaderboard.length === 0) {
+      return [];
     }
 
-    return merged
-      .sort((a, b) => b.points - a.points)
-      .map((entry, index) => ({ ...entry, rank: index + 1 }));
-  }, [closedRaces, roster, profile, seasonPoints, formPoints, latestRace]);
+    // Leaderboard-Daten vom Backend verwenden
+    // Backend liefert bereits: username, displayName, points, rank
+    return leaderboard.map((entry) => {
+      // Prüfe ob dieser Eintrag der aktuelle User ist
+      const isCurrentUser =
+        user &&
+        (entry.username === user.username ||
+          entry.displayName === user.displayName);
+
+      // Hole zusätzliche Daten aus dem Profil, falls es der aktuelle User ist
+      const team = isCurrentUser
+        ? profile?.favoriteTeam || "Eigenes Team"
+        : "Eigenes Team"; // Backend liefert kein Team, könnte später erweitert werden
+      const country = isCurrentUser ? profile?.country || "CH" : "CH"; // Backend liefert kein Country, könnte später erweitert werden
+
+      // Form und lastRacePoints können aus raceStats berechnet werden (optional)
+      // Für jetzt verwenden wir Platzhalter
+      const form = isCurrentUser ? formPoints : 0;
+      const lastRacePoints = isCurrentUser ? latestRace?.score || 0 : 0;
+
+      return {
+        username: entry.username,
+        displayName: entry.displayName,
+        team,
+        country,
+        points: entry.points || 0,
+        rank: entry.rank || 0,
+        form,
+        lastRacePoints,
+        isUser: isCurrentUser,
+      };
+    });
+  }, [leaderboard, user, profile, formPoints, latestRace]);
 
   return (
     <div className="player-leaderboard-page">
