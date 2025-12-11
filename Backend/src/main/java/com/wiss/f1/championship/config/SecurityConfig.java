@@ -20,6 +20,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.wiss.f1.championship.security.JwtAuthenticationFilter;
+
 @EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
