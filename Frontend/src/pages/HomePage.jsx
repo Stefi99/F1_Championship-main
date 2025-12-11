@@ -3,21 +3,28 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTrackVisual } from "../data/tracks";
 import { getAllRaces } from "../services/raceService.js";
+import { ApiError } from "../utils/api.js";
+import { getErrorMessage } from "../utils/errorHandler.js";
+import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
+import ErrorMessage from "../components/common/ErrorMessage.jsx";
 
 function HomePage() {
   const navigate = useNavigate();
   const [races, setRaces] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Lädt Rennen vom Backend
   useEffect(() => {
     const fetchRaces = async () => {
       setLoading(true);
+      setError(null);
       try {
         const racesData = await getAllRaces();
         setRaces(racesData);
-      } catch (error) {
-        console.error("Fehler beim Laden der Rennen:", error);
+      } catch (err) {
+        console.error("Fehler beim Laden der Rennen:", err);
+        setError(err);
         setRaces([]);
       } finally {
         setLoading(false);
@@ -81,6 +88,41 @@ function HomePage() {
   );
 
   // Aufbau der Home-Page
+  // Loading-State: Zeige Spinner während Daten geladen werden
+  if (loading) {
+    return (
+      <div className="home-page">
+        <LoadingSpinner message="Rennen werden geladen..." />
+      </div>
+    );
+  }
+
+  // Error-State: Zeige Fehlermeldung wenn Daten nicht geladen werden konnten
+  if (error) {
+    return (
+      <div className="home-page">
+        <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
+          <ErrorMessage error={error} />
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: "1rem",
+              padding: "0.75rem 1.5rem",
+              background: "var(--f1-red, #e10600)",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Seite neu laden
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-page">
       <section className="home-hero">

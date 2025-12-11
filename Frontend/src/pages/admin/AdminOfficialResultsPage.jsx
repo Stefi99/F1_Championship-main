@@ -2,9 +2,11 @@
 import { useEffect, useState } from "react";
 import {
   getStoredDrivers,
-  getDriverTeam,
+  getDriverTeamSync,
   TEAM_CLASS_MAP,
 } from "../../data/drivers";
+import { getAllRaces, updateRaceResults } from "../../services/raceService.js";
+import { ApiError } from "../../utils/api.js";
 
 //Farbpalette für Teams zur visuellen Hervorhebung
 const TEAM_COLOR_PALETTE = {
@@ -27,18 +29,15 @@ function AdminOfficialResultsPage() {
   const [resultsOrder, setResultsOrder] = useState([]);
   const [dragIndex, setDragIndex] = useState(null);
   const [driversByName, setDriversByName] = useState({});
-
-  // Hilfsfunktionen zum Laden und Speichern aller Rennen.
-  // persist() speichert Änderungen und aktualisiert den State.
-  const loadRaces = () => JSON.parse(localStorage.getItem("races") || "[]");
-  const persist = (list) => {
-    setRaces(list);
-    localStorage.setItem("races", JSON.stringify(list));
-  };
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   // Hilfsfunktionen zur Ermittlung von Teamfarben und Teamnamen.
   const teamClass = (driverName) => {
-    const team = getDriverTeam(driverName) || driversByName[driverName]?.team;
+    const team =
+      getDriverTeamSync(driverName) || driversByName[driverName]?.team;
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
@@ -48,38 +47,57 @@ function AdminOfficialResultsPage() {
   };
 
   const teamLabel = (driverName) =>
-    getDriverTeam(driverName) ||
+    getDriverTeamSync(driverName) ||
     driversByName[driverName]?.team ||
     "Team unbekannt";
 
   // Laden von Fahrer-/Teamdaten, Rennen, Ergebnisse
   useEffect(() => {
-    const driverList = getStoredDrivers();
-    const map = driverList.reduce((acc, driver) => {
-      acc[driver.name] = driver;
-      return acc;
-    }, {});
-    setDriversByName(map);
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        // Fahrer vom Backend laden
+        const driverList = await getStoredDrivers();
+        const map = driverList.reduce((acc, driver) => {
+          acc[driver.name] = driver;
+          return acc;
+        }, {});
+        setDriversByName(map);
 
-    const stored = loadRaces();
-    setRaces(stored);
-    if (stored.length > 0) {
-      const firstRace = stored[0];
-      const firstId = String(firstRace.id);
-      const initialOrder = firstRace.resultsOrder?.length
-        ? firstRace.resultsOrder
-        : firstRace.drivers?.length
-        ? firstRace.drivers
-        : driverList.map((driver) => driver.name);
-      setSelectedId(firstId);
-      setResultsOrder(initialOrder);
-    }
+        // Rennen vom Backend laden
+        const racesData = await getAllRaces();
+        setRaces(racesData);
+
+        if (racesData.length > 0) {
+          const firstRace = racesData[0];
+          const firstId = String(firstRace.id);
+          const initialOrder = firstRace.resultsOrder?.length
+            ? firstRace.resultsOrder
+            : firstRace.drivers?.length
+            ? firstRace.drivers
+            : driverList.map((driver) => driver.name);
+          setSelectedId(firstId);
+          setResultsOrder(initialOrder);
+        }
+      } catch (err) {
+        console.error("Fehler beim Laden der Daten:", err);
+        setError("Daten konnten nicht geladen werden.");
+        setRaces([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Aktualisiert die Ergebnisliste neu, wenn Auswahl gewechselt wird
   useEffect(() => {
-    if (!selectedId) {
-      setResultsOrder([]);
+    if (!selectedId || loading) {
+      if (!selectedId) {
+        setResultsOrder([]);
+      }
       return;
     }
     const current = races.find(
@@ -92,30 +110,56 @@ function AdminOfficialResultsPage() {
       ? current.drivers
       : driverList.map((driver) => driver.name);
     setResultsOrder(initialOrder || []);
-  }, [selectedId, races, driversByName]);
+  }, [selectedId, races, driversByName, loading]);
 
   // Speichert die offizielle Reihenfolge des ausgewählten Rennens
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedId) {
-      alert("Bitte zuerst ein Rennen auswählen");
+      setError("Bitte zuerst ein Rennen auswählen");
       return;
     }
     if (resultsOrder.length === 0) {
-      alert("Keine Fahrer vorhanden. Bitte zuerst Fahrer dem Rennen zuweisen.");
+      setError(
+        "Keine Fahrer vorhanden. Bitte zuerst Fahrer dem Rennen zuweisen."
+      );
       return;
     }
-    const next = races.map((race) =>
-      String(race.id) === String(selectedId)
-        ? {
-            ...race,
-            resultsOrder,
-            results: resultsOrder.join(", "),
-            status: "closed",
-          }
-        : race
-    );
-    persist(next);
-    alert("Ergebnisse gespeichert (Status: closed)");
+
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      // Ergebnisse über API speichern
+      const updatedRace = await updateRaceResults(selectedId, resultsOrder);
+
+      // Lokalen State aktualisieren
+      const next = races.map((race) =>
+        String(race.id) === String(selectedId)
+          ? {
+              ...race,
+              resultsOrder: updatedRace.resultsOrder || resultsOrder,
+              status: updatedRace.status || "CLOSED",
+            }
+          : race
+      );
+      setRaces(next);
+
+      setMessage(
+        "Ergebnisse erfolgreich gespeichert (Status: " +
+          (updatedRace.status || "CLOSED") +
+          ")"
+      );
+    } catch (err) {
+      console.error("Fehler beim Speichern der Ergebnisse:", err);
+      if (err instanceof ApiError) {
+        setError(err.message || "Fehler beim Speichern der Ergebnisse.");
+      } else {
+        setError("Netzwerkfehler oder Server nicht erreichbar.");
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Erstellt eine zufällige Reihenfolge der Fahrer
@@ -156,7 +200,9 @@ function AdminOfficialResultsPage() {
   );
   const hasDrivers =
     resultsOrder.length > 0 || (currentRace?.drivers || []).length > 0;
-  const closedCount = races.filter((race) => race.status === "closed").length;
+  const closedCount = races.filter(
+    (race) => race.status === "closed" || race.status === "CLOSED"
+  ).length;
 
   // Darstellung der kompletten Ergebnis-Erfassungsseite
   return (
@@ -175,16 +221,16 @@ function AdminOfficialResultsPage() {
               type="button"
               className="admin-ghost-btn"
               onClick={shuffleOrder}
-              disabled={races.length === 0 || !hasDrivers}
+              disabled={races.length === 0 || !hasDrivers || loading}
             >
               Zufallsreihenfolge
             </button>
             <button
               type="button"
               onClick={handleSave}
-              disabled={!hasDrivers || races.length === 0}
+              disabled={!hasDrivers || races.length === 0 || saving || loading}
             >
-              Ergebnisse speichern
+              {saving ? "Speichern..." : "Ergebnisse speichern"}
             </button>
           </div>
         </div>
@@ -230,10 +276,11 @@ function AdminOfficialResultsPage() {
                     value={selectedId}
                     onChange={(e) => setSelectedId(e.target.value)}
                     className="results-select"
+                    disabled={loading}
                   >
                     {races.map((race) => (
                       <option key={race.id} value={race.id}>
-                        {race.track} - {race.date || "Datum fehlt"}
+                        {race.name || race.track} - {race.date || "Datum fehlt"}
                       </option>
                     ))}
                   </select>
@@ -244,7 +291,7 @@ function AdminOfficialResultsPage() {
                 <div className="results-meta-grid">
                   <div className="results-meta-card">
                     <span>Strecke</span>
-                    <strong>{currentRace.track}</strong>
+                    <strong>{currentRace.name || currentRace.track}</strong>
                   </div>
                   <div className="results-meta-card">
                     <span>Datum</span>
@@ -258,6 +305,16 @@ function AdminOfficialResultsPage() {
                     <span>Wetter</span>
                     <strong>{currentRace.weather || "-"}</strong>
                   </div>
+                </div>
+              )}
+
+              {(error || message) && (
+                <div
+                  className={`results-message ${
+                    error ? "results-error" : "results-success"
+                  }`}
+                >
+                  {error || message}
                 </div>
               )}
             </section>
@@ -337,15 +394,17 @@ function AdminOfficialResultsPage() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={!hasDrivers || races.length === 0}
+                  disabled={
+                    !hasDrivers || races.length === 0 || saving || loading
+                  }
                 >
-                  Ergebnisse speichern
+                  {saving ? "Speichern..." : "Ergebnisse speichern"}
                 </button>
                 <button
                   type="button"
                   className="admin-ghost-btn"
                   onClick={shuffleOrder}
-                  disabled={!hasDrivers}
+                  disabled={!hasDrivers || loading}
                 >
                   Zufallsreihenfolge
                 </button>

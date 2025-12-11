@@ -1,0 +1,71 @@
+/* Error Message Styles */
+.error-message {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.error-message-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  color: #c33;
+}
+
+.error-message-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.error-message-text {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.error-message-dismiss {
+  background: none;
+  border: none;
+  color: #c33;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.error-message-dismiss:hover {
+  opacity: 0.7;
+}
+
+.error-message-dismiss:focus {
+  outline: 2px solid #c33;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .error-message-content {
+    background: #3a1f1f;
+    border-color: #5a2f2f;
+    color: #ff6b6b;
+  }
+
+  .error-message-dismiss {
+    color: #ff6b6b;
+  }
+
+  .error-message-dismiss:focus {
+    outline-color: #ff6b6b;
+  }
+}
+
