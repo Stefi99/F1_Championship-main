@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getStoredDrivers,
-  getDriverTeamSync,
+  getDriverTeam,
   TEAM_CLASS_MAP,
 } from "../../data/drivers";
 import { TRACK_OPTIONS } from "../../data/tracks";
@@ -299,7 +299,7 @@ function AdminRaceFormPage() {
             {driverOptions.map((driver) => {
               const isSelected = drivers.includes(driver.name);
               const teamClass = TEAM_COLOR_CLASS(
-                getDriverTeamSync(driver.name) || driver.team
+                getDriverTeam(driver.name) || driver.team
               );
 
               return (
