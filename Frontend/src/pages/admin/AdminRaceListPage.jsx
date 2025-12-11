@@ -27,7 +27,7 @@ function AdminRaceListPage() {
   // Mapping-Tabellen für die Übersetzung technischer Werte
   const statusLabel = {
     open: "Offen",
-    voting: "Tippen möglich",
+    voting: "Voting",
     closed: "Geschlossen",
   };
 
@@ -69,6 +69,11 @@ function AdminRaceListPage() {
     const openCount = races.filter((race) => race.status === "open").length;
     const votingCount = races.filter((race) => race.status === "voting").length;
     const closedCount = races.filter((race) => race.status === "closed").length;
+
+    console.log(
+      "Race statuses: ",
+      races.map((r) => r.status)
+    );
     return { total, openCount, votingCount, closedCount };
   }, [races]);
 

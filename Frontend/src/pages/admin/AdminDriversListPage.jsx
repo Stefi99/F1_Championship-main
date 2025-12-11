@@ -21,6 +21,7 @@ function AdminDriversListPage() {
       setLoading(true);
       try {
         const driversData = await getStoredDrivers();
+        console.log("Geladene Fahrer:", driversData.length, driversData);
         setDrivers(driversData);
       } catch (error) {
         console.error("Fehler beim Laden der Fahrer:", error);
@@ -67,6 +68,52 @@ function AdminDriversListPage() {
       setError(
         "Fahrer konnten nicht gespeichert werden. Bitte versuche es erneut."
       );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Ergänzt fehlende Standard-Fahrer zur Liste
+  const handleAddMissing = async () => {
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      // Finde fehlende Fahrer (vergliche Namen, case-insensitive)
+      const currentNames = new Set(
+        drivers.map((d) => d.name.toLowerCase().trim())
+      );
+      const missingDrivers = defaultDrivers.filter(
+        (defaultDriver) =>
+          !currentNames.has(defaultDriver.name.toLowerCase().trim())
+      );
+
+      if (missingDrivers.length === 0) {
+        setMessage("Alle Standard-Fahrer sind bereits vorhanden.");
+        setSaving(false);
+        return;
+      }
+
+      // Füge fehlende Fahrer zur aktuellen Liste hinzu
+      const updatedDrivers = [...drivers, ...missingDrivers];
+
+      // Speichere alle Fahrer im Backend
+      await saveDrivers(updatedDrivers);
+
+      // Cache aktualisieren
+      clearDriversCache();
+
+      // Fahrer neu laden
+      const reloadedDrivers = await getStoredDrivers();
+      setDrivers(reloadedDrivers);
+
+      setMessage(
+        `${missingDrivers.length} fehlende Fahrer wurden hinzugefügt.`
+      );
+    } catch (error) {
+      console.error("Fehler beim Hinzufügen fehlender Fahrer:", error);
+      setError("Fehlende Fahrer konnten nicht hinzugefügt werden.");
     } finally {
       setSaving(false);
     }
@@ -130,6 +177,14 @@ function AdminDriversListPage() {
             <button
               type="button"
               className="admin-ghost-btn"
+              onClick={handleAddMissing}
+              disabled={saving || loading}
+            >
+              Fehlende Fahrer hinzufügen
+            </button>
+            <button
+              type="button"
+              className="admin-ghost-btn"
               onClick={handleReset}
               disabled={saving || loading}
             >
@@ -181,8 +236,11 @@ function AdminDriversListPage() {
           </div>
 
           <div className="driver-grid">
-            {drivers.map((driver) => (
-              <div key={driver.id} className="driver-card">
+            {drivers.map((driver, index) => (
+              <div
+                key={driver?.id || `driver-${index}`}
+                className="driver-card"
+              >
                 <label className="driver-field">
                   <span className="driver-field-label">Fahrername</span>
                   <input

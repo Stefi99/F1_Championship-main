@@ -9,7 +9,7 @@ import { getAllRaces } from "../../services/raceService.js";
 // Mapping-Tabellen für die UI-Anzeige der Renn- und Wetterstatus-Werte.
 const statusLabel = {
   open: "Geplant",
-  voting: "Tippen offen",
+  voting: "Voting",
   closed: "Abgeschlossen",
 };
 

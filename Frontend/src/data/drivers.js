@@ -1,6 +1,7 @@
 // Zuordnung für CSS-Teamfarben
 export const TEAM_CLASS_MAP = {
   "Red Bull": "team-red-bull",
+  "Red Bull Racing": "team-red-bull",
   Ferrari: "team-ferrari",
   Mercedes: "team-mercedes",
   McLaren: "team-mclaren",
@@ -16,34 +17,55 @@ export const TEAM_OPTIONS = Object.keys(TEAM_CLASS_MAP);
 
 //Standart Liste aller F1-Fahrer
 export const defaultDrivers = [
-  { id: "max-verstappen", name: "Max Verstappen", team: "Red Bull" },
-  { id: "sergio-perez", name: "Sergio Perez", team: "Red Bull" },
-  { id: "charles-leclerc", name: "Charles Leclerc", team: "Ferrari" },
-  { id: "carlos-sainz", name: "Carlos Sainz", team: "Ferrari" },
-  { id: "lewis-hamilton", name: "Lewis Hamilton", team: "Mercedes" },
+  { id: "max-verstappen", name: "Max Verstappen", team: "Red Bull Racing" },
+  { id: "yuki-tsunoda", name: "Yuki Tsunoda", team: "Red Bull Racing" },
+  { id: "kimi-antonelli", name: "Kimi Antonelli", team: "Mercedes" },
   { id: "george-russell", name: "George Russell", team: "Mercedes" },
+  { id: "charles-leclerc", name: "Charles Leclerc", team: "Ferrari" },
+  { id: "lewis-hamilton", name: "Lewis Hamilton", team: "Ferrari" },
   { id: "lando-norris", name: "Lando Norris", team: "McLaren" },
   { id: "oscar-piastri", name: "Oscar Piastri", team: "McLaren" },
   { id: "fernando-alonso", name: "Fernando Alonso", team: "Aston Martin" },
   { id: "lance-stroll", name: "Lance Stroll", team: "Aston Martin" },
-  { id: "esteban-ocon", name: "Esteban Ocon", team: "Alpine" },
   { id: "pierre-gasly", name: "Pierre Gasly", team: "Alpine" },
-  { id: "valtteri-bottas", name: "Valtteri Bottas", team: "Sauber" },
-  { id: "guanyu-zhou", name: "Guanyu Zhou", team: "Sauber" },
-  { id: "kevin-magnussen", name: "Kevin Magnussen", team: "Haas" },
-  { id: "nico-hulkenberg", name: "Nico Hulkenberg", team: "Haas" },
-  { id: "alex-albon", name: "Alex Albon", team: "Williams" },
-  { id: "logan-sargeant", name: "Logan Sargeant", team: "Williams" },
-  { id: "yuki-tsunoda", name: "Yuki Tsunoda", team: "RB" },
-  { id: "daniel-ricciardo", name: "Daniel Ricciardo", team: "RB" },
+  { id: "franco-colapinto", name: "Franco Colapinto", team: "Alpine" },
+  { id: "liam-lawson", name: "Liam Lawson", team: "RB" },
+  { id: "isack-hadjar", name: "Isack Hadjar", team: "RB" },
+  { id: "gabriel-bortoleto", name: "Gabriel Bortoleto", team: "Sauber" },
+  { id: "nico-hulkenberg", name: "Nico Hülkenberg", team: "Sauber" },
+  { id: "esteban-ocon", name: "Esteban Ocon", team: "Haas" },
+  { id: "oliver-bearman", name: "Oliver Bearman", team: "Haas" },
+  { id: "alexander-albon", name: "Alexander Albon", team: "Williams" },
+  { id: "carlos-sainz", name: "Carlos Sainz", team: "Williams" },
 ];
 
 //wenn Fahrer keine ID hat dann wird Namen angezeigt
 function withIds(driversList) {
-  return (driversList || []).map((d) => ({
-    ...d,
-    id: d.id || d.name,
-  }));
+  if (!Array.isArray(driversList)) {
+    return [];
+  }
+
+  // Sicherstellen, dass jeder Fahrer eine eindeutige ID hat
+  const seen = new Set();
+  return driversList.map((d, index) => {
+    let id = d.id;
+
+    // Wenn keine ID vorhanden, verwende den Namen
+    if (!id) {
+      id = d.name;
+    }
+
+    // Wenn die ID bereits verwendet wurde, füge einen Index hinzu
+    if (seen.has(id)) {
+      id = `${id}_${index}`;
+    }
+    seen.add(id);
+
+    return {
+      ...d,
+      id: id,
+    };
+  });
 }
 
 // Cache für Fahrer-Daten (wird beim Laden gesetzt)

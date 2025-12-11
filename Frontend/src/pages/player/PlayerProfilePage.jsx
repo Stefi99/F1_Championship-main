@@ -7,7 +7,7 @@ import { loadPlayerProfile, persistPlayerProfile } from "../../utils/profile";
 import { ApiError } from "../../utils/api.js";
 
 function PlayerProfilePage() {
-  const { user, login } = useContext(AuthContext);
+  const { user, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +65,8 @@ function PlayerProfilePage() {
   // Übernimmt neue Profildaten ins Formular,
   // ohne Passwortfelder zu verändern.
   useEffect(() => {
+    // Daten nicht setzen falls profil nicht vorhanden (Loading state)
+    if (profile == null) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm((prev) => ({
       ...prev,
@@ -166,13 +168,13 @@ function PlayerProfilePage() {
       // API-Call zum Backend
       const saved = await persistPlayerProfile(updates);
 
-      // Profil im AuthProvider aktualisieren (lädt User-Daten neu)
-      // Der AuthProvider wird automatisch die User-Daten neu laden
+      // Profil im lokalen State aktualisieren
       setProfile(saved);
-      setMessage("Profil erfolgreich gespeichert.");
 
-      // Optional: AuthProvider neu laden (falls nötig)
-      // Der AuthProvider sollte automatisch die neuen Daten haben
+      // AuthContext aktualisieren, damit die neuen Daten überall verfügbar sind
+      await refreshUser();
+
+      setMessage("Profil erfolgreich gespeichert.");
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message || "Fehler beim Speichern des Profils.");

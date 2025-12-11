@@ -1,44 +1,6 @@
 // Mapping-Funktionen für Race-Daten zwischen Frontend und Backend
 
 /**
- * RaceStatus-Mapping: Backend Enum <-> Frontend String
- * Backend: OPEN, TIPPABLE, CLOSED
- * Frontend: "open", "voting", "closed"
- */
-export const RACE_STATUS_MAP = {
-  // Backend Enum -> Frontend String
-  OPEN: "open",
-  TIPPABLE: "voting",
-  CLOSED: "closed",
-  // Frontend String -> Backend Enum
-  open: "OPEN",
-  voting: "TIPPABLE",
-  closed: "CLOSED",
-};
-
-/**
- * Konvertiert Backend Race-Status (Enum) zu Frontend-Format (String)
- * @param {string} backendStatus - Backend Status (OPEN, TIPPABLE, CLOSED)
- * @returns {string} Frontend Status ("open", "voting", "closed")
- */
-export function mapRaceStatusFromBackend(backendStatus) {
-  if (!backendStatus) return "open";
-  const upper = String(backendStatus).toUpperCase();
-  return RACE_STATUS_MAP[upper] || "open";
-}
-
-/**
- * Konvertiert Frontend Race-Status (String) zu Backend-Format (Enum)
- * @param {string} frontendStatus - Frontend Status ("open", "voting", "closed")
- * @returns {string} Backend Status (OPEN, TIPPABLE, CLOSED)
- */
-export function mapRaceStatusToBackend(frontendStatus) {
-  if (!frontendStatus) return "OPEN";
-  const lower = String(frontendStatus).toLowerCase();
-  return RACE_STATUS_MAP[lower] || "OPEN";
-}
-
-/**
  * Normalisiert ein Race-Objekt vom Backend für Frontend-Verwendung
  * @param {Object} backendRace - Race-Objekt vom Backend
  * @returns {Object} Normalisiertes Race-Objekt für Frontend
@@ -52,7 +14,8 @@ export function normalizeRaceFromBackend(backendRace) {
     track: backendRace.track || backendRace.name || "Unknown Track",
     date: backendRace.date, // Backend sendet LocalDate als String (YYYY-MM-DD)
     weather: backendRace.weather || "sunny",
-    status: mapRaceStatusFromBackend(backendRace.status),
+    tyres: backendRace.tyres || "",
+    status: backendRace.status || "open",
     resultsOrder: Array.isArray(backendRace.resultsOrder)
       ? backendRace.resultsOrder
       : [],
@@ -75,8 +38,14 @@ export function normalizeRaceToBackend(frontendRace) {
     track: frontendRace.track || frontendRace.name || "Unknown Track",
     date: frontendRace.date, // Sollte im Format YYYY-MM-DD sein
     weather: frontendRace.weather || "sunny",
-    status: mapRaceStatusToBackend(frontendRace.status),
-    // resultsOrder wird separat über PUT /races/{id}/results gesendet
+    tyres: frontendRace.tyres || null,
+    status: frontendRace.status?.toLowerCase() ?? "open",
+    // resultsOrder kann jetzt direkt mit gesendet werden (wenn vorhanden)
+    resultsOrder: Array.isArray(frontendRace.resultsOrder)
+      ? frontendRace.resultsOrder
+      : Array.isArray(frontendRace.drivers)
+      ? frontendRace.drivers
+      : null,
   };
 }
 
@@ -89,4 +58,3 @@ export function normalizeRacesFromBackend(backendRaces) {
   if (!Array.isArray(backendRaces)) return [];
   return backendRaces.map(normalizeRaceFromBackend).filter(Boolean);
 }
-

@@ -42,3 +42,57 @@ export async function createResult(raceId, driverId, finalPosition) {
   }
 }
 
+/**
+ * Löscht alle Ergebnisse für ein Rennen
+ * @param {number|string} raceId - Die ID des Rennens
+ * @returns {Promise<void>}
+ */
+export async function deleteResultsForRace(raceId) {
+  try {
+    await api.delete(`/results/race/${raceId}`);
+  } catch (error) {
+    console.error("Fehler beim Löschen der Ergebnisse:", error);
+    throw error;
+  }
+}
+
+/**
+ * Erstellt alle Ergebnisse für ein Rennen basierend auf der Reihenfolge
+ * @param {number|string} raceId - Die ID des Rennens
+ * @param {Array<string>} resultsOrder - Array von Fahrernamen in Reihenfolge
+ * @param {Object} driversByName - Map von Fahrernamen zu Fahrer-Objekten mit id
+ * @returns {Promise<Array>} Array der erstellten OfficialResult-Objekte
+ */
+export async function createResultsForRace(
+  raceId,
+  resultsOrder,
+  driversByName
+) {
+  try {
+    // Zuerst alte Ergebnisse löschen
+    await deleteResultsForRace(raceId);
+
+    // Dann neue Ergebnisse erstellen
+    const results = [];
+    for (let i = 0; i < resultsOrder.length; i++) {
+      const driverName = resultsOrder[i];
+      const driver = driversByName[driverName];
+
+      if (!driver || !driver.id) {
+        console.warn(
+          `Fahrer ${driverName} nicht gefunden oder hat keine ID, überspringe...`
+        );
+        continue;
+      }
+
+      const position = i + 1;
+      const result = await createResult(raceId, driver.id, position);
+      results.push(result);
+    }
+
+    return results;
+  } catch (error) {
+    console.error("Fehler beim Erstellen der Ergebnisse:", error);
+    throw error;
+  }
+}

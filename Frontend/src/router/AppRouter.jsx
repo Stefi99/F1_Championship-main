@@ -57,14 +57,7 @@ function AppRouter() {
           }
         />
 
-        <Route
-          path="/player/races"
-          element={
-            <ProtectedRoute>
-              <PlayerRaceListPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/player/races" element={<PlayerRaceListPage />} />
 
         <Route
           path="/player/leaderboard"
