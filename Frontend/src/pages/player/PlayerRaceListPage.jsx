@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTrackVisual } from "../../data/tracks";
 import { loadPlayerTips } from "../../utils/tips";
+import { getAllRaces } from "../../services/raceService.js";
 
 // Übersetzungs-Tabellen für UI-Anzeige von Renn- und Wetterstatus
 const statusLabel = {
@@ -30,37 +31,22 @@ function PlayerRaceListPage() {
   const [races, setRaces] = useState([]);
   const [tips, setTips] = useState({});
 
-  // Lädt Rennen und gespeicherte Tipps. Listener sorgt dafür,
-  // dass Änderungen aus anderen Tabs übernommen werden.
+  // Lädt Rennen und gespeicherte Tipps vom Backend
   useEffect(() => {
-    const readRaces = () => {
+    const fetchData = async () => {
       try {
-        return JSON.parse(localStorage.getItem("races") || "[]");
-      } catch (err) {
-        console.error("races parse error", err);
-        return [];
+        const racesData = await getAllRaces();
+        setRaces(racesData);
+        const tipsData = loadPlayerTips();
+        setTips(tipsData);
+      } catch (error) {
+        console.error("Fehler beim Laden der Daten:", error);
+        setRaces([]);
+        setTips({});
       }
     };
 
-    const readTips = () => loadPlayerTips();
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRaces(readRaces());
-    setTips(readTips());
-
-    const handleStorage = (event) => {
-      if (
-        event.key === "races" ||
-        event.key === "playerTips" ||
-        event.key === null
-      ) {
-        setRaces(readRaces());
-        setTips(readTips());
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    fetchData();
   }, []);
 
   // Sortiert die Rennen nach Datum (aufsteigend), sodass die nächste Strecke oben steht

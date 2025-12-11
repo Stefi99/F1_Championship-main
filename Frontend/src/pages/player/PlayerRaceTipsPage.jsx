@@ -8,6 +8,7 @@ import {
 } from "../../data/drivers";
 import { getTrackVisual } from "../../data/tracks";
 import { getRaceTip, persistRaceTip } from "../../utils/tips";
+import { getRaceById } from "../../services/raceService.js";
 
 // Farbzuordnung der Teams für visuelle Hervorhebung in Tipp- und Ergebnislisten
 const TEAM_COLOR_PALETTE = {
@@ -63,18 +64,8 @@ function PlayerRaceTipsPage() {
   const [error, setError] = useState("");
   const [lastSavedAt, setLastSavedAt] = useState(null);
 
-  // Lädt alle Rennen aus dem LocalStorage
-  const loadRaces = () => {
-    try {
-      return JSON.parse(localStorage.getItem("races") || "[]");
-    } catch (err) {
-      console.error("races parse error", err);
-      return [];
-    }
-  };
-
   // Hauptroutine zum Synchronisieren aller relevanten Daten
-  const syncData = useCallback(() => {
+  const syncData = useCallback(async () => {
     const driverList = getStoredDrivers();
     const map = driverList.reduce((acc, driver) => {
       acc[driver.name] = driver;
@@ -82,50 +73,42 @@ function PlayerRaceTipsPage() {
     }, {});
     setDriversByName(map);
 
-    const races = loadRaces();
-    const current =
-      races.find((item) => String(item.id) === String(raceId)) || null;
-    setRace(current);
+    // Rennen vom Backend laden
+    try {
+      const current = await getRaceById(raceId);
+      setRace(current);
 
-    const allDrivers =
-      current?.drivers?.length > 0
-        ? current.drivers
-        : driverList.map((driver) => driver.name);
+      // Backend hat kein "drivers" Feld direkt, verwendet resultsOrder oder alle Fahrer
+      const allDrivers = driverList.map((driver) => driver.name);
 
-    const tip = getRaceTip(raceId);
-    const savedOrder = (tip?.order || []).filter((name) =>
-      allDrivers.includes(name)
-    );
+      const tip = getRaceTip(raceId);
+      const savedOrder = (tip?.order || []).filter((name) =>
+        allDrivers.includes(name)
+      );
 
-    const initialSelection =
-      savedOrder.length > 0 ? savedOrder.slice(0, 10) : allDrivers.slice(0, 10);
-    const remaining = allDrivers.filter(
-      (name) => !initialSelection.includes(name)
-    );
+      const initialSelection =
+        savedOrder.length > 0
+          ? savedOrder.slice(0, 10)
+          : allDrivers.slice(0, 10);
+      const remaining = allDrivers.filter(
+        (name) => !initialSelection.includes(name)
+      );
 
-    setSelection(initialSelection);
-    setAvailable(remaining);
-    setLastSavedAt(tip?.updatedAt || null);
-    setMessage("");
-    setError("");
+      setSelection(initialSelection);
+      setAvailable(remaining);
+      setLastSavedAt(tip?.updatedAt || null);
+      setMessage("");
+      setError("");
+    } catch (error) {
+      console.error("Fehler beim Laden des Rennens:", error);
+      setError("Rennen konnte nicht geladen werden.");
+      setRace(null);
+    }
   }, [raceId]);
 
   // Lädt alle Tipp- und Renninformationen beim Seitenstart
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     syncData();
-    const handleStorage = (event) => {
-      if (
-        event.key === "races" ||
-        event.key === "driversData" ||
-        event.key === "playerTips" ||
-        event.key === null
-      ) {
-        syncData();
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
   }, [syncData]);
 
   // Teambezogene Hilfsfunktionen für Darstellung und Teamfarben

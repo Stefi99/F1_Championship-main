@@ -2,33 +2,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTrackVisual } from "../data/tracks";
+import { getAllRaces } from "../services/raceService.js";
 
 function HomePage() {
   const navigate = useNavigate();
   const [races, setRaces] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Lädt Rennen initial aus LocalStorage
+  // Lädt Rennen vom Backend
   useEffect(() => {
-    const loadRaces = () => {
+    const fetchRaces = async () => {
+      setLoading(true);
       try {
-        return JSON.parse(localStorage.getItem("races") || "[]");
-      } catch (err) {
-        console.error("races parse error", err);
-        return [];
+        const racesData = await getAllRaces();
+        setRaces(racesData);
+      } catch (error) {
+        console.error("Fehler beim Laden der Rennen:", error);
+        setRaces([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRaces(loadRaces());
-
-    const handleStorage = (event) => {
-      if (event.key === "races" || event.key === null) {
-        setRaces(loadRaces());
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    fetchRaces();
   }, []);
 
   // Statistische Zusammenfassung aller Rennen
