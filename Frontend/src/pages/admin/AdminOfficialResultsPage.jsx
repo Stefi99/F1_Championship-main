@@ -1,10 +1,6 @@
 //Seite zur Eingabe der offiziellen Rennergebnisse.
 import { useEffect, useState } from "react";
-import {
-  getStoredDrivers,
-  getDriverTeamSync,
-  TEAM_CLASS_MAP,
-} from "../../data/drivers";
+import { getStoredDrivers, getDriverTeam, TEAM_CLASS_MAP } from "../../data/drivers";
 import { getAllRaces, updateRaceResults } from "../../services/raceService.js";
 import { ApiError } from "../../utils/api.js";
 
@@ -36,8 +32,7 @@ function AdminOfficialResultsPage() {
 
   // Hilfsfunktionen zur Ermittlung von Teamfarben und Teamnamen.
   const teamClass = (driverName) => {
-    const team =
-      getDriverTeamSync(driverName) || driversByName[driverName]?.team;
+    const team = getDriverTeam(driverName) || driversByName[driverName]?.team;
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
@@ -47,7 +42,7 @@ function AdminOfficialResultsPage() {
   };
 
   const teamLabel = (driverName) =>
-    getDriverTeamSync(driverName) ||
+    getDriverTeam(driverName) ||
     driversByName[driverName]?.team ||
     "Team unbekannt";
 

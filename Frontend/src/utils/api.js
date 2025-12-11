@@ -22,7 +22,7 @@ export class ApiError extends Error {
  * @returns {Response} Die Response wenn erfolgreich
  * @throws {ApiError} Wenn Response nicht erfolgreich
  */
-async function checkResponse(response) {
+async function checkResponse(response, endpoint) {
   if (!response.ok) {
     let errorData = null;
     const contentType = response.headers.get("content-type");
@@ -104,7 +104,7 @@ async function apiRequest(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, requestOptions);
-    await checkResponse(response);
+    await checkResponse(response, endpoint);
 
     // Leere Response (z.B. bei 204 No Content)
     if (response.status === 204 || response.headers.get("content-length") === "0") {

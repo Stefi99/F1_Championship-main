@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getDriverTeamSync, TEAM_CLASS_MAP } from "../../data/drivers";
+import { getDriverTeam, TEAM_CLASS_MAP } from "../../data/drivers";
 import { getTrackVisual } from "../../data/tracks";
 import { getAllRaces, deleteRace } from "../../services/raceService.js";
 import { ApiError } from "../../utils/api.js";
@@ -17,12 +17,12 @@ function AdminRaceListPage() {
 
   // Team-Informationen für Fahrerchips in der Detailansicht
   const teamClass = (driverName) => {
-    const team = getDriverTeamSync(driverName);
+    const team = getDriverTeam(driverName);
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
   const teamLabel = (driverName) =>
-    getDriverTeamSync(driverName) || "Team unbekannt";
+    getDriverTeam(driverName) || "Team unbekannt";
 
   // Mapping-Tabellen für die Übersetzung technischer Werte
   const statusLabel = {
