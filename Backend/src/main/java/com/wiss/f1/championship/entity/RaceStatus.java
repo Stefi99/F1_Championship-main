@@ -1,7 +1,9 @@
 package com.wiss.f1.championship.entity;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+@JsonDeserialize(using = RaceStatusDeserializer.class)
 public enum RaceStatus {
     OPEN("open"),          // Rennen erstellt, noch keine Tipps möglich
     TIPPABLE("voting"),   // Tippen möglich (Frontend verwendet "voting")
