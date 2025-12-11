@@ -1,16 +1,38 @@
 // Verwaltung des JWT-Tokens
+// Nutzung von sessionStorage (nicht persistent über Tabs) mit Fallback auf In-Memory,
+// um XSS-Risiko durch dauerhaft gespeicherte Tokens zu reduzieren.
 const TOKEN_KEY = "jwt_token";
+let memoryToken = null;
+
+const getSessionStore = () => {
+  try {
+    return typeof window !== "undefined" ? window.sessionStorage : null;
+  } catch (err) {
+    // Zugriff kann z.B. in Privacy- oder SSR-Umgebungen fehlschlagen
+    console.warn("SessionStorage nicht verfügbar, verwende In-Memory-Token.", err);
+    return null;
+  }
+};
 
 /**
  * Speichert das JWT-Token
  * @param {string} token - Das JWT-Token
  */
 export function setToken(token) {
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-  } else {
+  const store = getSessionStore();
+  if (!token) {
     removeToken();
+    return;
   }
+
+  if (store) {
+    store.setItem(TOKEN_KEY, token);
+    memoryToken = null;
+    return;
+  }
+
+  // Fallback: nur innerhalb der laufenden Session im Speicher
+  memoryToken = token;
 }
 
 /**
@@ -18,14 +40,23 @@ export function setToken(token) {
  * @returns {string|null} Das Token oder null
  */
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  const store = getSessionStore();
+  if (store) {
+    return store.getItem(TOKEN_KEY);
+  }
+
+  return memoryToken;
 }
 
 /**
  * Entfernt das gespeicherte Token
  */
 export function removeToken() {
-  localStorage.removeItem(TOKEN_KEY);
+  const store = getSessionStore();
+  if (store) {
+    store.removeItem(TOKEN_KEY);
+  }
+  memoryToken = null;
 }
 
 /**

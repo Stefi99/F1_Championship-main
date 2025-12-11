@@ -1,29 +1,15 @@
 // Verwaltet das Spielerprofil über Backend-API
 import api, { ApiError } from "./api.js";
+import { normalizeUserFromBackend } from "./userMapper.js";
 
 /**
  * Lädt das Spielerprofil vom Backend
- * @returns {Promise<Object>} UserProfileDTO mit allen Profildaten
+ * @returns {Promise<Object>} UserProfileDTO mit allen Profildaten (normalisiert für Frontend)
  */
 export async function loadPlayerProfile() {
   try {
     const userProfile = await api.get("/users/me");
-
-    // UserProfileDTO in Frontend-Format konvertieren
-    return {
-      id: userProfile.id || null,
-      username: userProfile.username || "",
-      displayName: userProfile.displayName || "",
-      email: userProfile.email || "",
-      role: userProfile.role || "PLAYER",
-      favoriteTeam: userProfile.favoriteTeam || "Keines",
-      country: userProfile.country || "",
-      bio: userProfile.bio || "",
-      points: userProfile.points || 0,
-      // Diese Felder kommen nicht vom Backend, werden für Kompatibilität gesetzt
-      lastUpdated: new Date().toISOString(),
-      lastPasswordChange: null,
-    };
+    return normalizeUserFromBackend(userProfile);
   } catch (error) {
     console.error("Fehler beim Laden des Profils:", error);
 
@@ -46,7 +32,7 @@ export async function loadPlayerProfile() {
 /**
  * Speichert das Spielerprofil im Backend
  * @param {Object} profile - Profil-Daten (nur displayName, favoriteTeam, country, bio werden gespeichert)
- * @returns {Promise<Object>} Aktualisiertes UserProfileDTO
+ * @returns {Promise<Object>} Aktualisiertes UserProfileDTO (normalisiert für Frontend)
  */
 export async function persistPlayerProfile(profile) {
   try {
@@ -62,17 +48,11 @@ export async function persistPlayerProfile(profile) {
     const updatedProfile = await api.put("/users/me", updateData);
 
     // UserProfileDTO in Frontend-Format konvertieren
+    const normalized = normalizeUserFromBackend(updatedProfile);
+
+    // Behalte lokale Felder, die nicht vom Backend kommen
     return {
-      id: updatedProfile.id || null,
-      username: updatedProfile.username || profile.username || "",
-      displayName: updatedProfile.displayName || "",
-      email: updatedProfile.email || profile.email || "",
-      role: updatedProfile.role || profile.role || "PLAYER",
-      favoriteTeam: updatedProfile.favoriteTeam || "Keines",
-      country: updatedProfile.country || "",
-      bio: updatedProfile.bio || "",
-      points: updatedProfile.points || profile.points || 0,
-      lastUpdated: new Date().toISOString(),
+      ...normalized,
       lastPasswordChange: profile.lastPasswordChange || null,
     };
   } catch (error) {

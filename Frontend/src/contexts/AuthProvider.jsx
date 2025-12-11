@@ -7,6 +7,7 @@ import {
   hasToken,
 } from "../utils/tokenStorage.js";
 import api from "../utils/api.js";
+import { normalizeUserFromBackend } from "../utils/userMapper.js";
 
 // Provider-Komponente, die den AuthContext bereitstellt
 function AuthProvider({ children }) {
@@ -24,18 +25,8 @@ function AuthProvider({ children }) {
       // User-Profil vom Backend laden
       const userProfile = await api.get("/users/me");
 
-      // User-Objekt für Frontend erstellen
-      const userData = {
-        id: userProfile.id || null, // ID kommt möglicherweise nicht aus UserProfileDTO
-        username: userProfile.username,
-        displayName: userProfile.displayName,
-        email: userProfile.email,
-        role: userProfile.role,
-        favoriteTeam: userProfile.favoriteTeam || "Keines",
-        country: userProfile.country || "",
-        bio: userProfile.bio || "",
-        points: userProfile.points || 0,
-      };
+      // User-Objekt für Frontend normalisieren
+      const userData = normalizeUserFromBackend(userProfile);
 
       setUser(userData);
     } catch (error) {

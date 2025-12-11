@@ -66,7 +66,7 @@ function PlayerRaceTipsPage() {
 
   // Hauptroutine zum Synchronisieren aller relevanten Daten
   const syncData = useCallback(async () => {
-    const driverList = getStoredDrivers();
+    const driverList = await getStoredDrivers(); // getStoredDrivers ist jetzt async
     const map = driverList.reduce((acc, driver) => {
       acc[driver.name] = driver;
       return acc;
