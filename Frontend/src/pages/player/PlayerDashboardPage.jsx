@@ -1,12 +1,24 @@
-// Zentrales Dashboard für Spieler. Zeigt Profildaten, offene Tippfenster,
-// kommende Rennen und Schnellzugriffe (Tippen, Leaderboard, Profil).
+/**
+ * PlayerDashboardPage - Zentrales Dashboard für Spieler
+ *
+ * Zeigt eine Übersicht mit:
+ * - Profildaten (Punkte, Lieblingsteam, etc.)
+ * - Offene Tippfenster (Rennen im Voting-Status)
+ * - Kommende Rennen (nächstes Event)
+ * - Schnellzugriffe (Tippen, Leaderboard, Profil)
+ * - Statistiken (offen, voting, geschlossen)
+ *
+ * Alle Daten werden vom Backend geladen und in übersichtlichen Karten dargestellt.
+ */
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
 import { getTrackVisual } from "../../data/tracks";
 import { getAllRaces } from "../../services/raceService.js";
 
-// Mapping-Tabellen für die UI-Anzeige der Renn- und Wetterstatus-Werte.
+/**
+ * Mapping-Tabellen für die UI-Anzeige der Renn- und Wetterstatus-Werte
+ */
 const statusLabel = {
   open: "Geplant",
   voting: "Voting",
@@ -20,14 +32,23 @@ const weatherLabel = {
 };
 
 function PlayerDashboardPage() {
-  // Zugriff auf aktuellen Benutzer aus dem globalen Auth-Kontext.
-  // User-Daten kommen bereits vom Backend über AuthProvider
+  /**
+   * Zugriff auf aktuellen Benutzer aus dem globalen Auth-Kontext
+   * User-Daten kommen bereits vom Backend über AuthProvider
+   */
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  /**
+   * State für Rennen und Loading-Status
+   */
   const [races, setRaces] = useState([]);
   const [racesLoading, setRacesLoading] = useState(true);
 
-  // Profil-Daten aus User-Context verwenden (kommt bereits vom Backend)
+  /**
+   * Profil-Daten aus User-Context verwenden (kommt bereits vom Backend)
+   * Fallback-Werte für den Fall, dass user noch nicht geladen ist
+   */
   const profile = user || {
     username: "",
     displayName: "",
@@ -40,6 +61,9 @@ function PlayerDashboardPage() {
     lastPasswordChange: null,
   };
 
+  /**
+   * Effect: Lädt alle Rennen vom Backend beim ersten Rendern
+   */
   useEffect(() => {
     const fetchRaces = async () => {
       setRacesLoading(true);
@@ -57,7 +81,12 @@ function PlayerDashboardPage() {
     fetchRaces();
   }, []);
 
-  // Berechnet Statistiken über alle Rennen
+  /**
+   * stats - Berechnet Statistiken über alle Rennen
+   *
+   * Wird mit useMemo optimiert, um Neuberechnungen nur bei Änderungen
+   * der Rennen-Liste durchzuführen.
+   */
   const stats = useMemo(() => {
     const open = races.filter((race) => race.status === "open").length;
     const voting = races.filter((race) => race.status === "voting").length;
@@ -70,7 +99,12 @@ function PlayerDashboardPage() {
     };
   }, [races]);
 
-  // Filtert die Rennen nach Status, um nur relevante Listen anzuzeigen.
+  /**
+   * Gefilterte Rennen-Listen nach Status
+   *
+   * Wird mit useMemo optimiert, um Neuberechnungen nur bei Änderungen
+   * der Rennen-Liste durchzuführen.
+   */
   const votingRaces = useMemo(
     () => races.filter((race) => race.status === "voting"),
     [races]
@@ -80,7 +114,12 @@ function PlayerDashboardPage() {
     [races]
   );
 
-  // Ermittelt das nächste anstehende Rennen
+  /**
+   * nextRace - Ermittelt das nächste anstehende Rennen
+   *
+   * Filtert alle nicht-geschlossenen Rennen und sortiert sie nach Datum.
+   * Gibt das Rennen mit dem frühesten Datum zurück.
+   */
   const nextRace = useMemo(() => {
     const toTimestamp = (value) => {
       if (!value) return Number.POSITIVE_INFINITY;
@@ -94,7 +133,16 @@ function PlayerDashboardPage() {
     );
   }, [races]);
 
-  // Hilfsfunktionen zur formatierten Ausgabe von Datums- und Zeitwerten
+  /**
+   * Hilfsfunktionen zur formatierten Ausgabe von Datums- und Zeitwerten
+   */
+
+  /**
+   * formatDate - Formatiert ein Datum für die Anzeige
+   *
+   * @param {string|Date} value - Datumswert
+   * @returns {string} Formatiertes Datum oder Fallback-Text
+   */
   const formatDate = (value) => {
     if (!value) return "Datum folgt";
     const date = new Date(value);
@@ -102,6 +150,13 @@ function PlayerDashboardPage() {
     return date.toLocaleDateString("de-DE");
   };
 
+  /**
+   * formatDateTime - Formatiert ein Datum mit Uhrzeit für die Anzeige
+   *
+   * @param {string|Date} value - Datumswert
+   * @param {string} fallback - Fallback-Text wenn kein Datum vorhanden
+   * @returns {string} Formatiertes Datum/Uhrzeit oder Fallback-Text
+   */
   const formatDateTime = (value, fallback = "Noch nie angepasst") => {
     if (!value) return fallback;
     const date = new Date(value);
@@ -109,7 +164,15 @@ function PlayerDashboardPage() {
     return date.toLocaleString("de-DE");
   };
 
-  // Definiert die Shortcut-Karten für das Dashboard
+  /**
+   * actions - Definiert die Shortcut-Karten für das Dashboard
+   *
+   * Jede Aktion enthält:
+   * - title: Titel der Aktion
+   * - description: Beschreibung
+   * - cta: Text für den Button
+   * - onClick: Navigations-Handler
+   */
   const actions = [
     {
       title: "Tipps abgeben",

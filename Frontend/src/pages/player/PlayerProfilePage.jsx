@@ -1,4 +1,14 @@
-// Seite zur Bearbeitung des persönlichen Spielerprofils.
+/**
+ * PlayerProfilePage - Seite zur Bearbeitung des persönlichen Spielerprofils
+ *
+ * Ermöglicht Spielern:
+ * - Anzeigename zu ändern
+ * - Lieblingsteam zu setzen
+ * - Land und Bio zu bearbeiten
+ * - Profil-Daten anzuzeigen (Email, Username, Punkte sind schreibgeschützt)
+ *
+ * Hinweis: Email, Username und Passwort können nicht über diese Seite geändert werden.
+ */
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
@@ -9,13 +19,19 @@ import { ApiError } from "../../utils/api.js";
 function PlayerProfilePage() {
   const { user, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  /**
+   * State für Profil-Daten und UI-Status
+   */
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Initialisiert das Formular mit den aktuellen Profildaten.
+  /**
+   * Formular-State - Initialisiert mit den aktuellen Profildaten
+   */
   const [form, setForm] = useState({
     displayName: "",
     email: "",

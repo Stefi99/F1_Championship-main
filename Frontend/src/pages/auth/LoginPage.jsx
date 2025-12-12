@@ -1,10 +1,23 @@
-// Gemeinsame Auth-Seite mit Login links und Registrierung rechts
+/**
+ * AuthPage - Gemeinsame Authentifizierungsseite mit Login und Registrierung
+ *
+ * Zeigt beide Formulare (Login und Registrierung) nebeneinander an.
+ * Der Benutzer kann zwischen beiden wechseln, wobei das fokussierte Formular
+ * visuell hervorgehoben wird.
+ *
+ * Nach erfolgreichem Login oder Registrierung wird der Benutzer automatisch
+ * zu seinem Dashboard weitergeleitet (Admin oder Player, je nach Rolle).
+ *
+ * @param {string} defaultMode - Standard-Modus: "login" oder "register"
+ */
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
 import api, { ApiError } from "../../utils/api.js";
 
-// Initialzustände für Login- und Registrierungsformulare.
+/**
+ * Initialzustände für Login- und Registrierungsformulare
+ */
 const initialLogin = { identifier: "", password: "" };
 const initialRegister = {
   email: "",
@@ -18,31 +31,71 @@ function AuthPage({ defaultMode = "login" }) {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Lokale UI- und Formulare-States
+  /**
+   * UI-State: Welches Formular ist aktuell hervorgehoben (für visuelles Feedback)
+   */
   const [highlight, setHighlight] = useState(
     defaultMode === "register" ? "register" : "login"
   );
+
+  /**
+   * Formular-States für Login und Registrierung
+   */
   const [loginForm, setLoginForm] = useState(initialLogin);
   const [registerForm, setRegisterForm] = useState(initialRegister);
+
+  /**
+   * Fehler- und Erfolgsmeldungen für beide Formulare
+   */
   const [loginError, setLoginError] = useState("");
   const [loginMessage, setLoginMessage] = useState("");
   const [registerError, setRegisterError] = useState("");
   const [registerMessage, setRegisterMessage] = useState("");
+
+  /**
+   * Loading-States für beide Formulare (verhindert mehrfaches Absenden)
+   */
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
 
-  // Formulareingaben aktualisieren. Separate Handler für Login- und Registrierfelder
+  /**
+   * Formular-Update-Handler
+   *
+   * Separate Handler für Login- und Registrierungsformulare,
+   * um die Eingaben in den jeweiligen States zu speichern.
+   */
+
+  /**
+   * handleLoginChange - Aktualisiert ein Feld im Login-Formular
+   *
+   * @param {string} field - Name des Feldes (z.B. "identifier", "password")
+   * @returns {Function} Event-Handler
+   */
   const handleLoginChange = (field) => (event) => {
     const { value } = event.target;
     setLoginForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  /**
+   * handleRegisterChange - Aktualisiert ein Feld im Registrierungs-Formular
+   *
+   * @param {string} field - Name des Feldes (z.B. "email", "username", etc.)
+   * @returns {Function} Event-Handler
+   */
   const handleRegisterChange = (field) => (event) => {
     const { value } = event.target;
     setRegisterForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Login-Flow
+  /**
+   * handleLoginSubmit - Behandelt das Absenden des Login-Formulars
+   *
+   * Sendet die Anmeldedaten an das Backend, prüft die Antwort und
+   * meldet den Benutzer über den AuthContext an. Bei Erfolg wird
+   * der Benutzer zu seinem Dashboard weitergeleitet.
+   *
+   * @param {Event} event - Form-Submit-Event
+   */
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
     setLoginError("");
@@ -50,7 +103,7 @@ function AuthPage({ defaultMode = "login" }) {
     setLoginLoading(true);
 
     try {
-      // API-Call zum Backend
+      // API-Call zum Backend mit identifier (Email oder Username) und Passwort
       const response = await api.post("/auth/login", {
         identifier: loginForm.identifier.trim(),
         password: loginForm.password,
@@ -63,6 +116,7 @@ function AuthPage({ defaultMode = "login" }) {
         return;
       }
 
+      // Validierung: Token muss vorhanden sein
       if (!response.token) {
         setLoginError("Kein Token erhalten. Bitte versuche es erneut.");
         setLoginLoading(false);
@@ -70,7 +124,7 @@ function AuthPage({ defaultMode = "login" }) {
       }
 
       // Token und AuthResponse an AuthProvider übergeben
-      // AuthProvider lädt dann automatisch die vollständigen User-Daten
+      // AuthProvider lädt dann automatisch die vollständigen User-Daten vom Backend
       await login(response.token, {
         id: response.id,
         username: response.username,
@@ -81,9 +135,8 @@ function AuthPage({ defaultMode = "login" }) {
       setLoginForm(initialLogin);
 
       // Warte kurz, damit User die Erfolgsmeldung sieht
+      // Dann Navigation basierend auf Rolle (Admin oder Player)
       setTimeout(() => {
-        // Navigation basierend auf Rolle
-        // User-Daten werden vom AuthProvider geladen, daher kurz warten
         const role = response.role;
         navigate(role === "ADMIN" ? "/admin" : "/player");
       }, 500);
@@ -105,7 +158,14 @@ function AuthPage({ defaultMode = "login" }) {
     }
   };
 
-  // Registrierungs-Flow
+  /**
+   * handleRegisterSubmit - Behandelt das Absenden des Registrierungs-Formulars
+   *
+   * Erstellt einen neuen Benutzer-Account im Backend, meldet den Benutzer
+   * automatisch an und leitet ihn zu seinem Dashboard weiter.
+   *
+   * @param {Event} event - Form-Submit-Event
+   */
   const handleRegisterSubmit = async (event) => {
     event.preventDefault();
     setRegisterError("");

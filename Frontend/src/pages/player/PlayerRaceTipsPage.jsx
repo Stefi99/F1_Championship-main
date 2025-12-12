@@ -1,4 +1,17 @@
-// Seite zur Abgabe oder Ansicht der persönlichen Tipps für ein bestimmtes Rennen
+/**
+ * PlayerRaceTipsPage - Seite zur Abgabe oder Ansicht der persönlichen Tipps
+ *
+ * Ermöglicht Spielern:
+ * - Top 10 Fahrer für ein Rennen zu tippen (nur wenn Status = "voting")
+ * - Fahrer per Drag & Drop oder Up/Down-Buttons zu sortieren
+ * - Tipps zu speichern (nur die ersten 10 Positionen werden gewertet)
+ * - Gespeicherte Tipps anzuzeigen
+ * - Offizielle Ergebnisse zu sehen (wenn Rennen geschlossen ist)
+ * - Vergleich zwischen Tipp und offiziellem Ergebnis
+ *
+ * Die Seite zeigt auch visuell an, welche Tipps richtig waren
+ * (exakte Position, knapp daneben, in Top 10, fehlt).
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -10,7 +23,11 @@ import { getTrackVisual } from "../../data/tracks";
 import { getRaceTip, persistRaceTip } from "../../utils/tips";
 import { getRaceById } from "../../services/raceService.js";
 
-// Farbzuordnung der Teams für visuelle Hervorhebung in Tipp- und Ergebnislisten
+/**
+ * TEAM_COLOR_PALETTE - Farbzuordnung der Teams
+ *
+ * Wird verwendet für visuelle Hervorhebung in Tipp- und Ergebnislisten
+ */
 const TEAM_COLOR_PALETTE = {
   "team-red-bull": "#2037c4",
   "team-ferrari": "#dc0000",
@@ -64,7 +81,17 @@ function PlayerRaceTipsPage() {
   const [error, setError] = useState("");
   const [lastSavedAt, setLastSavedAt] = useState(null);
 
-  // Hauptroutine zum Synchronisieren aller relevanten Daten
+  /**
+   * syncData - Hauptroutine zum Synchronisieren aller relevanten Daten
+   *
+   * Lädt:
+   * - Alle Fahrer vom Backend
+   * - Rennen-Daten vom Backend
+   * - Gespeicherten Tipp (falls vorhanden)
+   *
+   * Initialisiert die Auswahl mit gespeichertem Tipp oder ersten 10 Fahrern.
+   * Wird beim Seitenstart und beim Zurücksetzen aufgerufen.
+   */
   const syncData = useCallback(async () => {
     const driverList = await getStoredDrivers(); // getStoredDrivers ist jetzt async
     const map = driverList.reduce((acc, driver) => {
@@ -153,29 +180,61 @@ function PlayerRaceTipsPage() {
   const statusText = statusLabel[race?.status] || statusLabel.open;
   const lastSavedText = formatDateTime(lastSavedAt);
 
-  // Verschiebt einen Fahrer innerhalb der Top-10-Auswahl
+  /**
+   * moveItem - Verschiebt einen Fahrer innerhalb der Top-10-Auswahl
+   *
+   * Wird verwendet für:
+   * - Drag & Drop Operationen
+   * - Up/Down Button-Klicks
+   *
+   * @param {number} from - Index der Quelle
+   * @param {number} to - Index des Ziels
+   */
   const moveItem = (from, to) => {
+    // Validierung: Indizes müssen gültig und unterschiedlich sein
     if (from === null || to === null || from === to) return;
     setSelection((prev) => {
+      // Validierung: Ziel-Index muss innerhalb der Liste sein
       if (to < 0 || to >= prev.length) return prev;
       const next = [...prev];
+      // Element entfernen und an neuer Position einfügen
       const [item] = next.splice(from, 1);
       next.splice(to, 0, item);
       return next;
     });
   };
 
-  // Steuerung der Drag & Drop Interaktion
+  /**
+   * Drag & Drop Event-Handler
+   *
+   * Alle Handler prüfen zuerst, ob Tippen erlaubt ist (canTip).
+   */
+
+  /**
+   * handleDragStart - Startet das Ziehen eines Elements
+   *
+   * @param {number} index - Index des Elements, das gezogen wird
+   */
   const handleDragStart = (index) => {
     if (!canTip) return;
     setDragIndex(index);
   };
 
+  /**
+   * handleDragOver - Verhindert Standard-Verhalten beim Überziehen
+   *
+   * @param {Event} event - Drag-Event
+   */
   const handleDragOver = (event) => {
     if (!canTip) return;
     event.preventDefault();
   };
 
+  /**
+   * handleDrop - Beendet das Ziehen und verschiebt das Element
+   *
+   * @param {number} index - Index der Zielposition
+   */
   const handleDrop = (index) => {
     if (!canTip) return;
     if (dragIndex === null) return;
@@ -183,7 +242,15 @@ function PlayerRaceTipsPage() {
     setDragIndex(null);
   };
 
-  // Fügt einen Fahrer aus dem verfügbaren Pool zur Top 10 hinzu
+  /**
+   * handleAddDriver - Fügt einen Fahrer aus dem verfügbaren Pool zur Top 10 hinzu
+   *
+   * Prüft:
+   * - Ob Fahrer bereits ausgewählt ist
+   * - Ob das Limit von 10 Fahrern erreicht ist
+   *
+   * @param {string} driverName - Name des Fahrers
+   */
   const handleAddDriver = (driverName) => {
     if (selection.includes(driverName)) return;
     if (selection.length >= 10) {
@@ -196,7 +263,13 @@ function PlayerRaceTipsPage() {
     setMessage("");
   };
 
-  // Entfernt einen Fahrer aus der Top 10 und legt ihn zurück in den Fahrerpool
+  /**
+   * handleRemoveDriver - Entfernt einen Fahrer aus der Top 10
+   *
+   * Legt den Fahrer zurück in den verfügbaren Pool.
+   *
+   * @param {string} driverName - Name des Fahrers
+   */
   const handleRemoveDriver = (driverName) => {
     setSelection((prev) => prev.filter((name) => name !== driverName));
     setAvailable((prev) =>
@@ -204,7 +277,15 @@ function PlayerRaceTipsPage() {
     );
   };
 
-  // Speichert den Tipp des Spielers
+  /**
+   * handleSave - Speichert den Tipp des Spielers
+   *
+   * Validiert:
+   * - Rennen muss vorhanden sein
+   * - Mindestens ein Fahrer muss ausgewählt sein
+   *
+   * Speichert nur die ersten 10 Positionen (Rest wird ignoriert).
+   */
   const handleSave = async () => {
     if (!race) {
       setError("Rennen wurde nicht gefunden.");
