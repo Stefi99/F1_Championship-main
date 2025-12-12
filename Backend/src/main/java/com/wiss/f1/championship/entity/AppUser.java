@@ -16,49 +16,56 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Entity für einen User der Anwendung.
+ * Implementiert Spring Security's UserDetails für Authentifizierung und Autorisierung.
+ */
 @Entity
 @Table(name = "app_users")
 public class AppUser implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;  // Primärschlüssel
 
     @Column(nullable = false, unique = true, length = 50)
-    private String username;
+    private String username;  // Username für Login
 
     @Column(nullable = false, unique = true, length = 100)
-    private String email;
+    private String email;  // E-Mail-Adresse
 
     @Column(nullable = false)
-    private String password;
+    private String password;  // Passwort (verschlüsselt)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private Role role;
+    private Role role;  // Rolle: PLAYER oder ADMIN
 
     @Column(length = 100)
-    private String displayName;  // Anzeigename (optional, falls nicht gesetzt wird username verwendet)
+    private String displayName;  // Optionaler Anzeigename
 
     @Column(length = 100)
-    private String favoriteTeam;  // Lieblings-Team (optional)
+    private String favoriteTeam;  // Optional: Lieblings-Team
 
     @Column(length = 100)
-    private String country;      // Land (optional)
+    private String country;      // Optional: Land
 
     @Column(length = 500)
-    private String bio;          // Biografie (optional)
+    private String bio;          // Optional: Biografie
 
+    // Standardkonstruktor
     public AppUser() {}
 
+    // Konstruktor ohne displayName (displayName = username)
     public AppUser(String username, String email, String password, Role role) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.role = role;
-        this.displayName = username;  // Standard: displayName = username
+        this.displayName = username;
     }
 
+    // Konstruktor mit optionalem displayName
     public AppUser(String username, String email, String password, Role role, String displayName) {
         this.username = username;
         this.email = email;
@@ -67,6 +74,7 @@ public class AppUser implements UserDetails {
         this.displayName = displayName != null && !displayName.trim().isEmpty() ? displayName : username;
     }
 
+    // UserDetails Methoden für Spring Security
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
@@ -90,43 +98,36 @@ public class AppUser implements UserDetails {
     @Override
     public boolean isEnabled() { return true; }
 
+    // Getter und Setter für weitere Felder
     public Long getId() { return id; }
 
     public String getEmail() { return email; }
 
     public Role getRole() { return role; }
-
     public void setRole(Role role) { this.role = role; }
 
     public String getDisplayName() {
         return displayName != null && !displayName.trim().isEmpty() ? displayName : username;
     }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+    public String getFavoriteTeam() { return favoriteTeam; }
+    public void setFavoriteTeam(String favoriteTeam) { this.favoriteTeam = favoriteTeam; }
 
-    public String getFavoriteTeam() {
-        return favoriteTeam;
-    }
+    public String getCountry() { return country; }
+    public void setCountry(String country) { this.country = country; }
 
-    public void setFavoriteTeam(String favoriteTeam) {
-        this.favoriteTeam = favoriteTeam;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 }
+
+/* ============================================================
+   ZUSAMMENFASSUNG DIESES FILES (AppUser.java)
+   ------------------------------------------------------------
+   - Entity für User, speichert Username, Email, Passwort, Rolle
+   - Optionale Felder: displayName, favoriteTeam, country, bio
+   - Implementiert UserDetails für Spring Security:
+       - getAuthorities() gibt ROLE_PLAYER oder ROLE_ADMIN zurück
+       - AccountStatus-Methoden immer true (nicht gesperrt/abgelaufen)
+   - Wird in AuthController, AppUserController und SecurityConfig verwendet
+   ============================================================ */

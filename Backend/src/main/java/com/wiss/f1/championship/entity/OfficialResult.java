@@ -1,13 +1,18 @@
 package com.wiss.f1.championship.entity;
+
 import jakarta.persistence.*;
 
+/**
+ * Entity für offizielle Rennergebnisse.
+ * Verknüpft ein Rennen mit einem Fahrer und der finalen Position.
+ */
 @Entity
 @Table(name = "official_results")
 public class OfficialResult {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;  // Primärschlüssel
 
     // Ergebnis gehört zu genau einem Rennen
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -20,12 +25,13 @@ public class OfficialResult {
     private Driver driver;
 
     @Column(nullable = false)
-    private Integer finalPosition; // 1 bis 20
+    private Integer finalPosition; // Endplatzierung im Rennen (1 bis 20)
 
-    // Leerer Konstruktor
+    // Leerer Konstruktor für JPA
     public OfficialResult() {
     }
 
+    // Konstruktor mit Race, Driver und finaler Position
     public OfficialResult(Race race, Driver driver, Integer finalPosition) {
         this.race = race;
         this.driver = driver;
@@ -33,7 +39,6 @@ public class OfficialResult {
     }
 
     // Getter und Setter
-
     public Long getId() {
         return id;
     }
@@ -62,3 +67,12 @@ public class OfficialResult {
         this.finalPosition = finalPosition;
     }
 }
+
+/* ============================================================
+   ZUSAMMENFASSUNG DIESES FILES (OfficialResult.java)
+   ------------------------------------------------------------
+   - Entity für ein offizielles Rennergebnis
+   - Felder: id, race, driver, finalPosition
+   - Verknüpft Race und Driver über ManyToOne-Beziehungen
+   - Wird in OfficialResultController und Leaderboard-Logik verwendet
+   ============================================================ */
