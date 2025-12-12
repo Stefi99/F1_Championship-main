@@ -60,18 +60,51 @@ public class Tip {
         this.updatedAt = updatedAt;
     }
 
-    // Getter & Setter
-    public Long getId() { return id; }
-    public AppUser getUser() { return user; }
-    public void setUser(AppUser user) { this.user = user; }
-    public Race getRace() { return race; }
-    public void setRace(Race race) { this.race = race; }
-    public Driver getDriver() { return driver; }
-    public void setDriver(Driver driver) { this.driver = driver; }
-    public Integer getPredictedPosition() { return predictedPosition; }
-    public void setPredictedPosition(Integer predictedPosition) { this.predictedPosition = predictedPosition; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    // Getter und Setter
+
+    public Long getId() {
+        return id;
+    }
+
+    public AppUser getUser() {
+        return user;
+    }
+
+    public void setUser(AppUser user) {
+        this.user = user;
+    }
+
+    public Race getRace() {
+        return race;
+    }
+
+    public void setRace(Race race) {
+        this.race = race;
+    }
+
+    public Driver getDriver() {
+        return driver;
+    }
+
+    public void setDriver(Driver driver) {
+        this.driver = driver;
+    }
+
+    public Integer getPredictedPosition() {
+        return predictedPosition;
+    }
+
+    public void setPredictedPosition(Integer predictedPosition) {
+        this.predictedPosition = predictedPosition;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }
 
 /* ============================================================

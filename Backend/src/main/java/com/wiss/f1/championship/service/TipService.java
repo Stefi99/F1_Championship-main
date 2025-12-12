@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -73,15 +75,20 @@ public class TipService {
 
         for (int i = 0; i < driverNames.size() && i < 10; i++) {
             String driverName = driverNames.get(i);
-            if (driverName == null || driverName.trim().isEmpty()) continue;
+            if (driverName == null || driverName.trim().isEmpty()) {
+                continue; // Überspringe leere Einträge
+            }
 
             Optional<Driver> driverOpt = driverService.getDriverByName(driverName);
             if (driverOpt.isEmpty()) {
                 throw new IllegalArgumentException("Fahrer nicht gefunden: " + driverName);
             }
 
+            Driver driver = driverOpt.get();
+
             int position = i + 1; // Position 1-10
-            newTips.add(new Tip(user, race, driverOpt.get(), position, LocalDateTime.now()));
+            Tip tip = new Tip(user, race, driver, position, LocalDateTime.now());
+            newTips.add(tip);
         }
 
         return tipRepository.saveAll(newTips);
@@ -96,10 +103,13 @@ public class TipService {
      */
     public List<String> getTipOrderForUserAndRace(AppUser user, Race race) {
         List<Tip> tips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
-        if (tips.isEmpty()) return new ArrayList<>();
+        if (tips.isEmpty()) {
+            return new ArrayList<>();
+        }
 
+        // Sortiere nach Position und extrahiere Fahrernamen
         return tips.stream()
-                .sorted(Comparator.comparingInt(Tip::getPredictedPosition))
+                .sorted((t1, t2) -> Integer.compare(t1.getPredictedPosition(), t2.getPredictedPosition()))
                 .map(tip -> tip.getDriver().getName())
                 .collect(Collectors.toList());
     }
@@ -114,21 +124,18 @@ public class TipService {
         List<Tip> allTips = tipRepository.findByUser(user);
 
         return allTips.stream()
-                .collect(Collectors.groupingBy(Tip::getRace))
-                .entrySet().stream()
-                .map(entry -> {
-                    Race race = entry.getKey();
-                    List<Tip> raceTips = entry.getValue();
-                    List<String> order = raceTips.stream()
-                            .sorted(Comparator.comparingInt(Tip::getPredictedPosition))
-                            .map(t -> t.getDriver().getName())
-                            .collect(Collectors.toList());
-
-                    LocalDateTime updatedAt = raceTips.get(0).getUpdatedAt();
-                    return new TipResponseDTO(race.getId(), order, updatedAt);
-                })
+            .collect(Collectors.groupingBy(Tip::getRace))
+            .entrySet().stream()
+            .map(entry -> {
+        Race race = entry.getKey();
+        List<String> order = entry.getValue().stream()
+                .sorted((t1, t2) -> Integer.compare(t1.getPredictedPosition(), t2.getPredictedPosition()))
+                .map(tip -> tip.getDriver().getName())
                 .collect(Collectors.toList());
-    }
+        return new TipResponseDTO(race.getId(), order, entry.getValue().getFirst().getUpdatedAt());
+    })
+            .collect(Collectors.toList());
+}
 
     /**
      * Holt das Datum der letzten Tipp-Aktualisierung für einen User und ein Rennen.
@@ -139,8 +146,10 @@ public class TipService {
      */
     public LocalDateTime getTipUpdatedAtForUserAndRace(AppUser user, Race race) {
         List<Tip> tips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
-        if (tips.isEmpty()) return LocalDateTime.now();
-        return tips.get(0).getUpdatedAt();
+        if(tips.isEmpty()) {
+            return LocalDateTime.now();
+        }
+        return tips.getFirst().getUpdatedAt();
     }
 }
 

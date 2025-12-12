@@ -11,11 +11,18 @@ import com.wiss.f1.championship.service.TipService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/tips")
@@ -39,14 +46,14 @@ public class TipController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !(authentication.getPrincipal() instanceof AppUser)) {
-            return ResponseEntity.status(401).build(); // nicht authentifiziert
+            return ResponseEntity.status(401).build();
         }
 
         AppUser currentUser = (AppUser) authentication.getPrincipal();
 
         Optional<Race> raceOpt = raceService.getRaceById(raceId);
         if (raceOpt.isEmpty()) {
-            return ResponseEntity.notFound().build(); // Rennen nicht gefunden
+            return ResponseEntity.notFound().build();
         }
 
         Race race = raceOpt.get();
@@ -71,9 +78,15 @@ public class TipController {
         AppUser currentUser = (AppUser) authentication.getPrincipal();
 
         // Validierung des Requests
-        if (request.getRaceId() == null || request.getOrder() == null || request.getOrder().isEmpty()) {
+        if (request.getRaceId() == null) {
             return ResponseEntity.badRequest().build();
         }
+
+        if (request.getOrder() == null || request.getOrder().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Rennen prüfen
 
         Optional<Race> raceOpt = raceService.getRaceById(request.getRaceId());
         if (raceOpt.isEmpty()) {
@@ -82,6 +95,7 @@ public class TipController {
 
         Race race = raceOpt.get();
 
+        // Tipp speichern/aktualisieren
         try {
             tipService.saveOrUpdateTip(currentUser, race, request.getOrder());
 

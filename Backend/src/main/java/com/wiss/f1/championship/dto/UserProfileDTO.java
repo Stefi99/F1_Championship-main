@@ -36,29 +36,71 @@ public class UserProfileDTO {
     }
 
     // Getter und Setter
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
 
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public String getFavoriteTeam() { return favoriteTeam; }
-    public void setFavoriteTeam(String favoriteTeam) { this.favoriteTeam = favoriteTeam; }
+    public String getDisplayName() {
+        return displayName;
+    }
 
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
+    public String getEmail() {
+        return email;
+    }
 
-    public int getPoints() { return points; }
-    public void setPoints(int points) { this.points = points; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public String getFavoriteTeam() {
+        return favoriteTeam;
+    }
+
+    public void setFavoriteTeam(String favoriteTeam) {
+        this.favoriteTeam = favoriteTeam;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
 }
 
 /* ============================================================

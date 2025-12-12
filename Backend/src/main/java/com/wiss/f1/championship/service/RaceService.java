@@ -82,6 +82,7 @@ public class RaceService {
         Race race = raceRepository.findById(id)
                 .orElseThrow(() -> new RaceNotFoundException("Race nicht gefunden mit ID: " + id));
         race.setResultsOrder(resultsOrder);
+        // Wenn Ergebnisse gespeichert werden, setze Status automatisch auf CLOSED
         race.setStatus(RaceStatus.CLOSED);
         return raceRepository.save(race);
     }

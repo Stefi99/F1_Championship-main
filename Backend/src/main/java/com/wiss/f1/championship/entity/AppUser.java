@@ -98,27 +98,45 @@ public class AppUser implements UserDetails {
     @Override
     public boolean isEnabled() { return true; }
 
-    // Getter und Setter für weitere Felder
     public Long getId() { return id; }
 
     public String getEmail() { return email; }
 
     public Role getRole() { return role; }
+
     public void setRole(Role role) { this.role = role; }
 
     public String getDisplayName() {
         return displayName != null && !displayName.trim().isEmpty() ? displayName : username;
     }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
 
-    public String getFavoriteTeam() { return favoriteTeam; }
-    public void setFavoriteTeam(String favoriteTeam) { this.favoriteTeam = favoriteTeam; }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
+    public String getFavoriteTeam() {
+        return favoriteTeam;
+    }
 
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
+    public void setFavoriteTeam(String favoriteTeam) {
+        this.favoriteTeam = favoriteTeam;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
 }
 
 /* ============================================================

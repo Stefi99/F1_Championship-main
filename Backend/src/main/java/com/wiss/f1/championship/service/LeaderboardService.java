@@ -56,11 +56,20 @@ public class LeaderboardService {
             int totalPoints = 0;
 
             for (Race race : races) {
+                System.out.println("Checking race " + race.getName());
                 // Nur geschlossene Rennen berücksichtigen
                 if (race.getStatus() != RaceStatus.CLOSED) continue;
 
+                System.out.println("Race isnt closed");
+                // Tipps des Users für dieses Rennen
+
                 List<Tip> userTips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
                 if (userTips.isEmpty()) continue;
+
+                System.out.println("Tips arent empty");
+
+                System.out.println("Checking official results");
+                // Offizielle Ergebnisse
 
                 List<OfficialResult> results = officialResultRepository.findByRaceId(race.getId());
                 if (results.isEmpty()) continue;
@@ -75,6 +84,8 @@ public class LeaderboardService {
                 for (Tip t : userTips) {
                     predictedPosMap.put(t.getPredictedPosition(), t.getDriver().getId());
                 }
+
+                System.out.println("Calculating race points");
 
                 totalPoints += calculateRacePoints(predictedPosMap, officialPosMap);
             }
@@ -145,6 +156,8 @@ public class LeaderboardService {
 
         for (Race race : races) {
             if (race.getStatus() != RaceStatus.CLOSED) continue;
+
+            if (!"CLOSED".equalsIgnoreCase(race.getStatus().name())) continue;
 
             List<Tip> userTips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
             if (userTips.isEmpty()) continue;

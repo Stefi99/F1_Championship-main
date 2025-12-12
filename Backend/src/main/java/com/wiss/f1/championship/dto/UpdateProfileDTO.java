@@ -26,17 +26,38 @@ public class UpdateProfileDTO {
     }
 
     // Getter und Setter
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
 
-    public String getFavoriteTeam() { return favoriteTeam; }
-    public void setFavoriteTeam(String favoriteTeam) { this.favoriteTeam = favoriteTeam; }
+    public String getDisplayName() {
+        return displayName;
+    }
 
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
+    public String getFavoriteTeam() {
+        return favoriteTeam;
+    }
+
+    public void setFavoriteTeam(String favoriteTeam) {
+        this.favoriteTeam = favoriteTeam;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
 }
 
 /* ============================================================

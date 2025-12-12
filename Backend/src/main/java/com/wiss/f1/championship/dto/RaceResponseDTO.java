@@ -39,30 +39,69 @@ public class RaceResponseDTO {
         this.resultsOrder = resultsOrder;
     }
 
-    // Getter und Setter
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
+    public String getName() {
+        return name;
+    }
 
-    public String getTrack() { return track; }
-    public void setTrack(String track) { this.track = track; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getWeather() { return weather; }
-    public void setWeather(String weather) { this.weather = weather; }
+    public LocalDate getDate() {
+        return date;
+    }
 
-    public String getTyres() { return tyres; }
-    public void setTyres(String tyres) { this.tyres = tyres; }
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
 
-    public RaceStatus getStatus() { return status; }
-    public void setStatus(RaceStatus status) { this.status = status; }
+    public String getTrack() {
+        return track;
+    }
 
-    public List<String> getResultsOrder() { return resultsOrder; }
-    public void setResultsOrder(List<String> resultsOrder) { this.resultsOrder = resultsOrder; }
+    public void setTrack(String track) {
+        this.track = track;
+    }
+
+    public String getWeather() {
+        return weather;
+    }
+
+    public void setWeather(String weather) {
+        this.weather = weather;
+    }
+
+    public String getTyres() {
+        return tyres;
+    }
+
+    public void setTyres(String tyres) {
+        this.tyres = tyres;
+    }
+
+    public RaceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RaceStatus status) {
+        this.status = status;
+    }
+
+    public List<String> getResultsOrder() {
+        return resultsOrder;
+    }
+
+    public void setResultsOrder(List<String> resultsOrder) {
+        this.resultsOrder = resultsOrder;
+    }
 }
 
 /* ============================================================
