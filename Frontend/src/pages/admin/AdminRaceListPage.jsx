@@ -1,3 +1,15 @@
+/**
+ * AdminRaceListPage - Seite für die Verwaltung aller Rennen (Admin-Bereich)
+ *
+ * Zeigt eine Übersicht aller Rennen mit:
+ * - Statistiken (Gesamt, offen/voting, geschlossen)
+ * - Karten für jedes Rennen mit visueller Streckendarstellung
+ * - Erweiterbare Detailansicht mit Ergebnissen und teilnehmenden Fahrern
+ * - Schnellzugriffe zum Bearbeiten, Löschen und zu Ergebnissen
+ *
+ * Jede Rennkarte zeigt Strecke, Datum, Wetter, Reifen, Status und
+ * kann erweitert werden, um Details anzuzeigen.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDriverTeam, TEAM_CLASS_MAP } from "../../data/drivers";
@@ -7,43 +19,75 @@ import { ApiError } from "../../utils/api.js";
 import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
 import ErrorMessage from "../../components/common/ErrorMessage.jsx";
 
-// Seite für die Verwaltung aller Rennen (Admin-Bereich)
 function AdminRaceListPage() {
   const navigate = useNavigate();
+  // Liste aller Rennen (vom Backend geladen)
   const [races, setRaces] = useState([]);
+  // ID des Rennens, dessen Detailansicht erweitert ist (null wenn keine)
   const [expandedId, setExpandedId] = useState(null);
+  // Loading-State für initiales Laden der Rennen
   const [loading, setLoading] = useState(true);
+  // Fehler-Objekt (falls beim Laden ein Fehler auftritt)
   const [error, setError] = useState(null);
 
-  // Team-Informationen für Fahrerchips in der Detailansicht
+  /**
+   * Hilfsfunktionen für Team-Informationen in der Detailansicht
+   */
+
+  /**
+   * teamClass - Gibt die CSS-Klasse für das Team eines Fahrers zurück
+   *
+   * @param {string} driverName - Name des Fahrers
+   * @returns {string} CSS-Klasse für das Team
+   */
   const teamClass = (driverName) => {
     const team = getDriverTeam(driverName);
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
+  /**
+   * teamLabel - Gibt den Team-Namen eines Fahrers zurück
+   *
+   * @param {string} driverName - Name des Fahrers
+   * @returns {string} Team-Name oder "Team unbekannt"
+   */
   const teamLabel = (driverName) =>
     getDriverTeam(driverName) || "Team unbekannt";
 
-  // Mapping-Tabellen für die Übersetzung technischer Werte
+  /**
+   * Mapping-Tabellen für die Übersetzung technischer Werte in benutzerfreundliche Labels
+   */
+
+  /**
+   * statusLabel - Übersetzt Status-Werte in deutsche Labels
+   */
   const statusLabel = {
     open: "Offen",
     voting: "Voting",
     closed: "Geschlossen",
   };
 
+  /**
+   * weatherLabel - Übersetzt Wetter-Werte in deutsche Labels
+   */
   const weatherLabel = {
     sunny: "Sonne",
     cloudy: "Wolkig",
     rain: "Regen",
   };
 
+  /**
+   * tyreLabel - Übersetzt Reifen-Werte in Labels
+   */
   const tyreLabel = {
     soft: "Soft",
     medium: "Medium",
     hard: "Hard",
   };
 
-  // Lädt alle Rennen vom Backend
+  /**
+   * Effect: Lädt alle Rennen vom Backend beim ersten Rendern
+   */
   useEffect(() => {
     const fetchRaces = async () => {
       setLoading(true);
@@ -63,7 +107,18 @@ function AdminRaceListPage() {
     fetchRaces();
   }, []);
 
-  // Berechnet Statistiken (Anzahl offen, voting, geschlossen)
+  /**
+   * stats - Berechnet Statistiken über die Rennen
+   *
+   * Wird mit useMemo optimiert, um Neuberechnungen nur bei Änderungen
+   * der Rennen-Liste durchzuführen.
+   *
+   * Berechnet:
+   * - total: Gesamtanzahl aller Rennen
+   * - openCount: Anzahl offener Rennen
+   * - votingCount: Anzahl Rennen im Voting-Status
+   * - closedCount: Anzahl geschlossener Rennen
+   */
   const stats = useMemo(() => {
     const total = races.length;
     const openCount = races.filter((race) => race.status === "open").length;
@@ -77,7 +132,14 @@ function AdminRaceListPage() {
     return { total, openCount, votingCount, closedCount };
   }, [races]);
 
-  // Löscht ein Rennen nach Bestätigung durch den Benutzer.
+  /**
+   * handleDelete - Löscht ein Rennen nach Bestätigung durch den Benutzer
+   *
+   * Zeigt eine Bestätigungsabfrage an, bevor das Rennen gelöscht wird.
+   * Nach erfolgreichem Löschen wird das Rennen aus der lokalen Liste entfernt.
+   *
+   * @param {string|number} id - ID des zu löschenden Rennens
+   */
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Rennen wirklich löschen?");
     if (!confirmDelete) return;
@@ -96,11 +158,26 @@ function AdminRaceListPage() {
     }
   };
 
-  // Öffnet oder schließt die Detailansicht einer Rennkarte
+  /**
+   * toggleExpand - Öffnet oder schließt die Detailansicht einer Rennkarte
+   *
+   * Wenn die Karte bereits erweitert ist, wird sie geschlossen.
+   * Wenn sie geschlossen ist, wird sie erweitert.
+   *
+   * @param {string|number} id - ID des Rennens
+   */
   const toggleExpand = (id) =>
     setExpandedId((prev) => (String(prev) === String(id) ? null : id));
 
-  // Erzeugt die Hintergrund-Styles für die Track-Karte
+  /**
+   * mediaStyle - Erzeugt die Hintergrund-Styles für die Track-Karte
+   *
+   * Kombiniert mehrere Hintergrund-Layer (Pattern, Bild, Gradient)
+   * zu einem CSS-Style-Objekt für die visuelle Darstellung der Strecke.
+   *
+   * @param {Object} visual - Track-Visual-Objekt mit pattern, image, gradient
+   * @returns {Object} CSS-Style-Objekt für backgroundImage
+   */
   const mediaStyle = (visual) => {
     const layers = [
       visual.pattern,
