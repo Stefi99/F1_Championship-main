@@ -5,19 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.wiss.f1.championship.entity.Driver;
 import com.wiss.f1.championship.entity.OfficialResult;
@@ -33,30 +27,37 @@ class OfficialResultServiceTest {
 
     @BeforeEach
     void setUp() {
+        // Mockito-Mock des Repositories erstellen, Service mit Mock initialisieren
         resultRepository = mock(OfficialResultRepository.class);
         resultService = new OfficialResultService(resultRepository);
     }
 
     @Test
     void testCreateResult() {
+        // Testet das Erstellen eines neuen OfficialResult
         Race race = new Race("Bahrain GP", LocalDate.of(2024, 3, 2),
                 "Bahrain International Circuit", "Sunny", RaceStatus.CLOSED);
         Driver driver = new Driver("Max Verstappen", "Red Bull Racing");
         OfficialResult result = new OfficialResult(race, driver, 1);
 
+        // Mock: save() gibt das übergebene Objekt zurück
         when(resultRepository.save(any(OfficialResult.class))).thenReturn(result);
 
         OfficialResult saved = resultService.createResult(result);
 
+        // Prüfen, dass Ergebnis korrekt gespeichert wurde
         assertNotNull(saved);
         assertEquals(1, saved.getFinalPosition());
         assertEquals("Max Verstappen", saved.getDriver().getName());
         assertEquals("Bahrain GP", saved.getRace().getName());
+
+        // Sicherstellen, dass Repository.save genau einmal aufgerufen wurde
         verify(resultRepository, times(1)).save(any(OfficialResult.class));
     }
 
     @Test
     void testGetById() {
+        // Testet Abruf eines OfficialResult nach ID (vorhanden)
         Race race = new Race("Bahrain GP", LocalDate.of(2024, 3, 2),
                 "Bahrain International Circuit", "Sunny", RaceStatus.CLOSED);
         Driver driver = new Driver("Max Verstappen", "Red Bull Racing");
@@ -66,30 +67,35 @@ class OfficialResultServiceTest {
 
         Optional<OfficialResult> found = resultService.getById(1L);
 
+        // Prüfen, dass Ergebnis korrekt zurückgegeben wird
         assertTrue(found.isPresent());
         assertEquals(1, found.get().getFinalPosition());
         assertEquals("Max Verstappen", found.get().getDriver().getName());
+
         verify(resultRepository, times(1)).findById(1L);
     }
 
     @Test
     void testGetByIdNotFound() {
+        // Testet Abruf eines OfficialResult nach ID, die nicht existiert
         when(resultRepository.findById(999L)).thenReturn(Optional.empty());
 
         Optional<OfficialResult> result = resultService.getById(999L);
 
+        // Prüfen, dass kein Ergebnis zurückgegeben wird
         assertFalse(result.isPresent());
         verify(resultRepository, times(1)).findById(999L);
     }
 
     @Test
     void testGetResultsForRace() {
+        // Testet Abruf aller OfficialResults für ein Rennen
         Race race = new Race("Bahrain GP", LocalDate.of(2024, 3, 2),
                 "Bahrain International Circuit", "Sunny", RaceStatus.CLOSED);
-        
+
         Driver driver1 = new Driver("Max Verstappen", "Red Bull Racing");
         Driver driver2 = new Driver("Lewis Hamilton", "Mercedes");
-        
+
         OfficialResult result1 = new OfficialResult(race, driver1, 1);
         OfficialResult result2 = new OfficialResult(race, driver2, 2);
 
@@ -98,17 +104,20 @@ class OfficialResultServiceTest {
 
         List<OfficialResult> found = resultService.getResultsForRace(race);
 
+        // Prüfen, dass beide Ergebnisse korrekt zurückgegeben werden
         assertNotNull(found);
         assertEquals(2, found.size());
         assertEquals(1, found.get(0).getFinalPosition());
         assertEquals(2, found.get(1).getFinalPosition());
         assertEquals("Max Verstappen", found.get(0).getDriver().getName());
         assertEquals("Lewis Hamilton", found.get(1).getDriver().getName());
+
         verify(resultRepository, times(1)).findByRace(eq(race));
     }
 
     @Test
     void testGetResultsForRaceEmpty() {
+        // Testet Abruf für ein Rennen ohne Ergebnisse
         Race race = new Race("Bahrain GP", LocalDate.of(2024, 3, 2),
                 "Bahrain International Circuit", "Sunny", RaceStatus.CLOSED);
 
@@ -116,18 +125,37 @@ class OfficialResultServiceTest {
 
         List<OfficialResult> found = resultService.getResultsForRace(race);
 
+        // Prüfen, dass leere Liste korrekt zurückgegeben wird
         assertNotNull(found);
         assertTrue(found.isEmpty());
+
         verify(resultRepository, times(1)).findByRace(eq(race));
     }
 
     @Test
     void testDeleteResult() {
+        // Testet Löschen eines OfficialResult nach ID
         doNothing().when(resultRepository).deleteById(1L);
 
         resultService.deleteResult(1L);
 
+        // Sicherstellen, dass Repository.deleteById genau einmal aufgerufen wurde
         verify(resultRepository, times(1)).deleteById(1L);
     }
-}
 
+    /*
+     * Zusammenfassung:
+     * Dieses Testklasse prüft alle Kernfunktionen des OfficialResultService:
+     * 1. testCreateResult: Speichern eines OfficialResult
+     * 2. testGetById: Abrufen eines existierenden OfficialResult
+     * 3. testGetByIdNotFound: Abrufen eines nicht existierenden OfficialResult
+     * 4. testGetResultsForRace: Abrufen aller Ergebnisse für ein Rennen
+     * 5. testGetResultsForRaceEmpty: Abrufen bei leerem Ergebnis
+     * 6. testDeleteResult: Löschen eines OfficialResult
+     *
+     * Die Tests verwenden Mockito-Mocks für das Repository und überprüfen:
+     * - Korrekte Rückgabe der Objekte
+     * - Aufruf der richtigen Repository-Methoden
+     * - Verhalten bei leeren oder nicht vorhandenen Daten
+     */
+}

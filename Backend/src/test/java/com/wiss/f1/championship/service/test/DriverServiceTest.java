@@ -4,23 +4,28 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.wiss.f1.championship.entity.Driver;
 import com.wiss.f1.championship.repository.DriverRepository;
 import com.wiss.f1.championship.service.DriverService;
 
+/**
+ * Unit-Tests für DriverService.
+ *
+ * Testfälle:
+ * - Erstellen eines Fahrers
+ * - Aktualisieren eines Fahrers
+ * - Alle Fahrer abrufen (sortiert nach Name)
+ * - Fahrer nach ID abrufen (vorhanden und nicht vorhanden)
+ * - Fahrer löschen
+ *
+ * Mockito wird verwendet, um das DriverRepository zu mocken und die Service-Logik isoliert zu testen.
+ */
 class DriverServiceTest {
 
     private DriverRepository driverRepository;
@@ -119,3 +124,12 @@ class DriverServiceTest {
     }
 }
 
+/*
+ * Zusammenfassung:
+ * DriverServiceTest prüft die CRUD-Operationen des DriverService:
+ * - createDriver / updateDriver / deleteDriver
+ * - getDriverById (existierend und nicht existierend)
+ * - getAllDrivers (Rückgabe aller Fahrer, sortiert)
+ *
+ * Mockito sorgt für ein isoliertes Testen ohne tatsächliche Datenbankzugriffe.
+ */
