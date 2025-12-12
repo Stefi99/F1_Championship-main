@@ -1,9 +1,33 @@
-// Mapping-Funktionen für Race-Daten zwischen Frontend und Backend
-
 /**
- * Normalisiert ein Race-Objekt vom Backend für Frontend-Verwendung
- * @param {Object} backendRace - Race-Objekt vom Backend
- * @returns {Object} Normalisiertes Race-Objekt für Frontend
+ * raceMapper.js - Mapping-Funktionen für Race-Daten zwischen Frontend und Backend
+ *
+ * Stellt Funktionen bereit, um Race-Objekte zwischen Backend-Format (DTO)
+ * und Frontend-Format zu konvertieren. Dies ist notwendig, da:
+ * - Backend und Frontend unterschiedliche Feldnamen verwenden können
+ * - Datentypen unterschiedlich sein können (z.B. Status als Enum vs. String)
+ * - Fallback-Werte für fehlende Felder benötigt werden
+ *
+ * Alle Race-Services sollten diese Mapper-Funktionen verwenden.
+ */
+/**
+ * normalizeRaceFromBackend - Normalisiert ein Race-Objekt vom Backend
+ *
+ * Konvertiert ein RaceDTO vom Backend ins Frontend-Format:
+ * - Stellt sicher, dass alle erwarteten Felder vorhanden sind
+ * - Setzt Fallback-Werte für optionale Felder
+ * - Normalisiert Feldnamen (name/track können vertauscht sein)
+ * - Konvertiert resultsOrder und drivers zu Arrays
+ *
+ * @param {Object} backendRace - RaceDTO vom Backend
+ * @param {number} backendRace.id - Rennen-ID
+ * @param {string} backendRace.name - Rennenname
+ * @param {string} backendRace.track - Streckenname
+ * @param {string} backendRace.date - Datum (YYYY-MM-DD)
+ * @param {string} backendRace.weather - Wetter (sunny, cloudy, rain)
+ * @param {string} backendRace.tyres - Reifen (soft, medium, hard)
+ * @param {string} backendRace.status - Status (open, voting, closed)
+ * @param {Array<string>} backendRace.resultsOrder - Offizielle Reihenfolge
+ * @returns {Object|null} Normalisiertes Race-Objekt für Frontend oder null wenn Eingabe null
  */
 export function normalizeRaceFromBackend(backendRace) {
   if (!backendRace) return null;
@@ -25,9 +49,25 @@ export function normalizeRaceFromBackend(backendRace) {
 }
 
 /**
- * Normalisiert ein Race-Objekt für Backend-Übertragung
+ * normalizeRaceToBackend - Normalisiert ein Race-Objekt für Backend-Übertragung
+ *
+ * Konvertiert ein Race-Objekt vom Frontend ins Backend-Format (RaceDTO):
+ * - Konvertiert ID zu Number (falls vorhanden)
+ * - Normalisiert Status zu Kleinbuchstaben
+ * - Stellt sicher, dass resultsOrder ein Array ist
+ * - Setzt optionale Felder auf null (statt undefined)
+ *
  * @param {Object} frontendRace - Race-Objekt vom Frontend
- * @returns {Object} Normalisiertes Race-Objekt für Backend
+ * @param {number|string} frontendRace.id - Rennen-ID (optional für neue Rennen)
+ * @param {string} frontendRace.name - Rennenname
+ * @param {string} frontendRace.track - Streckenname
+ * @param {string} frontendRace.date - Datum (YYYY-MM-DD)
+ * @param {string} frontendRace.weather - Wetter
+ * @param {string} frontendRace.tyres - Reifen
+ * @param {string} frontendRace.status - Status
+ * @param {Array<string>} frontendRace.resultsOrder - Offizielle Reihenfolge
+ * @param {Array<string>} frontendRace.drivers - Teilnehmende Fahrer (Fallback für resultsOrder)
+ * @returns {Object|null} Normalisiertes RaceDTO für Backend oder null wenn Eingabe null
  */
 export function normalizeRaceToBackend(frontendRace) {
   if (!frontendRace) return null;
@@ -50,9 +90,14 @@ export function normalizeRaceToBackend(frontendRace) {
 }
 
 /**
- * Normalisiert eine Liste von Rennen vom Backend
- * @param {Array} backendRaces - Array von Race-Objekten vom Backend
- * @returns {Array} Array von normalisierten Race-Objekten
+ * normalizeRacesFromBackend - Normalisiert eine Liste von Rennen vom Backend
+ *
+ * Wrapper-Funktion, die normalizeRaceFromBackend auf jedes Element
+ * eines Arrays anwendet. Filtert null-Werte heraus.
+ *
+ * @param {Array<Object>} backendRaces - Array von RaceDTOs vom Backend
+ * @returns {Array<Object>} Array von normalisierten Race-Objekten für Frontend
+ *                          Gibt leeres Array zurück, wenn Eingabe kein Array ist
  */
 export function normalizeRacesFromBackend(backendRaces) {
   if (!Array.isArray(backendRaces)) return [];
