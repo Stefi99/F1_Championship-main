@@ -1,3 +1,14 @@
+/**
+ * AdminDriversListPage - Seite zur Verwaltung der Fahrer (Admin-Bereich)
+ *
+ * Ermöglicht Administratoren:
+ * - Fahrernamen und Team-Zuordnungen zu bearbeiten
+ * - Änderungen im Backend zu speichern
+ * - Fehlende Standard-Fahrer hinzuzufügen
+ * - Die Fahrerliste auf Standard zurückzusetzen
+ *
+ * Alle Änderungen wirken sofort in allen Rennen, Ergebnissen und Farbcodierungen.
+ */
 import { useEffect, useState } from "react";
 import {
   getStoredDrivers,
@@ -7,15 +18,20 @@ import {
   defaultDrivers,
 } from "../../data/drivers";
 
-// Seite für die Verwaltung der Fahrer (Admin-Bereich)
 function AdminDriversListPage() {
+  // Liste aller Fahrer (wird beim Laden vom Backend gefüllt)
   const [drivers, setDrivers] = useState([]);
+  // Loading-State für initiales Laden der Fahrer
   const [loading, setLoading] = useState(true);
+  // Saving-State für Speicher-Operationen
   const [saving, setSaving] = useState(false);
+  // Erfolgs- und Fehlermeldungen
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Lädt die Fahrer vom Backend beim ersten Rendern.
+  /**
+   * Effect: Lädt die Fahrer vom Backend beim ersten Rendern
+   */
   useEffect(() => {
     const fetchDrivers = async () => {
       setLoading(true);
@@ -35,17 +51,39 @@ function AdminDriversListPage() {
     fetchDrivers();
   }, []);
 
-  //Ändert das Team eines Fahrers direkt, erst beim Speichern dauerhaft gespeichert
+  /**
+   * handleChangeTeam - Ändert das Team eines Fahrers
+   *
+   * Änderungen werden nur im lokalen State gespeichert und erst beim
+   * Klick auf "Speichern" dauerhaft im Backend gespeichert.
+   *
+   * @param {string} id - Eindeutige ID des Fahrers
+   * @param {string} team - Neuer Team-Name
+   */
   const handleChangeTeam = (id, team) => {
     setDrivers((prev) => prev.map((d) => (d.id === id ? { ...d, team } : d)));
   };
 
-  //Aktualisiert den Namen eines Fahrers
+  /**
+   * handleChangeName - Aktualisiert den Namen eines Fahrers
+   *
+   * Änderungen werden nur im lokalen State gespeichert und erst beim
+   * Klick auf "Speichern" dauerhaft im Backend gespeichert.
+   *
+   * @param {string} id - Eindeutige ID des Fahrers
+   * @param {string} name - Neuer Name des Fahrers
+   */
   const handleChangeName = (id, name) => {
     setDrivers((prev) => prev.map((d) => (d.id === id ? { ...d, name } : d)));
   };
 
-  // Speichert die Änderungen dauerhaft im Backend
+  /**
+   * handleSave - Speichert alle Änderungen dauerhaft im Backend
+   *
+   * Speichert die aktuelle Fahrerliste im Backend, aktualisiert den Cache
+   * und lädt die Fahrer neu, um sicherzustellen, dass alle Backend-IDs
+   * korrekt sind.
+   */
   const handleSave = async () => {
     setSaving(true);
     setError("");
@@ -55,10 +93,10 @@ function AdminDriversListPage() {
       // Speichere alle Fahrer im Backend
       await saveDrivers(drivers);
 
-      // Cache aktualisieren
+      // Cache zurücksetzen, damit beim nächsten Laden die neuesten Daten geladen werden
       clearDriversCache();
 
-      // Fahrer neu laden, um Backend-IDs zu erhalten
+      // Fahrer neu laden, um Backend-IDs zu erhalten und Konsistenz sicherzustellen
       const updatedDrivers = await getStoredDrivers();
       setDrivers(updatedDrivers);
 
@@ -73,7 +111,13 @@ function AdminDriversListPage() {
     }
   };
 
-  // Ergänzt fehlende Standard-Fahrer zur Liste
+  /**
+   * handleAddMissing - Ergänzt fehlende Standard-Fahrer zur Liste
+   *
+   * Vergleicht die aktuelle Fahrerliste mit der Standard-Liste und fügt
+   * alle Fahrer hinzu, die in der Standard-Liste vorhanden sind, aber
+   * in der aktuellen Liste fehlen. Speichert die erweiterte Liste im Backend.
+   */
   const handleAddMissing = async () => {
     setSaving(true);
     setError("");
@@ -119,8 +163,15 @@ function AdminDriversListPage() {
     }
   };
 
-  // Setzt die Fahrerliste auf die Standard-Fahrer zurück
+  /**
+   * handleReset - Setzt die Fahrerliste auf die Standard-Fahrer zurück
+   *
+   * Ersetzt die gesamte Fahrerliste durch die Standard-Liste.
+   * Benötigt eine Bestätigung vom Benutzer, da dies alle benutzerdefinierten
+   * Änderungen überschreibt.
+   */
   const handleReset = async () => {
+    // Sicherheitsabfrage vor dem Zurücksetzen
     if (
       !confirm(
         "Möchtest du wirklich alle Fahrer auf die Standard-Liste zurücksetzen?"
@@ -134,13 +185,13 @@ function AdminDriversListPage() {
     setMessage("");
 
     try {
-      // Standard-Fahrer im Backend speichern
+      // Standard-Fahrer im Backend speichern (überschreibt alle Änderungen)
       await saveDrivers(defaultDrivers);
 
-      // Cache aktualisieren
+      // Cache zurücksetzen
       clearDriversCache();
 
-      // Fahrer neu laden
+      // Fahrer neu laden, um die Standard-Liste anzuzeigen
       const updatedDrivers = await getStoredDrivers();
       setDrivers(updatedDrivers);
 
@@ -153,6 +204,7 @@ function AdminDriversListPage() {
     }
   };
 
+  // Berechne Anzahl der verschiedenen Teams (für Statistik-Anzeige)
   const teamCount = new Set(drivers.map((d) => d.team)).size;
 
   // Darstellung der Fahrer-Verwaltungsoberfläche

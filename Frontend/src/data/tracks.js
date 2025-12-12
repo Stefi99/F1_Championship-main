@@ -1,5 +1,15 @@
-// Track-Konfigurationen für Anzeige und Auswahl.
-// Enthält Designinformationen (Labels, Kürzel, Farbverläufe)
+/**
+ * TRACK_PLACEHOLDERS - Konfigurationen für Rennstrecken
+ *
+ * Enthält Designinformationen für jede Rennstrecke:
+ * - label: Anzeigename der Strecke
+ * - code: Länderkürzel (z.B. "BHR" für Bahrain)
+ * - gradient: CSS-Farbverlauf für die visuelle Darstellung
+ * - pattern: Zusätzliches CSS-Pattern für visuelle Effekte
+ *
+ * Diese Daten werden verwendet, um Rennen visuell ansprechend darzustellen
+ * und Dropdown-Auswahlfelder zu befüllen.
+ */
 const TRACK_PLACEHOLDERS = {
   "Bahrain International Circuit": {
     label: "Bahrain",
@@ -38,6 +48,13 @@ const TRACK_PLACEHOLDERS = {
   },
 };
 
+/**
+ * DEFAULT_TRACK_VISUAL - Standard-Design für unbekannte Strecken
+ *
+ * Wird verwendet, wenn eine Strecke nicht in TRACK_PLACEHOLDERS definiert ist
+ * oder wenn kein Streckenname angegeben wurde. Stellt sicher, dass immer
+ * eine gültige visuelle Darstellung vorhanden ist.
+ */
 const DEFAULT_TRACK_VISUAL = {
   label: "Strecke folgt",
   code: "F1",
@@ -46,16 +63,35 @@ const DEFAULT_TRACK_VISUAL = {
     "radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.1), transparent 40%)",
 };
 
-// Generierte Dropdown-Auswahlliste für Formulare
+/**
+ * TRACK_OPTIONS - Generierte Dropdown-Auswahlliste für Formulare
+ *
+ * Wird für Select/Dropdown-Komponenten verwendet, um alle verfügbaren
+ * Rennstrecken zur Auswahl anzubieten. Jede Option enthält:
+ * - value: Der vollständige Streckenname (für Backend)
+ * - label: Der Anzeigename (für Benutzer)
+ */
 export const TRACK_OPTIONS = Object.keys(TRACK_PLACEHOLDERS).map((track) => ({
   value: track,
   label: TRACK_PLACEHOLDERS[track].label || track,
 }));
 
-// Liefert Design-Informationen für Anzeige eines Rennens
-// oder eine Default-Darstellung, falls die Strecke nicht definiert ist.
+/**
+ * getTrackVisual - Liefert Design-Informationen für eine Rennstrecke
+ *
+ * Gibt die visuellen Konfigurationsdaten (Label, Code, Gradient, Pattern)
+ * für eine gegebene Strecke zurück. Falls die Strecke nicht in TRACK_PLACEHOLDERS
+ * definiert ist, wird eine Standard-Darstellung mit dem Streckennamen zurückgegeben.
+ *
+ * @param {string|null|undefined} trackName - Name der Rennstrecke
+ * @returns {Object} Objekt mit label, code, gradient und pattern
+ */
 export function getTrackVisual(trackName) {
+  // Kein Streckenname angegeben → Standard-Darstellung
   if (!trackName) return DEFAULT_TRACK_VISUAL;
+
+  // Strecke in TRACK_PLACEHOLDERS gefunden → verwende diese Konfiguration
+  // Sonst: Standard-Darstellung mit dem Streckennamen als Label
   return (
     TRACK_PLACEHOLDERS[trackName] || {
       ...DEFAULT_TRACK_VISUAL,

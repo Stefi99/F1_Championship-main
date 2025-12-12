@@ -1,4 +1,15 @@
-// Zeigt die komplette Saisonrangliste
+/**
+ * PlayerLeaderboardPage - Zeigt die komplette Saisonrangliste
+ *
+ * Diese Seite zeigt:
+ * - Saison-Rangliste (alle Spieler sortiert nach Punkten)
+ * - Renn-Bewertungen (wie gut waren die Tipps pro Rennen)
+ * - Statistiken (Formkurve, Trefferquote, bestes Rennen)
+ * - Vergleich der eigenen Tipps mit offiziellen Ergebnissen
+ *
+ * Die Punkte werden vom Backend berechnet und basieren auf der
+ * Genauigkeit der Tipps im Vergleich zu den offiziellen Ergebnissen.
+ */
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext.js";
@@ -9,7 +20,12 @@ import { loadPlayerTips } from "../../utils/tips";
 import { getAllRaces } from "../../services/raceService.js";
 import { getLeaderboard } from "../../services/leaderboardService.js";
 
-// Farbzuordnung für Teams zum Gestalten von Avataren, Chips und Row-Akzenten.
+/**
+ * TEAM_COLOR_PALETTE - Farbzuordnung für Teams
+ *
+ * Wird verwendet zum Gestalten von Avataren, Chips und Row-Akzenten
+ * in der Rangliste.
+ */
 const TEAM_COLOR_PALETTE = {
   "team-red-bull": "#2037c4",
   "team-ferrari": "#dc0000",
@@ -24,28 +40,68 @@ const TEAM_COLOR_PALETTE = {
   "team-default": "#e10600",
 };
 
-// HINWEIS: Seed-Player und playerRoster wurden entfernt, da Leaderboard jetzt vom Backend kommt
-
-// F1-ähnliche Punkteskala für genaue Treffer
+/**
+ * POSITION_POINTS - F1-ähnliche Punkteskala für genaue Treffer
+ *
+ * Punkte werden vergeben für:
+ * - Exakte Position: Volle Punkte (25, 18, 15, ...)
+ * - Knapp daneben (±1 Position): 50% der Punkte
+ * - In Top 10: 3 Punkte
+ * - Podium komplett richtig: +6 Bonus
+ * - Sieger richtig: +5 Bonus
+ */
 const POSITION_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 3, 2];
 
-// Datumshilfsfunktionen für Sortierung und Anzeige.
+/**
+ * Datumshilfsfunktionen für Sortierung und Anzeige
+ */
+
+/**
+ * parseDate - Konvertiert einen Datumswert in ein Date-Objekt
+ *
+ * @param {string|Date} value - Datumswert
+ * @returns {Date|null} Date-Objekt oder null wenn ungültig
+ */
 const parseDate = (value) => {
   if (!value) return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
+/**
+ * formatDate - Formatiert ein Datum für die Anzeige
+ *
+ * @param {string|Date} value - Datumswert
+ * @returns {string} Formatiertes Datum oder Fallback-Text
+ */
 const formatDate = (value) => {
   const date = parseDate(value);
   if (!date) return "Datum folgt";
   return date.toLocaleDateString("de-DE");
 };
 
-// Liefert CSS-Teamklasse für grafische Darstellung im UI.
+/**
+ * teamClass - Liefert CSS-Teamklasse für grafische Darstellung im UI
+ *
+ * @param {string} teamName - Name des Teams
+ * @returns {string} CSS-Klasse für das Team
+ */
 const teamClass = (teamName) => TEAM_CLASS_MAP[teamName] || "team-default";
 
-// Kernlogik für die Auswertung eines Tipps gegenüber den offiziellen Ergebnissen
+/**
+ * scoreTipAgainstResults - Kernlogik für die Auswertung eines Tipps
+ *
+ * Vergleicht die getippte Reihenfolge mit den offiziellen Ergebnissen
+ * und berechnet Punkte basierend auf:
+ * - Exakte Positionen
+ * - Knapp daneben (±1 Position)
+ * - In Top 10
+ * - Bonus für Podium und Sieger
+ *
+ * @param {Array<string>} tipOrder - Getippte Reihenfolge (Top 10)
+ * @param {Array<string>} resultsOrder - Offizielle Reihenfolge (Top 10)
+ * @returns {Object} Objekt mit score, exact, near, inTop, accuracy, bestPick
+ */
 const scoreTipAgainstResults = (tipOrder = [], resultsOrder = []) => {
   const trimmedTip = Array.isArray(tipOrder) ? tipOrder.slice(0, 10) : [];
   const official = Array.isArray(resultsOrder) ? resultsOrder.slice(0, 10) : [];
@@ -122,7 +178,15 @@ function PlayerLeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Lädt Rennen, Tipps, Spielerprofil und Leaderboard vom Backend
+  /**
+   * Effect: Lädt alle benötigten Daten vom Backend
+   *
+   * Lädt parallel:
+   * - Alle Rennen
+   * - Spielerprofil
+   * - Gespeicherte Tipps (nur wenn User eingeloggt)
+   * - Leaderboard (Rangliste aller Spieler)
+   */
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);

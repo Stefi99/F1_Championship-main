@@ -1,28 +1,68 @@
+/**
+ * index.css - Globale Styles für die F1 Championship Anwendung
+ *
+ * Diese Datei enthält alle globalen CSS-Styles für die gesamte Anwendung:
+ * - CSS-Variablen für Farben und Design-Tokens
+ * - Globale Reset-Styles
+ * - Layout-Komponenten (Navbar, Footer, etc.)
+ * - Seiten-spezifische Styles (Admin, Player, Home, etc.)
+ * - Team-Farben für Fahrer
+ * - Responsive Design (Media Queries)
+ *
+ * Das Design folgt einem dunklen F1-inspirierten Theme mit roten Akzenten.
+ */
+
+/**
+ * :root - Globale CSS-Variablen für das Design-System
+
+ */
 :root {
+  /* F1-Brand-Farben: Rot als Hauptakzent */
   --f1-red: #e10600;
   --f1-red-2: #ff2a1a;
-  --f1-black: #0c0d11;
-  --f1-asphalt: #14151b;
-  --f1-mid: #1f212b;
-  --f1-text: #e7e8ec;
-  --f1-muted: #9ea3b0;
+
+  /* Dunkle Hintergrundfarben (F1-inspiriert) */
+  --f1-black: #0c0d11; /* Haupt-Hintergrund */
+  --f1-asphalt: #14151b; /* Sekundärer Hintergrund */
+  --f1-mid: #1f212b; /* Mittlerer Hintergrund */
+
+  /* Textfarben */
+  --f1-text: #e7e8ec; /* Haupt-Textfarbe */
+  --f1-muted: #9ea3b0; /* Gedämpfte Textfarbe */
+
+  /* Typografie */
   font-family: "Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
   line-height: 1.6;
   font-weight: 500;
   color: var(--f1-text);
   background-color: var(--f1-black);
+
+  /* Font-Rendering-Optimierungen */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ============================================
+   GLOBALE RESET-STYLES
+   ============================================ */
+
+/**
+ * Box-Sizing Reset: Alle Elemente verwenden border-box
+ * Erleichtert die Berechnung von Breiten und Höhen
+ */
 * {
   box-sizing: border-box;
 }
 
+/**
+ * Body: Vollständige Höhe mit Gradient-Hintergrund
+ * Verwendet mehrere Radial-Gradienten für einen subtilen Effekt
+ */
 body {
   margin: 0;
   min-height: 100vh;
+  /* Mehrschichtiger Gradient-Hintergrund für Tiefe */
   background: radial-gradient(
       circle at 20% 20%,
       rgba(255, 255, 255, 0.04),
@@ -37,6 +77,13 @@ body {
   color: var(--f1-text);
 }
 
+/* ============================================
+   BASIS-KOMPONENTEN
+   ============================================ */
+
+/**
+ * Links: F1-Rot als Standardfarbe mit Hover-Effekt
+ */
 a {
   font-weight: 700;
   color: var(--f1-red);
@@ -45,19 +92,30 @@ a {
 }
 
 a:hover {
-  color: #ff4d46;
+  color: #ff4d46; /* Helleres Rot beim Hover */
 }
 
+/**
+ * Root-Container: Mindesthöhe für vollständige Viewport-Nutzung
+ */
 #root {
   min-height: 100vh;
 }
 
+/**
+ * Shell-Layout: Flexbox-Container für Sticky-Footer
+ * Ermöglicht, dass der Footer immer am unteren Rand bleibt
+ */
 .f1-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
+/**
+ * Main-Content: Zentrierter Container mit maximaler Breite
+ * Verhindert, dass Inhalte auf großen Bildschirmen zu breit werden
+ */
 .f1-main {
   flex: 1;
   width: 100%;
@@ -66,6 +124,13 @@ a:hover {
   padding: 32px 24px 64px;
 }
 
+/* ============================================
+   TYPOGRAFIE
+   ============================================ */
+
+/**
+ * Überschriften: Einheitliche Styles für alle Überschriften
+ */
 h1,
 h2,
 h3,
@@ -75,11 +140,22 @@ h4 {
   letter-spacing: 0.01em;
 }
 
+/**
+ * Absätze: Gedämpfte Textfarbe für bessere Lesbarkeit
+ */
 p {
   margin: 0 0 12px;
   color: var(--f1-muted);
 }
 
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+/**
+ * Standard-Button: F1-Rot mit Gradient und Schatten
+ * Verwendet Transform-Animationen für interaktive Effekte
+ */
 button {
   border-radius: 10px;
   border: 1px solid #2b2d36;
@@ -96,31 +172,39 @@ button {
 }
 
 button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-1px); /* Leichtes Anheben beim Hover */
   filter: brightness(1.04);
   box-shadow: 0 12px 30px rgba(225, 6, 0, 0.45);
 }
 
 button:active {
-  transform: translateY(0);
+  transform: translateY(0); /* Zurück zur ursprünglichen Position */
   box-shadow: 0 6px 18px rgba(225, 6, 0, 0.3);
 }
 
 button:focus-visible {
-  outline: 2px solid var(--f1-red);
+  outline: 2px solid var(--f1-red); /* Accessibility: Sichtbarer Focus */
   outline-offset: 2px;
 }
 
+/* ============================================
+   NAVIGATION (NAVBAR)
+   ============================================ */
+
+/**
+ * Navbar: Sticky-Header mit Glassmorphism-Effekt
+ * Bleibt beim Scrollen am oberen Rand sichtbar
+ */
 .f1-navbar {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 50; /* Über anderen Inhalten */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 24px;
-  background: rgba(12, 13, 17, 0.92);
-  backdrop-filter: blur(10px);
+  background: rgba(12, 13, 17, 0.92); /* Semi-transparent */
+  backdrop-filter: blur(10px); /* Glassmorphism-Effekt */
   border-bottom: 1px solid #1d1f27;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
@@ -283,7 +367,16 @@ button.f1-nav-link:focus-visible {
   }
 }
 
-/* Team color tags */
+/* ============================================
+   TEAM-FARBEN (Fahrer-Teams)
+   ============================================ */
+
+/**
+ * Team-Farben: Definiert die offiziellen Farben aller F1-Teams
+ * Wird für Fahrer-Chips, Badges und visuelle Unterscheidung verwendet
+ */
+
+/* Standard-Fahrer-Chip: Basis-Style */
 .driver-chip {
   display: inline-flex;
   align-items: center;
@@ -341,7 +434,14 @@ button.f1-nav-link:focus-visible {
   color: #f1f5ff;
 }
 
-/* Admin Dashboard */
+/* ============================================
+   ADMIN-BEREICH
+   ============================================ */
+
+/**
+ * Admin Dashboard: Übersichtsseite für Administratoren
+ * Zeigt Statistiken und Quick-Actions
+ */
 .admin-dashboard-page {
   padding: 32px 24px 56px;
   max-width: 1220px;
@@ -549,7 +649,14 @@ button.f1-nav-link:focus-visible {
   }
 }
 
-/* Player Dashboard */
+/* ============================================
+   PLAYER-BEREICH
+   ============================================ */
+
+/**
+ * Player Dashboard: Übersichtsseite für Spieler
+ * Zeigt Profil, offene Tippfenster und kommende Rennen
+ */
 .player-dashboard {
   padding: 32px 24px 64px;
   max-width: 1220px;
@@ -1463,7 +1570,14 @@ button.f1-nav-link:focus-visible {
   }
 }
 
-/* Race Form */
+/* ============================================
+   RENNEN-FORMULAR
+   ============================================ */
+
+/**
+ * Race Form: Formular zum Erstellen/Bearbeiten von Rennen
+ * Enthält Felder für Strecke, Datum, Wetter, Reifen, etc.
+ */
 .race-form-page {
   padding: 32px 24px 64px;
   max-width: 1200px;
@@ -2934,7 +3048,14 @@ button.f1-nav-link:focus-visible {
   }
 }
 
-/* Home */
+/* ============================================
+   HOME-PAGE
+   ============================================ */
+
+/**
+ * Home Page: Öffentliche Landing-Page
+ * Zeigt Übersicht über Rennen, Statistiken und Call-to-Actions
+ */
 .home-page {
   padding: 32px 24px 64px;
   max-width: 1220px;
@@ -3313,7 +3434,14 @@ button.f1-nav-link:focus-visible {
   }
 }
 
-/* Player Leaderboard */
+/* ============================================
+   RANGLISTE
+   ============================================ */
+
+/**
+ * Player Leaderboard: Saison-Rangliste mit Spieler-Rankings
+ * Zeigt Punkte, Form und Race-Insights
+ */
 .player-leaderboard-page {
   padding: 32px 24px 64px;
   max-width: 1220px;
@@ -3677,7 +3805,14 @@ button.f1-nav-link:focus-visible {
   }
 }
 
-/* Auth */
+/* ============================================
+   AUTHENTIFIZIERUNG
+   ============================================ */
+
+/**
+ * Auth Page: Login- und Registrierungs-Seite
+ * Kombiniert beide Formulare in einer Seite mit Tab-Navigation
+ */
 .auth-page {
   display: flex;
   flex-direction: column;

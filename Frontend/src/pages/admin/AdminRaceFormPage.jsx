@@ -1,4 +1,15 @@
-// Formularseite zum Erstellen oder Bearbeiten von Rennen
+/**
+ * AdminRaceFormPage - Formularseite zum Erstellen oder Bearbeiten von Rennen
+ *
+ * Ermöglicht Administratoren:
+ * - Neue Rennen zu erstellen (Strecke, Datum, Wetter, Reifen, Status)
+ * - Bestehende Rennen zu bearbeiten
+ * - Fahrer für das Rennen auszuwählen (Standard: alle Fahrer vorselektiert)
+ * - Status des Rennens zu setzen (open, voting, closed)
+ *
+ * Beim Erstellen werden standardmäßig alle Fahrer ausgewählt.
+ * Beim Bearbeiten werden die vorhandenen Daten geladen.
+ */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -16,35 +27,62 @@ import { ApiError } from "../../utils/api.js";
 import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
 import ErrorMessage from "../../components/common/ErrorMessage.jsx";
 
-//Limit und Team-Farbzuordnung
+/**
+ * DRIVER_LIMIT - Maximale Anzahl von Fahrern pro Rennen
+ */
 const DRIVER_LIMIT = 20;
+
+/**
+ * TEAM_COLOR_CLASS - Gibt die CSS-Klasse für ein Team zurück
+ *
+ * @param {string} teamName - Name des Teams
+ * @returns {string} CSS-Klasse für das Team
+ */
 const TEAM_COLOR_CLASS = (teamName) =>
   TEAM_CLASS_MAP[teamName] || "team-default";
 
 function AdminRaceFormPage() {
   const navigate = useNavigate();
+  // Race-ID aus URL-Parametern (wenn vorhanden, ist es ein Edit-Modus)
   const { raceId } = useParams();
+  // Boolean: true wenn im Edit-Modus, false wenn im Create-Modus
   const isEdit = Boolean(raceId);
 
+  // Formular-Felder
   const [track, setTrack] = useState("");
   const [weather, setWeather] = useState("");
   const [date, setDate] = useState("");
   const [tyres, setTyres] = useState("");
   const [status, setStatus] = useState("");
-  const [originalStatus, setOriginalStatus] = useState(""); // Für Edit: ursprünglicher Status
+  // Für Edit-Modus: ursprünglicher Status (wird beibehalten, wenn kein neuer Status ausgewählt wird)
+  const [originalStatus, setOriginalStatus] = useState("");
+  // Liste der ausgewählten Fahrer (als Namen)
   const [drivers, setDrivers] = useState([]);
+  // Liste aller verfügbaren Fahrer (für Auswahl)
   const [driverOptions, setDriverOptions] = useState([]);
+  // Fehlermeldung für Fahrer-Auswahl (z.B. Limit überschritten)
   const [driverError, setDriverError] = useState("");
+  // Loading-State für Laden von Rennen-Daten (nur im Edit-Modus)
   const [loading, setLoading] = useState(false);
+  // Saving-State für Speicher-Operationen
   const [saving, setSaving] = useState(false);
+  // Allgemeine Fehlermeldungen
   const [error, setError] = useState(null);
+
+  // Prüft, ob eine Strecke ausgewählt wurde, die nicht in TRACK_OPTIONS ist
+  // (z.B. wenn beim Bearbeiten eine alte Strecke verwendet wird)
   const missingTrackOption =
     track &&
     !TRACK_OPTIONS.some((option) => String(option.value) === String(track))
       ? track
       : null;
 
-  // Fahrer laden (inkl. Teams aus Verwaltung)
+  /**
+   * Effect: Lädt alle verfügbaren Fahrer vom Backend
+   *
+   * Wird beim ersten Rendern ausgeführt, um die Liste der verfügbaren
+   * Fahrer für die Auswahl zu laden.
+   */
   useEffect(() => {
     const loadDrivers = async () => {
       try {
@@ -58,7 +96,12 @@ function AdminRaceFormPage() {
     loadDrivers();
   }, []);
 
-  // Bei neuem Rennen alle Fahrer vorselektieren
+  /**
+   * Effect: Bei neuem Rennen alle Fahrer vorselektieren
+   *
+   * Im Create-Modus werden standardmäßig alle verfügbaren Fahrer
+   * vorselektiert. Der Benutzer kann dann einzelne Fahrer abwählen.
+   */
   useEffect(() => {
     if (!isEdit && driverOptions.length > 0 && drivers.length === 0) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -66,7 +109,12 @@ function AdminRaceFormPage() {
     }
   }, [driverOptions, isEdit, drivers.length]);
 
-  // Bei Edit: vorhandene Daten vom Backend laden
+  /**
+   * Effect: Bei Edit-Modus vorhandene Daten vom Backend laden
+   *
+   * Lädt die Daten des zu bearbeitenden Rennens vom Backend und
+   * füllt das Formular mit den vorhandenen Werten.
+   */
   useEffect(() => {
     if (!isEdit) return;
 
@@ -100,23 +148,43 @@ function AdminRaceFormPage() {
     loadRaceData();
   }, [isEdit, raceId, navigate]);
 
-  // Fügt einen Fahrer hinzu oder entfernt ihn aus der Fahrer-Liste
+  /**
+   * toggleDriver - Fügt einen Fahrer hinzu oder entfernt ihn aus der Fahrer-Liste
+   *
+   * Wenn der Fahrer bereits ausgewählt ist, wird er entfernt.
+   * Wenn der Fahrer nicht ausgewählt ist, wird er hinzugefügt (falls Limit nicht überschritten).
+   *
+   * @param {string} driverName - Name des Fahrers
+   */
   const toggleDriver = (driverName) => {
     setDrivers((prev) => {
+      // Fahrer bereits ausgewählt → entfernen
       if (prev.includes(driverName)) {
         setDriverError("");
         return prev.filter((d) => d !== driverName);
       }
+      // Limit erreicht → Fehler anzeigen
       if (prev.length >= DRIVER_LIMIT) {
         setDriverError(`Maximal ${DRIVER_LIMIT} Fahrer wählbar.`);
         return prev;
       }
+      // Fahrer hinzufügen
       setDriverError("");
       return [...prev, driverName];
     });
   };
 
-  // Speichert das Rennen (Bearbeitung und Neue Rennen) über API
+  /**
+   * handleSubmit - Speichert das Rennen (Create oder Update) über API
+   *
+   * Behandelt sowohl das Erstellen neuer Rennen als auch das Bearbeiten
+   * bestehender Rennen. Der Status wird intelligent gesetzt:
+   * - Wenn ein Status ausgewählt wurde, wird dieser verwendet
+   * - Beim Edit: Wenn kein neuer Status ausgewählt, wird der ursprüngliche beibehalten
+   * - Beim Create: Default auf "open"
+   *
+   * @param {Event} e - Form-Submit-Event
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);

@@ -1,9 +1,21 @@
-// Driver-Service für Backend-Kommunikation
+/**
+ * driverService - Service für Backend-Kommunikation bezüglich Fahrer
+ *
+ * Stellt alle Funktionen zur Verfügung, um mit Fahrer-Daten zu arbeiten:
+ * - Laden von Fahrern (alle oder einzelne)
+ * - Erstellen, Aktualisieren und Löschen von Fahrern
+ * - Batch-Operationen (mehrere Fahrer auf einmal speichern)
+ *
+ * Alle Funktionen verwenden die zentrale API-Utility (api.js) für
+ * HTTP-Requests und Fehlerbehandlung.
+ */
 import api from "../utils/api.js";
 
 /**
- * Lädt alle Fahrer vom Backend
- * @returns {Promise<Array>} Liste aller Fahrer
+ * getAllDrivers - Lädt alle Fahrer vom Backend
+ *
+ * @returns {Promise<Array<Object>>} Liste aller Fahrer
+ *                                    Gibt leeres Array zurück bei Fehler
  */
 export async function getAllDrivers() {
   try {
@@ -85,21 +97,35 @@ export async function deleteDriver(id) {
 }
 
 /**
- * Speichert mehrere Fahrer (Batch-Update)
+ * saveDriversBatch - Speichert mehrere Fahrer auf einmal (Batch-Update)
+ *
+ * Entscheidet für jeden Fahrer automatisch, ob ein Update oder Create
+ * durchgeführt werden soll:
+ * - Update: Wenn Fahrer eine numerische ID hat
+ * - Create: Wenn Fahrer keine ID hat
+ *
+ * Alle Operationen werden parallel ausgeführt (Promise.all) für bessere Performance.
+ *
  * @param {Array<Object>} drivers - Array von Fahrern
- * @returns {Promise<Array>} Array der aktualisierten/erstellten Fahrer
+ * @param {number|undefined} drivers[].id - Optional: Fahrer-ID (für Update)
+ * @param {string} drivers[].name - Name des Fahrers
+ * @param {string} drivers[].team - Team-Name
+ * @returns {Promise<Array<Object>>} Array der aktualisierten/erstellten Fahrer
+ * @throws {Error} Wirft einen Fehler, wenn das Speichern fehlschlägt
  */
 export async function saveDriversBatch(drivers) {
   try {
+    // Für jeden Fahrer entscheiden: Update oder Create
     const promises = drivers.map(async (driver) => {
       // Wenn ID vorhanden und numerisch, dann Update
       if (driver.id && typeof driver.id === "number") {
         return await updateDriver(driver.id, driver);
       }
-      // Ansonsten Create
+      // Ansonsten Create (neuer Fahrer)
       return await createDriver(driver);
     });
 
+    // Alle Operationen parallel ausführen
     const results = await Promise.all(promises);
     return results;
   } catch (error) {
@@ -107,4 +133,3 @@ export async function saveDriversBatch(drivers) {
     throw error;
   }
 }
-

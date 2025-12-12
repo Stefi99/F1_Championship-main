@@ -1,4 +1,12 @@
-// zentrale Startseite für Administratoren
+/**
+ * AdminDashboardPage - Zentrale Startseite für Administratoren
+ *
+ * Zeigt eine Übersicht mit Statistiken (Anzahl Rennen, Fahrer, offene Tasks)
+ * und schnellen Zugriffen auf die wichtigsten Verwaltungsfunktionen:
+ * - Rennen verwalten
+ * - Fahrer verwalten
+ * - Offizielle Ergebnisse eintragen
+ */
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStoredDrivers } from "../../data/drivers";
@@ -10,11 +18,21 @@ import LoadingSpinner from "../../components/common/LoadingSpinner.jsx";
 
 function AdminDashboardPage() {
   const navigate = useNavigate();
+  // Statistiken: Anzahl Rennen, Fahrer und offene Tasks
   const [stats, setStats] = useState({ races: 0, drivers: 0, tasks: 0 });
+  // Loading-State für initiales Laden der Statistiken
   const [loading, setLoading] = useState(true);
 
-  //Definiert alle Verwaltungsaktionen
-  // wird als Klickbare Karte angezeigt
+  /**
+   * Verwaltungsaktionen - Definiert alle verfügbaren Admin-Funktionen
+   *
+   * Jede Aktion wird als klickbare Karte angezeigt mit:
+   * - label: Titel der Aktion
+   * - description: Beschreibung der Funktion
+   * - title: Tooltip-Text
+   * - img: Icon/Bild für die Karte
+   * - to: Route, zu der navigiert wird
+   */
   const actions = [
     {
       label: "Rennen verwalten",
@@ -42,15 +60,27 @@ function AdminDashboardPage() {
     },
   ];
 
-  // Lädt aktuelle Statistikdaten vom Backend
+  /**
+   * refreshStats - Lädt aktuelle Statistikdaten vom Backend
+   *
+   * Lädt parallel alle Rennen und Fahrer vom Backend und berechnet:
+   * - Anzahl aller Rennen
+   * - Anzahl aller Fahrer
+   * - Anzahl offener Tasks (Rennen, die geschlossen sind aber keine Ergebnisse haben,
+   *   oder Rennen, die noch nicht geschlossen sind)
+   */
   const refreshStats = useCallback(async () => {
     setLoading(true);
     try {
+      // Paralleles Laden von Rennen und Fahrern für bessere Performance
       const [racesData, driversData] = await Promise.all([
         getAllRaces(),
         getStoredDrivers(),
       ]);
 
+      // Berechne offene Tasks:
+      // Ein Task ist offen, wenn ein Rennen nicht geschlossen ist ODER
+      // wenn es geschlossen ist, aber keine Ergebnisse hat
       const openTasks = racesData.filter((race) => {
         const closed = race.status === "closed" || race.status === "CLOSED";
         const hasResults =
@@ -58,6 +88,7 @@ function AdminDashboardPage() {
         return !closed || !hasResults;
       }).length;
 
+      // Statistiken aktualisieren
       setStats({
         races: racesData.length,
         drivers: driversData.length,
@@ -65,13 +96,16 @@ function AdminDashboardPage() {
       });
     } catch (error) {
       console.error("Fehler beim Laden der Statistiken:", error);
+      // Bei Fehler: Statistiken auf 0 setzen
       setStats({ races: 0, drivers: 0, tasks: 0 });
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Lädt Statistiken beim ersten Rendern
+  /**
+   * Effect: Lädt Statistiken beim ersten Rendern der Seite
+   */
   useEffect(() => {
     refreshStats();
   }, [refreshStats]);

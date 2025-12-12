@@ -6,36 +6,58 @@ import "./ErrorBoundary.css";
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
+    // Initialer State: Kein Fehler vorhanden
     this.state = { hasError: false, error: null };
   }
 
+  /**
+   * Statische Lifecycle-Methode, die aufgerufen wird, wenn ein Fehler in einem
+   * Child-Komponenten auftritt. Aktualisiert den State, damit die Fallback-UI angezeigt wird.
+   *
+   * @param {Error} error - Der aufgetretene Fehler
+   * @returns {Object} Neuer State mit hasError: true und dem Fehler-Objekt
+   */
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
+    // State aktualisieren, damit beim nächsten Render die Fallback-UI angezeigt wird
     return { hasError: true, error };
   }
 
+  /**
+   * Lifecycle-Methode, die aufgerufen wird, nachdem ein Fehler abgefangen wurde.
+   * Ideal für Fehler-Logging oder das Senden von Fehlern an einen Error-Reporting-Service.
+   *
+   * @param {Error} error - Der aufgetretene Fehler
+   * @param {Object} errorInfo - Zusätzliche Fehlerinformationen (z.B. Component Stack)
+   */
   componentDidCatch(error, errorInfo) {
-    // Log error to console or error reporting service
+    // Fehler in der Konsole loggen (in Produktion könnte dies an einen Error-Reporting-Service gesendet werden)
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
+  /**
+   * Setzt den Error-State zurück, damit die Komponente erneut gerendert werden kann.
+   * Wird vom "Seite neu laden" Button aufgerufen.
+   */
   handleReset = () => {
     this.setState({ hasError: false, error: null });
   };
 
   render() {
+    // Wenn ein Fehler aufgetreten ist, zeige die Fallback-UI
     if (this.state.hasError) {
-      // Custom fallback UI
+      // Wenn eine benutzerdefinierte Fallback-UI übergeben wurde, verwende diese
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default fallback UI
+      // Standard Fallback-UI mit Fehlermeldung und Reset-Button
       return (
         <div className="error-boundary">
           <div className="error-boundary-content">
             <h2 className="error-boundary-title">Etwas ist schiefgelaufen</h2>
+            {/* Zeige die detaillierte Fehlermeldung an */}
             <ErrorMessage error={this.state.error} />
+            {/* Button zum Zurücksetzen des Error-States */}
             <button
               type="button"
               className="error-boundary-button"
@@ -48,9 +70,9 @@ class ErrorBoundary extends Component {
       );
     }
 
+    // Kein Fehler: Rendere die Kind-Komponenten normal
     return this.props.children;
   }
 }
 
 export default ErrorBoundary;
-

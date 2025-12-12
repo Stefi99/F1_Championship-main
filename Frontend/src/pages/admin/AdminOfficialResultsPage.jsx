@@ -1,4 +1,15 @@
-//Seite zur Eingabe der offiziellen Rennergebnisse.
+/**
+ * AdminOfficialResultsPage - Seite zur Eingabe der offiziellen Rennergebnisse
+ *
+ * Ermöglicht Administratoren:
+ * - Ein Rennen auszuwählen
+ * - Die offizielle Rangfolge per Drag & Drop oder mit Up/Down-Buttons zu setzen
+ * - Die Ergebnisse zu speichern (schließt das Rennen automatisch)
+ * - Eine Zufallsreihenfolge zu generieren (für Tests)
+ *
+ * Beim Speichern werden sowohl die resultsOrder im Race aktualisiert als auch
+ * die offiziellen Ergebnisse (OfficialResult) erstellt.
+ */
 import { useEffect, useState } from "react";
 import {
   getStoredDrivers,
@@ -9,7 +20,12 @@ import { getAllRaces, updateRaceResults } from "../../services/raceService.js";
 import { createResultsForRace } from "../../services/resultService.js";
 import { ApiError } from "../../utils/api.js";
 
-//Farbpalette für Teams zur visuellen Hervorhebung
+/**
+ * TEAM_COLOR_PALETTE - Farbpalette für Teams zur visuellen Hervorhebung
+ *
+ * Wird verwendet, um jedem Team eine spezifische Farbe zuzuordnen,
+ * die in der Ergebnisliste angezeigt wird.
+ */
 const TEAM_COLOR_PALETTE = {
   "team-red-bull": "#2037c4",
   "team-ferrari": "#dc0000",
@@ -23,35 +39,71 @@ const TEAM_COLOR_PALETTE = {
   "team-rb": "#0f1f7a",
 };
 
-// Seite für die Eingabe und Anzeige der offiziellen Rennergebnisse
 function AdminOfficialResultsPage() {
+  // Liste aller Rennen (vom Backend geladen)
   const [races, setRaces] = useState([]);
+  // ID des aktuell ausgewählten Rennens
   const [selectedId, setSelectedId] = useState("");
+  // Reihenfolge der Fahrer in den Ergebnissen (wird per Drag & Drop sortiert)
   const [resultsOrder, setResultsOrder] = useState([]);
+  // Index des Fahrers, der gerade gezogen wird (für Drag & Drop)
   const [dragIndex, setDragIndex] = useState(null);
+  // Map von Fahrernamen zu Fahrer-Objekten (für schnellen Zugriff)
   const [driversByName, setDriversByName] = useState({});
+  // Loading-State für initiales Laden der Daten
   const [loading, setLoading] = useState(true);
+  // Saving-State für Speicher-Operationen
   const [saving, setSaving] = useState(false);
+  // Fehler- und Erfolgsmeldungen
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  // Hilfsfunktionen zur Ermittlung von Teamfarben und Teamnamen.
+  /**
+   * Hilfsfunktionen zur Ermittlung von Team-Informationen
+   */
+
+  /**
+   * teamClass - Gibt die CSS-Klasse für das Team eines Fahrers zurück
+   *
+   * @param {string} driverName - Name des Fahrers
+   * @returns {string} CSS-Klasse für das Team (z.B. "team-ferrari")
+   */
   const teamClass = (driverName) => {
     const team = getDriverTeam(driverName) || driversByName[driverName]?.team;
     return TEAM_CLASS_MAP[team] || "team-default";
   };
 
+  /**
+   * teamColor - Gibt die Farbe für das Team eines Fahrers zurück
+   *
+   * @param {string} driverName - Name des Fahrers
+   * @returns {string} Hex-Farbcode oder CSS-Variable
+   */
   const teamColor = (driverName) => {
     const className = teamClass(driverName);
     return TEAM_COLOR_PALETTE[className] || "var(--f1-red)";
   };
 
+  /**
+   * teamLabel - Gibt den Team-Namen eines Fahrers zurück
+   *
+   * @param {string} driverName - Name des Fahrers
+   * @returns {string} Team-Name oder "Team unbekannt"
+   */
   const teamLabel = (driverName) =>
     getDriverTeam(driverName) ||
     driversByName[driverName]?.team ||
     "Team unbekannt";
 
-  // Laden von Fahrer-/Teamdaten, Rennen, Ergebnisse
+  /**
+   * Effect: Lädt Fahrer, Rennen und initialisiert die Ergebnisliste
+   *
+   * Beim ersten Laden werden:
+   * - Alle Fahrer vom Backend geladen und in eine Map konvertiert
+   * - Alle Rennen vom Backend geladen
+   * - Das erste Rennen automatisch ausgewählt
+   * - Die Ergebnisliste mit vorhandenen Ergebnissen oder Fahrern initialisiert
+   */
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -59,6 +111,7 @@ function AdminOfficialResultsPage() {
       try {
         // Fahrer vom Backend laden
         const driverList = await getStoredDrivers();
+        // Map erstellen für schnellen Zugriff auf Fahrer-Daten
         const map = driverList.reduce((acc, driver) => {
           acc[driver.name] = driver;
           return acc;
@@ -69,9 +122,11 @@ function AdminOfficialResultsPage() {
         const racesData = await getAllRaces();
         setRaces(racesData);
 
+        // Wenn Rennen vorhanden, wähle das erste aus und initialisiere Ergebnisliste
         if (racesData.length > 0) {
           const firstRace = racesData[0];
           const firstId = String(firstRace.id);
+          // Priorität: resultsOrder > drivers > alle Fahrer
           const initialOrder = firstRace.resultsOrder?.length
             ? firstRace.resultsOrder
             : firstRace.drivers?.length
@@ -92,7 +147,12 @@ function AdminOfficialResultsPage() {
     fetchData();
   }, []);
 
-  // Aktualisiert die Ergebnisliste neu, wenn Auswahl gewechselt wird
+  /**
+   * Effect: Aktualisiert die Ergebnisliste, wenn ein anderes Rennen ausgewählt wird
+   *
+   * Wenn der Benutzer ein anderes Rennen auswählt, wird die Ergebnisliste
+   * mit den vorhandenen Ergebnissen oder Fahrern des neuen Rennens aktualisiert.
+   */
   useEffect(() => {
     if (!selectedId || loading) {
       if (!selectedId) {
@@ -112,12 +172,22 @@ function AdminOfficialResultsPage() {
     setResultsOrder(initialOrder || []);
   }, [selectedId, races, driversByName, loading]);
 
-  // Speichert die offizielle Reihenfolge des ausgewählten Rennens
+  /**
+   * handleSave - Speichert die offizielle Reihenfolge des ausgewählten Rennens
+   *
+   * Speichert die Ergebnisse in zwei Schritten:
+   * 1. Aktualisiert die resultsOrder im Race-Objekt
+   * 2. Erstellt die offiziellen Ergebnisse (OfficialResult) für die Punkteberechnung
+   *
+   * Nach dem Speichern wird das Rennen automatisch auf "closed" gesetzt.
+   */
   const handleSave = async () => {
+    // Validierung: Rennen muss ausgewählt sein
     if (!selectedId) {
       setError("Bitte zuerst ein Rennen auswählen");
       return;
     }
+    // Validierung: Mindestens ein Fahrer muss vorhanden sein
     if (resultsOrder.length === 0) {
       setError(
         "Keine Fahrer vorhanden. Bitte zuerst Fahrer dem Rennen zuweisen."
@@ -130,13 +200,13 @@ function AdminOfficialResultsPage() {
     setMessage("");
 
     try {
-      // Ergebnisse über API speichern (resultsOrder im Race)
+      // Schritt 1: Ergebnisse über API speichern (resultsOrder im Race)
       const updatedRace = await updateRaceResults(selectedId, resultsOrder);
 
-      // Offizielle Ergebnisse (OfficialResult) erstellen
+      // Schritt 2: Offizielle Ergebnisse (OfficialResult) erstellen für Punkteberechnung
       await createResultsForRace(selectedId, resultsOrder, driversByName);
 
-      // Lokalen State aktualisieren
+      // Lokalen State aktualisieren mit den neuen Daten vom Backend
       const next = races.map((race) =>
         String(race.id) === String(selectedId)
           ? {
@@ -163,10 +233,16 @@ function AdminOfficialResultsPage() {
     }
   };
 
-  // Erstellt eine zufällige Reihenfolge der Fahrer
+  /**
+   * shuffleOrder - Erstellt eine zufällige Reihenfolge der Fahrer
+   *
+   * Verwendet den Fisher-Yates Shuffle Algorithmus, um die aktuelle
+   * Reihenfolge zufällig zu mischen. Nützlich für Tests oder als Startpunkt.
+   */
   const shuffleOrder = () => {
     setResultsOrder((prev) => {
       const next = [...prev];
+      // Fisher-Yates Shuffle
       for (let i = next.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1));
         [next[i], next[j]] = [next[j], next[i]];
@@ -175,21 +251,53 @@ function AdminOfficialResultsPage() {
     });
   };
 
-  // Verschiebt einen Fahrer innerhalb der Ergebnisliste
+  /**
+   * moveItem - Verschiebt einen Fahrer innerhalb der Ergebnisliste
+   *
+   * Wird verwendet für:
+   * - Drag & Drop Operationen
+   * - Up/Down Button-Klicks
+   *
+   * @param {number} from - Index der Quelle
+   * @param {number} to - Index des Ziels
+   */
   const moveItem = (from, to) => {
+    // Validierung: Indizes müssen gültig und unterschiedlich sein
     if (from === null || to === null || from === to) return;
     setResultsOrder((prev) => {
+      // Validierung: Ziel-Index muss innerhalb der Liste sein
       if (to < 0 || to >= prev.length) return prev;
       const next = [...prev];
+      // Element entfernen und an neuer Position einfügen
       const [item] = next.splice(from, 1);
       next.splice(to, 0, item);
       return next;
     });
   };
 
-  // Drag-&-Drop Steuerung
+  /**
+   * Drag & Drop Event-Handler
+   */
+
+  /**
+   * handleDragStart - Startet das Ziehen eines Elements
+   *
+   * @param {number} index - Index des Elements, das gezogen wird
+   */
   const handleDragStart = (index) => setDragIndex(index);
+
+  /**
+   * handleDragOver - Verhindert Standard-Verhalten beim Überziehen
+   *
+   * @param {Event} e - Drag-Event
+   */
   const handleDragOver = (e) => e.preventDefault();
+
+  /**
+   * handleDrop - Beendet das Ziehen und verschiebt das Element
+   *
+   * @param {number} index - Index der Zielposition
+   */
   const handleDrop = (index) => {
     if (dragIndex === null) return;
     moveItem(dragIndex, index);

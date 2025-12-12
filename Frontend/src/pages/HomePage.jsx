@@ -1,4 +1,15 @@
-// Öffentliche Startseite ohne Login.
+/**
+ * HomePage - Öffentliche Startseite ohne Login-Anforderung
+ *
+ * Zeigt eine Übersicht der F1 Championship mit:
+ * - Statistiken (Anzahl Rennen, offene Tippfenster, etc.)
+ * - Anstehende Rennen (nächste 3 Events)
+ * - Feature-Karten (Rangliste, Tipps)
+ * - Call-to-Action-Bereiche (Login, Registrierung)
+ *
+ * Diese Seite ist öffentlich zugänglich und benötigt keine Authentifizierung.
+ * Sie dient als Landing Page und Einstiegspunkt für neue und bestehende Benutzer.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTrackVisual } from "../data/tracks";
@@ -10,11 +21,20 @@ import ErrorMessage from "../components/common/ErrorMessage.jsx";
 
 function HomePage() {
   const navigate = useNavigate();
+
+  /**
+   * State für Rennen und UI-Status
+   */
   const [races, setRaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Lädt Rennen vom Backend
+  /**
+   * Effect: Lädt alle Rennen vom Backend beim ersten Rendern
+   *
+   * Die Rennen werden verwendet, um Statistiken zu berechnen und
+   * anstehende Events anzuzeigen.
+   */
   useEffect(() => {
     const fetchRaces = async () => {
       setLoading(true);
@@ -34,7 +54,18 @@ function HomePage() {
     fetchRaces();
   }, []);
 
-  // Statistische Zusammenfassung aller Rennen
+  /**
+   * stats - Statistische Zusammenfassung aller Rennen
+   *
+   * Berechnet die Anzahl der Rennen nach Status:
+   * - total: Gesamtanzahl aller Rennen
+   * - planned: Rennen im Status "open"
+   * - tipping: Rennen im Status "voting" (Tippfenster offen)
+   * - closed: Rennen im Status "closed" (abgeschlossen)
+   *
+   * Wird mit useMemo optimiert, um Neuberechnungen nur bei Änderungen
+   * der Rennen-Liste durchzuführen.
+   */
   const stats = useMemo(() => {
     const planned = races.filter((race) => race.status === "open").length;
     const tipping = races.filter((race) => race.status === "voting").length;
@@ -47,7 +78,12 @@ function HomePage() {
     };
   }, [races]);
 
-  // UI-Labels für Status und Wetteranzeigen.
+  /**
+   * Mapping-Tabellen für UI-Labels
+   *
+   * Übersetzen technische Status- und Wetterwerte in benutzerfreundliche
+   * deutsche Beschriftungen.
+   */
   const statusLabel = {
     open: "Geplant",
     voting: "Voting",
@@ -60,7 +96,14 @@ function HomePage() {
     rain: "Regen",
   };
 
-  // Ermittelt die nächsten anstehenden (nicht geschlossenen) Rennen
+  /**
+   * upcomingRaces - Ermittelt die nächsten anstehenden Rennen
+   *
+   * Filtert alle nicht-geschlossenen Rennen, sortiert sie nach Datum
+   * (aufsteigend) und gibt die ersten 3 zurück.
+   *
+   * Wird mit useMemo optimiert.
+   */
   const upcomingRaces = useMemo(() => {
     const parseDate = (value) => (value ? new Date(value) : null);
     return [...races]
@@ -76,7 +119,12 @@ function HomePage() {
       .slice(0, 3);
   }, [races]);
 
-  // Filtert Rennen nach Status zur Darstellung in Info-Karten und CTA-Bereichen.
+  /**
+   * Gefilterte Rennen-Listen nach Status
+   *
+   * Wird verwendet zur Darstellung in Info-Karten und CTA-Bereichen.
+   * Wird mit useMemo optimiert.
+   */
   const votingRaces = useMemo(
     () => races.filter((race) => race.status === "voting"),
     [races]
@@ -87,8 +135,11 @@ function HomePage() {
     [races]
   );
 
-  // Aufbau der Home-Page
-  // Loading-State: Zeige Spinner während Daten geladen werden
+  /**
+   * Rendering-Logik: Loading-State
+   *
+   * Zeigt einen Spinner während die Daten vom Backend geladen werden.
+   */
   if (loading) {
     return (
       <div className="home-page">
@@ -97,7 +148,12 @@ function HomePage() {
     );
   }
 
-  // Error-State: Zeige Fehlermeldung wenn Daten nicht geladen werden konnten
+  /**
+   * Rendering-Logik: Error-State
+   *
+   * Zeigt eine Fehlermeldung an, wenn die Daten nicht geladen werden konnten.
+   * Bietet einen Button zum Neuladen der Seite.
+   */
   if (error) {
     return (
       <div className="home-page">

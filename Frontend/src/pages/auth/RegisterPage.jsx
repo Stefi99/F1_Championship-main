@@ -1,6 +1,12 @@
+/**
+ * RegisterPage - Wrapper-Komponente für die Registrierungsseite
+ *
+ * Diese Komponente ist eine einfache Weiterleitung auf die kombinierte
+ * AuthPage mit Fokus auf das Registrierungsformular.
+ * Die eigentliche Logik befindet sich in AuthPage (LoginPage.jsx).
+ */
 import AuthPage from "./LoginPage.jsx";
 
-// Weiterleitung auf die kombinierte Auth-Seite mit Fokus auf Registrierung
 function RegisterPage() {
   return <AuthPage defaultMode="register" />;
 }
