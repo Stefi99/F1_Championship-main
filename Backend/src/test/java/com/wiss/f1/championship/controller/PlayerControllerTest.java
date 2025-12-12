@@ -3,20 +3,14 @@ package com.wiss.f1.championship.controller;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -33,6 +27,19 @@ import com.wiss.f1.championship.service.AppUserService;
 import com.wiss.f1.championship.service.RaceService;
 import com.wiss.f1.championship.service.TipService;
 
+/**
+ * Unit-Tests für PlayerController (TipController).
+ *
+ * Testfälle:
+ * - Abrufen eines Tipps für ein Rennen
+ * - Abrufen eines Tipps für ein nicht existentes Rennen
+ * - Abrufen eines Tipps ohne Authentifizierung
+ * - Erstellen oder Aktualisieren eines Tipps (inkl. Fehlerfälle)
+ * - Abrufen aller Tipps eines Users
+ * - Player-Test-Endpunkt
+ *
+ * SecurityContext und Authentication werden gemockt, um Authentifizierung zu simulieren.
+ */
 class PlayerControllerTest {
 
     private TipService tipService;
@@ -45,6 +52,7 @@ class PlayerControllerTest {
     private Authentication authentication;
     private SecurityContext securityContext;
 
+    // Hilfsmethode zum Setzen der privaten ID
     private void setId(Object entity, Long id, Class<?> clazz) {
         try {
             java.lang.reflect.Field idField = clazz.getDeclaredField("id");
@@ -65,7 +73,7 @@ class PlayerControllerTest {
         testPlayer = new AppUser("player1", "player1@test.com", "encodedPassword", Role.PLAYER);
         setId(testPlayer, 1L, AppUser.class);
 
-        testRace = new Race("Bahrain GP", LocalDate.of(2024, 3, 2), 
+        testRace = new Race("Bahrain GP", LocalDate.of(2024, 3, 2),
                 "Bahrain International Circuit", "Sunny", RaceStatus.TIPPABLE);
         testRace.setId(1L);
 
@@ -80,7 +88,7 @@ class PlayerControllerTest {
     @Test
     void testGetTipForRace() {
         List<String> tipOrder = Arrays.asList("Max Verstappen", "Lewis Hamilton", "Charles Leclerc");
-        
+
         when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace));
         when(tipService.getTipOrderForUserAndRace(testPlayer, testRace)).thenReturn(tipOrder);
 
@@ -127,7 +135,7 @@ class PlayerControllerTest {
     void testCreateOrUpdateTip() {
         List<String> tipOrder = Arrays.asList("Max Verstappen", "Lewis Hamilton", "Charles Leclerc");
         TipRequestDTO request = new TipRequestDTO(1L, tipOrder);
-        
+
         when(raceService.getRaceById(1L)).thenReturn(Optional.of(testRace));
         when(tipService.saveOrUpdateTip(testPlayer, testRace, tipOrder)).thenReturn(Arrays.asList());
         when(tipService.getTipOrderForUserAndRace(testPlayer, testRace)).thenReturn(tipOrder);
@@ -175,7 +183,7 @@ class PlayerControllerTest {
     void testCreateOrUpdateTipWithNonExistentRace() {
         List<String> tipOrder = Arrays.asList("Max Verstappen", "Lewis Hamilton");
         TipRequestDTO request = new TipRequestDTO(999L, tipOrder);
-        
+
         when(raceService.getRaceById(999L)).thenReturn(Optional.empty());
 
         ResponseEntity<TipResponseDTO> response = tipController.createOrUpdateTip(request);
@@ -190,10 +198,10 @@ class PlayerControllerTest {
     @Test
     void testGetAllTipsForUser() {
         List<TipResponseDTO> tips = Arrays.asList(
-            new TipResponseDTO(1L, Arrays.asList("Max Verstappen", "Lewis Hamilton"), LocalDateTime.now()),
-            new TipResponseDTO(2L, Arrays.asList("Charles Leclerc", "Carlos Sainz"), LocalDateTime.now())
+                new TipResponseDTO(1L, Arrays.asList("Max Verstappen", "Lewis Hamilton"), LocalDateTime.now()),
+                new TipResponseDTO(2L, Arrays.asList("Charles Leclerc", "Carlos Sainz"), LocalDateTime.now())
         );
-        
+
         when(userService.getUserById(1L)).thenReturn(Optional.of(testPlayer));
         when(tipService.getAllTipsForUser(testPlayer)).thenReturn(tips);
 
@@ -225,7 +233,20 @@ class PlayerControllerTest {
     void testPlayerTestEndpoint() {
         PlayerTestController playerTestController = new PlayerTestController();
         String result = playerTestController.playerTest();
-        
+
         assertEquals("Player ok!", result);
     }
 }
+
+/*
+ * Zusammenfassung:
+ * PlayerControllerTest prüft alle wesentlichen PlayerController-Endpunkte:
+ * - Tipps abrufen, erstellen oder aktualisieren
+ * - Validierung von Anfragen (leere oder ungültige Requests)
+ * - Verhalten bei nicht vorhandenen Rennen oder Benutzern
+ * - Authentifizierungssimulation über SecurityContext
+ * - Player-Test-Endpunkt
+ *
+ * Mockito wird verwendet, um TipService, AppUserService und RaceService zu mocken,
+ * wodurch die Controller-Logik isoliert getestet wird.
+ */
