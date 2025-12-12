@@ -14,7 +14,7 @@ Diese Anwendung ermöglicht:
 - **Spieler (Players)**: Tipps auf Formel-1-Rennen abgeben, Leaderboard einsehen, Profil verwalten
 - **Administratoren (Admins)**: Rennen erstellen und verwalten, Fahrer verwalten, offizielle Ergebnisse eintragen
 - **Authentifizierung**: Sichere Anmeldung und Registrierung mit JWT-Tokens
-- **Punkteberechnung**: Automatische Berechnung der Punkte basierend auf Tipp-Genauigkeit
+- **Punkteberechnung**: Automatische Punktevergabe basierend auf der Tipp-Genauigkeit
 
 ---
 
@@ -27,10 +27,8 @@ F1_Championship-main
 └── README.md         → Projektdokumentation
 ```
 
-Das Projekt besteht aus zwei Hauptteilen:
-
-- Einem **React-Frontend** zur Darstellung und Interaktion
-- Einem **Spring Boot Backend** zur Datenverarbeitung über eine REST-API
+Das Projekt ist klar in Frontend und Backend getrennt.  
+Die Kommunikation erfolgt über eine REST-API.
 
 ---
 
@@ -45,15 +43,13 @@ Das Projekt besteht aus zwei Hauptteilen:
 - **PostgreSQL** (Datenbank)
 - **Jakarta Validation** (Validierung)
 - **JWT (jjwt)** (Token-Generierung)
+- **BCrypt** (Passwörter gehasht)
 - **Swagger/OpenAPI** (API-Dokumentation)
 
-### Beschreibung:
-
-Das Backend wurde mit Java und Spring Boot umgesetzt und stellt eine REST-API bereit. Die Anwendung ist klar in Controller-, Service- und Repository-Schichten aufgebaut.
-
-Die Sicherheit erfolgt über Spring Security mit JWT-basierter Authentifizierung. Beim Login wird ein Token erzeugt, das bei jedem Request im Authorization-Header mitgesendet und serverseitig geprüft wird.
-
-Passwörter werden mit BCrypt gehasht gespeichert. Die Datenpersistenz erfolgt über Spring Data JPA mit PostgreSQL als Datenbank.
+**Beschreibung:**
+Das Backend stellt eine REST-API bereit und ist in Controller-, Service- und Repository-Schichten aufgebaut.  
+Die Authentifizierung erfolgt über JWT-Tokens, welche bei jedem Request serverseitig validiert werden.  
+Passwörter werden sicher mit BCrypt gehasht gespeichert, die Datenpersistenz erfolgt über JPA mit PostgreSQL.
 
 ### Frontend
 
@@ -63,12 +59,9 @@ Passwörter werden mit BCrypt gehasht gespeichert. Die Datenpersistenz erfolgt �
 - **CSS3** (Styling)
 
 ### Beschreibung:
-
-Das Frontend wurde mit React umgesetzt und bildet die Benutzeroberfläche der Anwendung. Die Navigation zwischen den Seiten erfolgt über React Router ohne Seitenreload.
-
-Der Login-Status wird zentral über die React Context API verwaltet. Der AuthContext speichert den eingeloggten Benutzer und den JWT-Token, sodass alle Komponenten darauf zugreifen können.
-
-Die Kommunikation mit dem Backend erfolgt über einen zentralen API-Service, der HTTP-Requests sendet und den JWT-Token automatisch im Authorization-Header mitsendet. Als Build-Tool wird Vite verwendet.
+Das Frontend bildet die Benutzeroberfläche der Anwendung.  
+Die Navigation erfolgt über React Router, der Login-Zustand wird zentral über die React Context API verwaltet.  
+API-Aufrufe erfolgen über einen Service-Layer, der den JWT-Token automatisch mitsendet.
 
 ### Testing
 
@@ -79,10 +72,7 @@ Die Kommunikation mit dem Backend erfolgt über einen zentralen API-Service, der
 - **React Testing Library** (Komponenten-Tests)
 
 ### Beschreibung:
-
-Für das Backend werden Unit- und Controller-Tests mit JUnit 5 umgesetzt. Mockito wird verwendet, um Abhängigkeiten zu mocken und Business-Logik isoliert zu testen. Mit MockMvc werden REST-Endpunkte getestet, ohne den Server vollständig zu starten.
-
-Das Frontend wird mit Vitest getestet. Die React Testing Library prüft Komponentenverhalten aus Sicht des Benutzers, zum Beispiel Formulare, Interaktionen und die Anzeige von Daten.
+Es wurden automatisierte Tests für Backend und Frontend umgesetzt, um zentrale Business-Logik und Benutzerinteraktionen zu überprüfen.
 
 ---
 
@@ -98,11 +88,10 @@ Das Frontend wird mit Vitest getestet. Die React Testing Library prüft Komponen
 
 ### 🔐 Admin (Administrator)
 
-- Alle Player-Funktionen
 - Rennen erstellen, bearbeiten und löschen
 - Fahrer verwalten (CRUD-Operationen)
 - Offizielle Rennergebnisse eintragen
-- Rennen-Status verwalten (OPEN → VOTING → CLOSED)
+- Rennstatus verwalten (OPEN → VOTING → CLOSED)
 
 ---
 
@@ -113,31 +102,26 @@ Das Frontend wird mit Vitest getestet. Die React Testing Library prüft Komponen
 - JWT-basierte Authentifizierung
 - Rollenbasierte Zugriffskontrolle (ADMIN/PLAYER)
 - Sichere Passwort-Speicherung (BCrypt)
-- Token-basierte Session-Verwaltung
 
 ### Rennen-Verwaltung
 
 - Rennen mit Status-System (OPEN, VOTING, CLOSED)
-- Renndetails: Name, Datum, Strecke, Wetter, Reifen
-- Ergebnisse-Order (Top 10 Fahrer)
+- Verwaltung von Renndaten und Ergebnissen
 
 ### Tipp-System
 
-- Tipps für Top 10 Positionen (1-10)
-- Tipp-Validierung (nur bei Status VOTING)
-- Tipp-Aktualisierung bis Voting geschlossen
+- Abgabe von Tipps für Top-10-Positionen
+- Validierung basierend auf dem Rennstatus
 
 ### Punkteberechnung
 
-- **Podium korrekt (Platz 1-3)**: 5 Punkte
-- **Top 10 korrekt (Platz 4-10)**: 3 Punkte
-- **Podium: Fahrer im Top 10, aber falsche Position**: 2 Punkte
-- **Top 10: Fahrer im Top 10, aber falsche Position**: 1 Punkt
+- Automatische Punktevergabe basierend auf der Genauigkeit der abgegebenen Tipps
+- Berücksichtigung von exakten Treffern und Platzierungsabweichungen
 
 ### Leaderboard
 
 - Sortierung nach Gesamtpunkten
-- Anzeige von Username, Display Name, Punkten und Rang
+- Anzeige von Rang, Benutzername und Punkten
 
 ---
 
@@ -153,61 +137,67 @@ Das Frontend wird mit Vitest getestet. Die React Testing Library prüft Komponen
 
 ## ▶️ Startanleitung
 
-### 1. Datenbank einrichten
+### Voraussetzungen:
+Für den Start müssen folgende Umgebungsvariablen gesetzt sein:
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `JWT_SECRET`
 
-PostgreSQL-Datenbank anlegen:
+### Anwendung starten
 
+### 1. PostgreSQL-Datenbank erstellen:
 ```sql
 CREATE DATABASE f1_championship_db;
 ```
 
-### 2. Backend starten (Spring Boot)
-
-Umgebungsvariablen setzen (Windows):
-
-```cmd
-set SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/f1_championship_db
-set SPRING_DATASOURCE_USERNAME=dein_user
-set SPRING_DATASOURCE_PASSWORD=dein_passwort
-set JWT_SECRET=dein_sehr_langer_geheimer_schluessel_mindestens_32_zeichen
-```
-
-Oder in `application.properties` direkt eintragen (nicht empfohlen für Produktion).
-
-Backend starten:
-
+### 2. Backend starten (Spring Boot):
 ```cmd
 cd Backend
 ./mvnw spring-boot:run
 ```
 
-> **Backend läuft auf**: `http://localhost:8080`  
-> **API-Dokumentation**: `http://localhost:8080/swagger-ui.html`
-
-### 3. Frontend starten (React)
-
+### 3. Frontend starten (React):
 ```cmd
 cd Frontend
 npm install
 npm run dev
 ```
 
+> **Backend läuft auf**: `http://localhost:8080`  
+> **API-Dokumentation**: `http://localhost:8080/swagger-ui.html`
 > **Frontend läuft auf**: `http://localhost:5173`  
 > Stelle sicher, dass das Backend auf Port `8080` läuft.
 
 ---
 
-## 🛠️ Datenbank-Konfiguration
+## 🧩 Initialdaten (Fahrer)
 
-Die Datenbank-Konfiguration erfolgt über Umgebungsvariablen in `application.properties`:
+Damit Rennen und Tipps korrekt funktionieren, müssen Fahrer in der Datenbank vorhanden sein.  
+Die folgenden Beispiel-Daten können einmalig in der Datenbank ausgeführt werden:
 
-```properties
-spring.datasource.url=${SPRING_DATASOURCE_URL}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
-jwt.secret=${JWT_SECRET}
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+```sql
+INSERT INTO drivers (name, team) VALUES
+('Max Verstappen', 'Red Bull Racing'),
+('Yuki Tsunoda', 'Red Bull Racing'),
+('Kimi Antonelli', 'Mercedes'),
+('George Russell', 'Mercedes'),
+('Charles Leclerc', 'Ferrari'),
+('Lewis Hamilton', 'Ferrari'),
+('Lando Norris', 'McLaren'),
+('Oscar Piastri', 'McLaren'),
+('Fernando Alonso', 'Aston Martin'),
+('Lance Stroll', 'Aston Martin'),
+('Pierre Gasly', 'Alpine'),
+('Franco Colapinto', 'Alpine'),
+('Liam Lawson', 'RB'),
+('Isack Hadjar', 'RB'),
+('Gabriel Bortoleto', 'Sauber'),
+('Nico Hülkenberg', 'Sauber'),
+('Esteban Ocon', 'Haas'),
+('Oliver Bearman', 'Haas'),
+('Alexander Albon', 'Williams'),
+('Carlos Sainz', 'Williams');
 ```
 
 ---
@@ -217,7 +207,6 @@ spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 ![ERD Diagramm](./images/erd-diagramm.png)
 
 ### Beziehungen:
-
 - **AppUser** → **Tip** (1:N) - Ein User kann mehrere Tipps abgeben
 - **Race** → **Tip** (1:N) - Ein Rennen kann mehrere Tipps haben
 - **Race** → **OfficialResult** (1:N) - Ein Rennen hat mehrere offizielle Ergebnisse
@@ -228,7 +217,7 @@ spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 
 ## 🏗️ Backend-Architektur
 
-### Layer-Architektur-Diagramm
+### Layer-Architektur-Diagramm:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -282,42 +271,34 @@ Das Backend ist nach Best Practices modular aufgebaut:
 com.wiss.f1.championship
 ├── config/                 → Konfigurationsklassen (Security, Swagger, etc.)
 │ ├── SecurityConfig.java
-│ ├── OpenApiConfig.java
 │ └── ...
 │
 ├── controller/             → REST-Controller (API-Endpunkte)
 │ ├── AuthController.java
-│ ├── RaceController.java
 │ └── ...
 │
 ├── dto/                    → Data Transfer Objects für Requests/Responses
 │ ├── AuthRequestDTO.java
-│ ├── UserProfileDTO.java
 │ └── ...
 │
 ├── entity/                 → JPA-Entitäten (Datenbankmodell)
 │ ├── AppUser.java
-│ ├── Race.java
 │ └── ...
 │
 ├── exception/              → Zentrale Fehlerbehandlung
 │ ├── GlobalExceptionHandler.java
-│ ├── UserNotFoundException.java
 │ └── ...
 │
 ├── repository/             → JPA-Repositories (Datenbankzugriff)
 │ ├── AppUserRepository.java
-│ ├── RaceRepository.java
 │ └── ...
 │
 ├── security/               → JWT & Security-Logik
 │ ├── JwtService.java
-│ ├── JwtAuthenticationFilter.java
 │ └── ...
 │
 └── service/                → Business-Logik
   ├── AppUserService.java
-  ├── RaceService.java
   └── ...
 
 
@@ -398,7 +379,6 @@ Frontend/src/
 │
 ├── contexts/             → Globales State-Management
 │ ├── AuthContext.js
-│ ├── AuthProvider.jsx
 │ └── ...
 │
 ├── router/               → Routing-Definitionen
@@ -407,7 +387,6 @@ Frontend/src/
 ├── components/           → Wiederverwendbare UI-Komponenten
 │ ├── layout/
 │ │ ├── Layout.jsx
-│ │ ├── Navbar.jsx
 │ │ └── ...
 │ │
 │ └── common/
@@ -421,33 +400,29 @@ Frontend/src/
 │ │
 │ ├── auth/
 │ │ ├── LoginPage.jsx
-│ │ └── RegisterPage.jsx
 │ │
 │ ├── player/
 │ │ ├── PlayerDashboardPage.jsx
-│ │ ├── PlayerRaceListPage.jsx
 │ │ └── ...
 │ │
 │ └── admin/
-│ ├── AdminDashboardPage.jsx
-│ ├── AdminRaceListPage.jsx
-│ └── ...
+│   ├── AdminDashboardPage.jsx
+│   └── ...
 │
 ├── services/             → API-Service-Layer
 │ ├── api.js
-│ ├── driverService.js
 │ └── ...
 │
 └── utils/                → Hilfsfunktionen
   ├── tokenStorage.js
-  ├── errorHandler.js
   └── ...
 
 ```
 
 ### State-Management-Flow (AuthContext)
 
-Das Frontend nutzt React Context API für zentrales State-Management der Authentifizierung. Dies ermöglicht es, den User-Status in der gesamten Anwendung zu teilen, ohne Props durch viele Komponenten zu reichen.
+Das Frontend nutzt die React Context API für das zentrale State-Management der Authentifizierung.  
+Der AuthContext stellt Benutzerinformationen und Login-Status global für alle Komponenten bereit.
 
 ```
 
@@ -463,13 +438,10 @@ Das Frontend nutzt React Context API für zentrales State-Management der Authent
 │                                         │
 │  - user: AppUser | null                 │
 │   → Enthält id, username, role, points  │
-│                                         │
 │  - loading: boolean                     │
 │   → true, während User-Daten geladen    │
-│                                         │
 │  - isAuthenticated: boolean             │
 │   → Berechnet aus: !!user               │
-│                                         │
 │ -  isAdmin: boolean                     │
 │   → user?.role === "ADMIN"              │
 └─────────────────────────────────────────┘
@@ -481,13 +453,10 @@ Das Frontend nutzt React Context API für zentrales State-Management der Authent
 │                                         │
 │  - login(token, authResponse)           │
 │   → Speichert Token & lädt User-Daten   │
-│                                         │
 │  - logout()                             │
 │   → Entfernt Token & setzt user = null  │
-│                                         │
 │  - refreshUser()                        │
 │   → Lädt aktuelle User-Daten neu        │
-│                                         │
 │  - loadUserFromToken()                  │
 │   → Initialer Login aus localStorage    │
 └─────────────────────────────────────────┘
@@ -499,72 +468,19 @@ Das Frontend nutzt React Context API für zentrales State-Management der Authent
 │                                         │
 │  - LoginPage                            │
 │   → nutzt login()                       │
-│                                         │
 │  - ProtectedRoute                       │
 │   → prüft isAuthenticated               │
-│                                         │
 │  - Navbar                               │
 │   → zeigt Login / Logout Button         │
 └─────────────────────────────────────────┘
 
 ```
 
-**Detaillierter Flow:**
-
-1. **App-Start (Initialisierung)**:
-
-   - `AuthProvider` wird in `main.jsx` geladen
-   - `useEffect` prüft, ob Token im `localStorage` vorhanden ist
-   - Falls ja: `loadUserFromToken()` wird aufgerufen
-   - Backend-Request: `GET /api/users/me` mit Token
-   - User-Daten werden in State gespeichert
-   - `loading` wird auf `false` gesetzt
-
-2. **Login-Prozess**:
-
-   - User gibt Credentials in `LoginPage` ein
-   - `POST /api/auth/login` wird gesendet
-   - Backend antwortet mit Token und User-Info
-   - `login(token, authResponse)` wird aufgerufen
-   - Token wird in `localStorage` gespeichert
-   - Vollständige User-Daten werden vom Backend geladen
-   - State wird aktualisiert → alle Komponenten sehen den neuen User
-
-3. **Verwendung in Komponenten**:
-
-   - Jede Komponente kann `useContext(AuthContext)` nutzen
-   - `ProtectedRoute` prüft `isAuthenticated` → leitet zu `/login` um, falls nicht authentifiziert
-   - `AdminRoute` prüft `isAdmin` → zeigt 403, falls nicht Admin
-   - `Navbar` zeigt Login/Logout-Button basierend auf `isAuthenticated`
-
-4. **Logout-Prozess**:
-
-   - User klickt auf Logout-Button
-   - `logout()` wird aufgerufen
-   - Token wird aus `localStorage` entfernt
-   - User-State wird auf `null` gesetzt
-   - Alle geschützten Routen werden unzugänglich
-
-5. **Token-Validierung (Automatisch)**:
-   - Bei jedem API-Request wird Token mitgesendet
-   - Falls Backend 401 (Unauthorized) zurückgibt
-   - Event `auth:unauthorized` wird ausgelöst
-   - `AuthProvider` hört auf dieses Event
-   - Automatischer Logout wird durchgeführt
-
-**Multi-User-Aspekt:**
-
-- Jeder User hat seinen eigenen State im `AuthProvider`
-- Wenn User A eingeloggt ist, sieht er nur seine eigenen Tipps
-- Wenn User B eingeloggt ist, sieht er seine eigenen Tipps
-- Der State ist pro Browser-Session isoliert
-- Mehrere User können gleichzeitig eingeloggt sein (in verschiedenen Browsern/Tabs)
-
----
-
 ## 🔄 API-Integration-Diagramm (Services → Fetch API → Backend)
 
-Das Frontend nutzt Service-Layer, die API-Calls kapseln. Diese Services nutzen einen zentralen API-Client (`api.js`), der die native Fetch API verwendet.
+Das Frontend nutzt einen Service-Layer zur Kapselung von API-Aufrufen.  
+Ein zentraler API-Client übernimmt die Kommunikation mit dem Backend und fügt den JWT-Token automatisch zu Requests hinzu.  
+Dadurch bleibt die Logik klar getrennt und die API-Integration übersichtlich.
 
 ```
 
@@ -572,78 +488,25 @@ Das Frontend nutzt Service-Layer, die API-Calls kapseln. Diese Services nutzen e
 │                   Frontend-Komponenten                  │
 │ (PlayerRaceTipsPage, AdminRaceListPage, etc.)           │
 └───────────────────────────┬─────────────────────────────┘
-                            │
                             │ import
                             │ tipService, raceService
                             ▼
 ┌─────────────────────────────────────────────────────────┐
 │                Service Layer (Frontend)                 │
-│                                                         │
-│  tipService.js                                          │
-│   - submitTip()                                         │
-│   - getTip()                                            │
-│                                                         │
-│  raceService.js                                         │
-│   - getAllRaces()                                       │
-│   - createRace()                                        │
-│                                                         │
-│  ...                                                    │
+│   (z.B. raceService, tip…)                              │
 └───────────────────────────┬─────────────────────────────┘
-                            │
                             │ delegiert Requests an
                             ▼
-
 ┌─────────────────────────────────────────────────────────┐
 │                 API Client (api.js)                     │
-│                                                         │
-│  - get(url)                                             │
-│  - post(url, data)                                      │
-│  - put(url, data)                                       │
-│  - delete(url)                                          │
-│                                                         │
-│  - fügt automatisch JWT hinzu                           │
-│    Authorization: Bearer <token>                        │
+│  (fügt JWT automatisch hinzu)                           │
 └────────────────────────────┬────────────────────────────┘
-                             │
                              │ HTTP Request
                              ▼
 ┌─────────────────────────────────────────────────────────┐
 │                  Backend (Spring Boot)                  │
-│                                                         │
-│  JwtAuthenticationFilter                                │
-│   - Extrahiert Token                                    │
-│   - Validiert Token                                     │
-│   - Setzt Authentication                                │
-│                                                         │
-│  Controller Layer                                       │
-│   - TipController                                       │
-│   - RaceController                                      │
-│   - LeaderboardController                               │
-│       Empfängt HTTP-Request                             │
-│       Ruft Service auf                                  │
-│                                                         │
-│  Service Layer                                          │
-│   - TipService                                          │
-│   - RaceService                                         │
-│   - LeaderboardService                                  │
-│       Business-Logik                                    │
-│       Validiert Daten                                   │
-│                                                         │
-│  Repository Layer                                       │
-│   - TipRepository                                       │
-│   - RaceRepository                                      │
-│   - DriverRepository                                    │
-│      Datenbankzugriffe                                  │
-│                                                         │
-│  PostgreSQL Database                                    │
-│   - tips                                                │
-│   - races                                               │
-│   - drivers                                             │
-│   - app_users                                           │
-│       Speichert Daten                                   │
-│                                                         │
+│  Controller → Service → DB                              │
 └─────────────────────────────────────────────────────────┘
-                           │
                            │ JSON Response
                            ▼
 ┌────────────────────────────────────────────────────────┐
@@ -654,286 +517,59 @@ Das Frontend nutzt Service-Layer, die API-Calls kapseln. Diese Services nutzen e
 
 ```
 
-### Detaillierter API-Flow (Beispiel: Tipp abgeben)
-
-**Schritt 1: User interagiert mit UI**
-
-- User wählt Fahrer für Positionen 1-10 in `PlayerRaceTipsPage`
-- Klickt auf "Tipp speichern"
-
-**Schritt 2: Frontend Service-Layer**
-
-- `PlayerRaceTipsPage` ruft `tipService.submitTip(raceId, order)` auf
-- `tipService.js` formatiert Daten und ruft `api.post('/api/tips', {raceId, order})` auf
-
-**Schritt 3: API-Client**
-
-- `api.js` fügt automatisch `Authorization: Bearer <token>` Header hinzu
-- Token wird aus `localStorage` geladen
-- HTTP POST Request wird an `http://localhost:8080/api/tips` gesendet
-
-**Schritt 4: Backend Security**
-
-- `JwtAuthenticationFilter` fängt Request ab
-- Extrahiert Token aus Header
-- Validiert Token mit `JwtService`
-- Lädt User aus Token
-- Setzt `Authentication` in `SecurityContext`
-
-**Schritt 5: Backend Controller**
-
-- `TipController.createOrUpdateTip()` wird aufgerufen
-- Controller extrahiert aktuellen User aus `SecurityContext`
-- Ruft `TipService.saveOrUpdateTip(user, race, order)` auf
-
-**Schritt 6: Backend Service**
-
-- `TipService` validiert, ob Rennen-Status `VOTING` ist
-- Prüft, ob User bereits einen Tipp für dieses Rennen hat
-- Speichert/aktualisiert Tipp in Datenbank über `TipRepository`
-
-**Schritt 7: Backend Repository**
-
-- `TipRepository` führt JPA-Operationen aus
-- Speichert `Tip`-Entitäten in Datenbank
-- Jede `Tip`-Entität verknüpft: User, Race, Driver, Position
-
-**Schritt 8: Response**
-
-- Service gibt `TipResponseDTO` zurück
-- Controller gibt JSON-Response zurück
-- Frontend empfängt Response
-- UI wird aktualisiert (z.B. "Tipp gespeichert!" Meldung)
-
-**Multi-User-Aspekt:**
-
-- Jeder Request enthält den Token des aktuellen Users
-- Backend identifiziert User über Token
-- Jeder User kann nur seine eigenen Tipps sehen/bearbeiten
-- Mehrere User können gleichzeitig Tipps abgeben (parallele Requests)
-- Datenbank speichert Tipps mit `user_id` Foreign Key → Isolation zwischen Usern
-
 ---
 
 ## 🧪 API-Endpunkte
 
 ### 🔐 Authentifizierung
-
-| Methode | Pfad                 | Beschreibung            | Auth |
-| ------- | -------------------- | ----------------------- | ---- |
-| POST    | `/api/auth/register` | Neuen User registrieren | ✅   |
-| POST    | `/api/auth/login`    | User einloggen          | ✅   |
-
-**Beispiel-Request (Login):**
-
-```json
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "identifier": "player1",
-  "password": "password123"
-}
-```
-
-**Beispiel-Response:**
-
-```json
-{
-  "id": 1,
-  "username": "player1",
-  "role": "PLAYER",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
----
+| Methode | Pfad                         | Beschreibung            
+| ------- | ---------------------------- | ----------------------- 
+| POST    | `/api/auth/register`         | Neuen User registrieren 
+| POST    | `/api/auth/login`            | User einloggen          
 
 ### 🏁 Rennen
-
-| Methode | Pfad                      | Beschreibung                 | Auth     |
-| ------- | ------------------------- | ---------------------------- | -------- |
-| GET     | `/api/races`              | Alle Rennen abrufen          | ✅       |
-| GET     | `/api/races/{id}`         | Einzelnes Rennen abrufen     | ✅       |
-| POST    | `/api/races`              | Neues Rennen erstellen       | ✅ Admin |
-| PUT     | `/api/races/{id}`         | Rennen bearbeiten            | ✅ Admin |
-| DELETE  | `/api/races/{id}`         | Rennen löschen               | ✅ Admin |
-| PUT     | `/api/races/{id}/results` | Rennergebnisse aktualisieren | ✅ Admin |
-
-**Beispiel-Request (Rennen erstellen):**
-
-```json
-POST /api/races
-Content-Type: application/json
-Authorization: Bearer <token>
-
-{
-  "name": "Bahrain GP",
-  "date": "2024-03-02",
-  "track": "Bahrain International Circuit",
-  "weather": "Sunny",
-  "tyres": "soft",
-  "status": "OPEN"
-}
-```
-
-**Beispiel-Response:**
-
-```json
-{
-  "id": 1,
-  "name": "Bahrain GP",
-  "date": "2024-03-02",
-  "track": "Bahrain International Circuit",
-  "weather": "Sunny",
-  "tyres": "soft",
-  "status": "OPEN",
-  "resultsOrder": []
-}
-```
-
----
+| Methode | Pfad                         | Beschreibung            
+| ------- | ---------------------------- | ----------------------- 
+| GET     | `/api/races`                 | Alle Rennen abrufen        
+| POST    | `/api/races`                 | Neues Rennen erstellen       
+| PUT     | `/api/races/{id}`            | Rennen bearbeiten            
+| DELETE  | `/api/races/{id}`            | Rennen löschen               
+| PUT     | `/api/races/{id}/results`    | Rennergebnisse aktualisieren 
 
 ### 🎯 Tipps
+| Methode | Pfad                         | Beschreibung            
+| ------- | ---------------------------- | ----------------------- 
+| GET     | `/api/tips/race/{raceId}`    | Tipp für Rennen abrufen      
+| POST    | `/api/tips`                  | Tipp erstellen/aktualisieren 
+| PUT     | `/api/tips`                  | Tipp aktualisieren           
+| GET     | `/api/tips/user/{userId}`    | Alle Tipps eines Users       
 
-| Methode | Pfad                      | Beschreibung                 | Auth |
-| ------- | ------------------------- | ---------------------------- | ---- |
-| GET     | `/api/tips/race/{raceId}` | Tipp für Rennen abrufen      | ✅   |
-| POST    | `/api/tips`               | Tipp erstellen/aktualisieren | ✅   |
-| PUT     | `/api/tips`               | Tipp aktualisieren           | ✅   |
-| GET     | `/api/tips/user/{userId}` | Alle Tipps eines Users       | ✅   |
-
-**Beispiel-Request (Tipp abgeben):**
-
-```json
-POST /api/tips
-Content-Type: application/json
-Authorization: Bearer <token>
-
-{
-  "raceId": 1,
-  "order": [
-    "Max Verstappen",
-    "Lewis Hamilton",
-    "Charles Leclerc",
-    "Sergio Perez",
-    "Carlos Sainz",
-    "Lando Norris",
-    "George Russell",
-    "Fernando Alonso",
-    "Esteban Ocon",
-    "Pierre Gasly"
-  ]
-}
-```
-
-**Beispiel-Response:**
-
-```json
-{
-  "raceId": 1,
-  "order": ["Max Verstappen", "Lewis Hamilton", ...],
-  "updatedAt": "2024-03-01T10:30:00"
-}
-```
-
----
-
-### 👤 User
-
-| Methode | Pfad              | Beschreibung          | Auth |
-| ------- | ----------------- | --------------------- | ---- |
-| GET     | `/api/users/me`   | Aktuelles User-Profil | ✅   |
-| PUT     | `/api/users/me`   | Profil aktualisieren  | ✅   |
-| GET     | `/api/users/{id}` | User nach ID abrufen  | ✅   |
-
-**Beispiel-Response (GET /api/users/me):**
-
-```json
-{
-  "username": "player1",
-  "displayName": "Max Mustermann",
-  "email": "player1@example.com",
-  "favoriteTeam": "Red Bull Racing",
-  "country": "Deutschland",
-  "bio": "F1-Fan seit 2010",
-  "points": 42,
-  "role": "PLAYER"
-}
-```
-
----
+### 👤 User         
+| Methode | Pfad                         | Beschreibung            
+| ------- | ---------------------------- | ----------------------- 
+| GET     | `/api/users/me`              | Aktuelles User-Profil 
+| PUT     | `/api/users/me`              | Profil aktualisieren  
+| GET     | `/api/users/{id}`            | User nach ID abrufen  
 
 ### 🏎️ Fahrer
-
-| Methode | Pfad                | Beschreibung             | Auth     |
-| ------- | ------------------- | ------------------------ | -------- |
-| GET     | `/api/drivers`      | Alle Fahrer abrufen      | ✅       |
-| GET     | `/api/drivers/{id}` | Einzelnen Fahrer abrufen | ✅       |
-| POST    | `/api/drivers`      | Neuen Fahrer erstellen   | ✅ Admin |
-| PUT     | `/api/drivers/{id}` | Fahrer bearbeiten        | ✅ Admin |
-| DELETE  | `/api/drivers/{id}` | Fahrer löschen           | ✅ Admin |
-
----
+| Methode | Pfad                         | Beschreibung            
+| ------- | ---------------------------- | ----------------------- 
+| GET     | `/api/drivers`               | Alle Fahrer abrufen      
+| POST    | `/api/drivers`               | Neuen Fahrer erstellen   
+| PUT     | `/api/drivers/{id}`          | Fahrer bearbeiten        
+| DELETE  | `/api/drivers/{id}`          | Fahrer löschen           
 
 ### 📊 Leaderboard
-
-| Methode | Pfad               | Beschreibung        | Auth |
-| ------- | ------------------ | ------------------- | ---- |
-| GET     | `/api/leaderboard` | Leaderboard abrufen | ✅   |
-
-**Beispiel-Response:**
-
-```json
-[
-  {
-    "username": "player1",
-    "displayName": "Max Mustermann",
-    "points": 42,
-    "rank": 1
-  },
-  {
-    "username": "player2",
-    "displayName": "Anna Schmidt",
-    "points": 38,
-    "rank": 2
-  }
-]
-```
-
----
+| Methode | Pfad                         | Beschreibung            
+| ------- | ---------------------------- | ----------------------- 
+| GET     | `/api/leaderboard`           | Leaderboard abrufen 
 
 ### 📋 Offizielle Ergebnisse
-
-| Methode | Pfad                         | Beschreibung                       | Auth     |
-| ------- | ---------------------------- | ---------------------------------- | -------- |
-| GET     | `/api/results/race/{raceId}` | Ergebnisse für Rennen              | ✅       |
-| POST    | `/api/results`               | Ergebnis erstellen                 | ✅ Admin |
-| DELETE  | `/api/results/race/{raceId}` | Alle Ergebnisse für Rennen löschen | ✅ Admin |
-
----
-
-## ✅ Response-Format
-
-### Erfolgreiche Response
-
-```json
-{
-  "id": 1,
-  "name": "Bahrain GP",
-  ...
-}
-```
-
-### Fehler-Response
-
-```json
-{
-  "status": 400,
-  "message": "Validation failed: [fieldName] is required",
-  "timestamp": "2024-12-10T10:00:00"
-}
-```
+| Methode | Pfad                         | Beschreibung            
+| ------- | ---------------------------- | ----------------------- 
+| GET     | `/api/results/race/{raceId}` | Ergebnisse für Rennen
+| POST    | `/api/results`               | Ergebnis erstellen 
+| DELETE  | `/api/results/race/{raceId}` | Alle Ergebnisse für Rennen löschen 
 
 ---
 
@@ -941,19 +577,19 @@ Authorization: Bearer <token>
 
 ### 🎮 Player (Spieler)
 
-- **Als Spieler möchte ich mich registrieren und einloggen**, damit ich am Multi-User-Tippspiel teilnehmen kann und meine Tipps von anderen Spielern getrennt gespeichert werden.
+- **Als Spieler möchte ich mich registrieren und einloggen**, damit ich am Multi-User-Tippspiel teilnehmen kann und meine Daten von anderen Spielern getrennt sind.
 
-- **Als Spieler möchte ich Tipps für Rennen abgeben**, während andere Spieler gleichzeitig ihre eigenen Tipps abgeben können, damit wir alle unabhängig voneinander am Wettbewerb teilnehmen können.
+- **Als Spieler möchte ich Tipps für Rennen abgeben**, damit meine Tipps unabhängig von anderen Spielern gespeichert und ausgewertet werden.
 
-- **Als Spieler möchte ich das Leaderboard einsehen**, das die Punkte aller Spieler zeigt und nach Gesamtpunkten sortiert ist, damit ich meinen Rang im Vergleich zu anderen Spielern sehe.
+- **Als Spieler möchte ich das Leaderboard einsehen**, um meinen Rang und meine Punkte im Vergleich zu anderen Spielern zu sehen.
 
 ### 🔐 Admin (Administrator)
 
-- **Als Admin möchte ich Rennen erstellen und verwalten**, die dann von mehreren Spielern gleichzeitig verwendet werden können, damit alle Spieler auf die gleichen Rennen tippen können.
+- **Als Admin möchte ich Rennen erstellen und verwalten**, damit alle Spieler auf dieselben Rennen tippen können.
 
-- **Als Admin möchte ich den Status von Rennen steuern** (OPEN → VOTING → CLOSED), damit alle Spieler gleichzeitig tippen können, wenn der Status auf VOTING gesetzt wird, und niemand mehr tippen kann, wenn er auf CLOSED gesetzt wird.
+- **Als Admin möchte ich den Status von Rennen steuern** (OPEN → VOTING → CLOSED), um festzulegen, wann Spieler Tipps abgeben dürfen.
 
-- **Als Admin möchte ich offizielle Ergebnisse eintragen**, die dann für alle Spieler gleichzeitig verwendet werden, um deren Tipps zu bewerten und das Leaderboard für alle Spieler zu aktualisieren.
+- **Als Admin möchte ich offizielle Ergebnisse eintragen**, damit die Tipps aller Spieler ausgewertet und das Leaderboard aktualisiert wird.
 
 ---
 
@@ -961,227 +597,83 @@ Authorization: Bearer <token>
 
 ```
 1. Admin erstellt Rennen
-   └─> Status: OPEN
-   └─> POST /api/races
-
 2. Admin ändert Status auf VOTING
-   └─> PUT /api/races/{id} (status: "VOTING")
-   └─> Spieler können jetzt tippen
-
 3. Spieler geben Tipps ab
-   └─> POST /api/tips
-   └─> Tipps werden gespeichert
-
 4. Admin schließt Voting
-   └─> PUT /api/races/{id} (status: "CLOSED")
-   └─> Keine Tipp-Änderungen mehr möglich
-
 5. Admin trägt offizielle Ergebnisse ein
-   └─> POST /api/results
-   └─> Oder: PUT /api/races/{id}/results
-
 6. System berechnet Punkte automatisch
-   └─> Leaderboard wird aktualisiert
-   └─> GET /api/leaderboard
-
 7. Spieler sehen ihre Punkte
-   └─> GET /api/users/me (enthält points)
-   └─> GET /api/leaderboard (Rangliste)
 ```
 
 ---
 
-## 🧪 Testfälle
+## ✅ Validierung & Fehlerbehandlung
+
+Eingaben werden über DTOs validiert, z. B. mit: @NotBlank, @Size und @Email
+
+Fehler werden zentral über einen GlobalExceptionHandler behandelt und als strukturierte Fehlermeldungen an das Frontend zurückgegeben.
+
+```
+{
+  "status": 400,
+  "message": "Validation failed: [fieldName] is required",
+  "timestamp": "2025-08-07T10:00:00"
+}
+```
+
+---
+
+## 🧪 Tests
+
+### 🧪 Testplan (Auswahl)
+
+| Testfall                          | Erwartetes Ergebnis                            |
+|-----------------------------------|------------------------------------------------|
+| Login mit gültigen Daten          | User erhält JWT-Token                          |
+| Login mit ungültigen Daten        | Fehler wird korrekt zurückgegeben              |
+| Rennen mit Status VOTING anzeigen | Rennen werden korrekt geladen                  |
+| Tipp für Rennen abgeben           | Tipp wird gespeichert                          |
+| Tipp eines anderen Users abrufen  | Zugriff wird verhindert (Multi-User-Isolation) |
+| Leaderboard abrufen               | Rangliste wird korrekt sortiert angezeigt      |
+| Rennen durch Admin erstellen      | Rennen wird gespeichert                        |
+| Rennen durch Player erstellen     | Zugriff verweigert                             |
+
+---
 
 ### Backend-Tests
 
-Die Anwendung enthält Multi-User-fokussierte Tests:
+Das Backend enthält Unit- und Controller-Tests mit Fokus auf Multi-User-Funktionalität, Authentifizierung und Zugriffskontrolle.
 
-#### Controller-Tests
+Beispiele getesteter Komponenten:
+- AuthController
+- RaceController
+- TipController
+- Service-Logik (z. B. Status-Validierungen)
 
-**PlayerControllerTest:**
-
-- ✅ `testGetTipForRace()` - Prüft, dass jeder User nur seine eigenen Tipps für ein Rennen abrufen kann (Multi-User-Isolation)
-- ✅ `testCreateOrUpdateTip()` - Testet, dass mehrere User gleichzeitig Tipps für dasselbe Rennen abgeben können, ohne sich gegenseitig zu beeinflussen
-
-**AuthControllerTest:**
-
-- ✅ `testLogin()` - Validiert, dass verschiedene User sich gleichzeitig einloggen können und jeder seinen eigenen Token erhält
-
-#### Service-Tests
-
-**RaceServiceTest:**
-
-- ✅ Testet, dass mehrere User gleichzeitig auf Rennen-Liste zugreifen können
-- ✅ Prüft, dass Rennen-Status-Änderungen für alle User sichtbar sind
-
-#### Tests ausführen
-
-```cmd
+Tests ausführen:
+```bash
 cd Backend
 mvn test
 ```
 
----
-
 ### Frontend-Tests
 
-Die Anwendung enthält Multi-User-fokussierte Komponenten-Tests:
+Im Frontend wurden Komponenten-Tests für zentrale Benutzerflüsse umgesetzt.
 
-**LoginPage.validation.test.jsx:**
-
-- ✅ Testet, dass verschiedene User sich nacheinander einloggen können, ohne sich gegenseitig zu beeinflussen
-
-**LeaderboardPage.test.jsx:**
-
-- ✅ Prüft, dass das Leaderboard alle User korrekt anzeigt und nach Punkten sortiert (Multi-User-Rangliste)
-
-#### Tests ausführen
-
-```cmd
+Tests ausführen:
+```bash
 cd Frontend
 npm test
 ```
-
----
-
-## 🔍 Testen für Reviewer
-
-### Demo-Accounts
-
-> **Hinweis**: Diese Accounts müssen vorher in der Datenbank angelegt werden oder können über die Registrierung erstellt werden (Admin-Rolle muss manuell in der DB gesetzt werden).
-
-**Admin-Account:**
-
-- **Username**: `admin`
-- **Password**: `admin123`
-- **Rolle**: ADMIN
-
-**Player-Account:**
-
-- **Username**: `player1`
-- **Password**: `player123`
-- **Rolle**: PLAYER
-
-### Test-Szenario für Reviewer
-
-1. **Backend starten** (siehe Startanleitung)
-2. **Frontend starten** (siehe Startanleitung)
-3. **Als Admin einloggen**:
-   - Navigiere zu `/login`
-   - Login mit Admin-Credentials
-   - Dashboard sollte sichtbar sein
-4. **Rennen erstellen**:
-   - Navigiere zu "Rennen verwalten"
-   - Erstelle ein neues Rennen (z.B. "Bahrain GP")
-   - Status auf "VOTING" setzen
-5. **Als Player einloggen**:
-   - Logout als Admin
-   - Login als Player
-6. **Tipp abgeben**:
-   - Navigiere zu "Rennen"
-   - Wähle ein Rennen mit Status "VOTING"
-   - Gib Tipps für Top 10 ab
-7. **Als Admin zurück**:
-   - Logout als Player
-   - Login als Admin
-   - Setze Rennen-Status auf "CLOSED"
-   - Trage offizielle Ergebnisse ein
-8. **Leaderboard prüfen**:
-   - Als Player einloggen
-   - Navigiere zu "Leaderboard"
-   - Punkte sollten berechnet sein
-
-### API-Tests mit Swagger
-
-1. Öffne `http://localhost:8080/swagger-ui.html`
-2. Authentifiziere dich mit dem JWT-Token (Button "Authorize")
-3. Teste die Endpunkte direkt im Browser
-
----
-
-## 📥 Installationsanleitung (Detailliert)
-
-### 1. Repository klonen
-
-```cmd
-git clone <repository-url>
-cd F1_Championship-main
-```
-
-### 2. PostgreSQL-Datenbank einrichten
-
-```sql
-CREATE DATABASE f1_championship_db;
-CREATE USER dein_user WITH PASSWORD 'dein_passwort';
-GRANT ALL PRIVILEGES ON DATABASE f1_championship_db TO dein_user;
-```
-
-### 3. Umgebungsvariablen setzen
-
-**Windows (CMD):**
-
-```cmd
-set SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/f1_championship_db
-set SPRING_DATASOURCE_USERNAME=dein_user
-set SPRING_DATASOURCE_PASSWORD=dein_passwort
-set JWT_SECRET=dein_sehr_langer_geheimer_schluessel_fuer_jwt_mindestens_32_zeichen_lang
-```
-
-**Windows (PowerShell):**
-
-```powershell
-$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/f1_championship_db"
-$env:SPRING_DATASOURCE_USERNAME="dein_user"
-$env:SPRING_DATASOURCE_PASSWORD="dein_passwort"
-$env:JWT_SECRET="dein_sehr_langer_geheimer_schluessel_fuer_jwt_mindestens_32_zeichen_lang"
-```
-
-**Linux/Mac:**
-
-```bash
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/f1_championship_db
-export SPRING_DATASOURCE_USERNAME=dein_user
-export SPRING_DATASOURCE_PASSWORD=dein_passwort
-export JWT_SECRET=dein_sehr_langer_geheimer_schluessel_fuer_jwt_mindestens_32_zeichen_lang
-```
-
-### 4. Backend starten
-
-```cmd
-cd Backend
-./mvnw spring-boot:run
-```
-
-Warte, bis die Meldung erscheint: `Started F1ChampionshipApplication`
-
-### 5. Frontend starten
-
-```cmd
-cd Frontend
-npm install
-npm run dev
-```
-
-### 6. Anwendung öffnen
-
-Öffne `http://localhost:5173` im Browser.
-
 ---
 
 ## 🎯 Features im Detail
 
 ### Punkteberechnung
-
-Die Punkteberechnung erfolgt automatisch beim Abrufen des Leaderboards oder User-Profils:
-
-- **Exakte Treffer Podium (Platz 1-3)**: 5 Punkte
-- **Exakte Treffer Top 10 (Platz 4-10)**: 3 Punkte
-- **Fahrer im Top 10, aber falsche Position (Podium-Platz)**: 2 Punkte
-- **Fahrer im Top 10, aber falsche Position (Platz 4-10)**: 1 Punkt
+Die Punkteberechnung erfolgt automatisch auf Basis der abgegebenen Tipps und der offiziellen Rennergebnisse.  
+Dabei werden sowohl exakte Treffer als auch Platzierungsabweichungen berücksichtigt.
 
 **Beispiel:**
-
 - Tipp: Platz 1 = Max Verstappen
 - Ergebnis: Platz 1 = Max Verstappen
 - → **5 Punkte** (exakter Treffer Podium)
@@ -1190,21 +682,24 @@ Die Punkteberechnung erfolgt automatisch beim Abrufen des Leaderboards oder User
 - Ergebnis: Platz 5 = Lewis Hamilton
 - → **2 Punkte** (Fahrer im Top 10, aber falsche Position, ursprünglich Podium-Platz)
 
-### Rennen-Status
-
-- **OPEN**: Rennen wurde erstellt, aber Spieler können noch nicht tippen
-- **VOTING**: Spieler können Tipps abgeben
-- **CLOSED**: Voting geschlossen, Admin kann Ergebnisse eintragen
-
 ---
 
 ## 🛡️ Sicherheit
 
-- **JWT-basierte Authentifizierung**: Tokens werden im localStorage gespeichert
+- **JWT-basierte Authentifizierung**: für geschützte API-Endpunkte
 - **Rollenbasierte Autorisierung**: ADMIN/PLAYER-Rollen werden serverseitig geprüft
 - **BCrypt-Passwort-Hashing**: Passwörter werden sicher gespeichert
 - **CORS-Konfiguration**: Frontend-Backend-Kommunikation ist konfiguriert
 - **Validierung**: DTOs werden mit Jakarta Validation validiert
+
+---
+
+## 👥 Hilfestellungen
+
+- **Unterrichtsbeispiele**
+- **Unterstützung durch  Stefi's Bruder** (Testing, Sortierlogik, Fehlerbehebung)
+- **ChatGPT**: Hilfe bei Strukturierung, Javadoc, Fehlerbehebung, Doku
+- **Internet**: StackOverflow, freeCodeCamp, OpenDataSoft, baeldung, Codecademy
 
 ---
 
@@ -1220,9 +715,3 @@ Ensar & Stephanie
 
 ---
 
-## 📝 Notizen
-
-- Die Datenbank wird automatisch mit `spring.jpa.hibernate.ddl-auto=update` erstellt/aktualisiert
-- JWT-Secret muss mindestens 32 Zeichen lang sein
-- API-Dokumentation ist unter `/swagger-ui.html` verfügbar
-- Frontend kommuniziert mit Backend über `http://localhost:8080/api`
