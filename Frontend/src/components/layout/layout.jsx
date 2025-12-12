@@ -1,18 +1,29 @@
+/**
+ * Layout - Hauptlayout-Komponente der Anwendung
+ *
+ * Diese Komponente definiert die grundlegende Struktur aller Seiten:
+ * - Navbar: Navigationsleiste oben
+ * - Main: Hauptinhalt (wird durch React Router Outlet gefüllt)
+ * - Footer: Fußzeile mit Copyright-Informationen
+ *
+ * Wird als Wrapper um alle Hauptseiten verwendet, um eine konsistente
+ * Seitenstruktur zu gewährleisten.
+ */
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 
-// Globales Seitenlayout.
-// Enthält die Navigationsleiste, den Platzhalter für Seiteninhalte (Outlet)
-// sowie den Footer. Dieses Layout wird um alle Hauptseiten herum verwendet.
 const Layout = () => {
   return (
     <div className="f1-shell">
+      {/* Navigationsleiste - erscheint auf allen Seiten */}
       <Navbar />
 
+      {/* Hauptinhalt - wird durch die aktuelle Route gefüllt */}
       <main className="f1-main">
         <Outlet />
       </main>
 
+      {/* Fußzeile mit Copyright-Informationen */}
       <footer className="f1-footer">
         <div>
           <p className="f1-footer-heading">F1 Championship</p>
