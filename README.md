@@ -47,6 +47,7 @@ Die Kommunikation erfolgt über eine REST-API.
 - **Swagger/OpenAPI** (API-Dokumentation)
 
 **Beschreibung:**
+
 Das Backend stellt eine REST-API bereit und ist in Controller-, Service- und Repository-Schichten aufgebaut.  
 Die Authentifizierung erfolgt über JWT-Tokens, welche bei jedem Request serverseitig validiert werden.  
 Passwörter werden sicher mit BCrypt gehasht gespeichert, die Datenpersistenz erfolgt über JPA mit PostgreSQL.
