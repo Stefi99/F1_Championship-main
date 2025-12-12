@@ -214,9 +214,7 @@ spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 
 ## 📦 Datenmodell (ERD)
 
-> ```markdown
-> ![ERD Diagramm](./images/erd-diagramm.png)
-> ```
+![ERD Diagramm](./images/erd-diagramm.png)
 
 ### Beziehungen:
 
