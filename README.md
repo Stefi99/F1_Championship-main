@@ -59,7 +59,8 @@ Passwörter werden sicher mit BCrypt gehasht gespeichert, die Datenpersistenz er
 - **Vite 7.2.4** (Build-Tool)
 - **CSS3** (Styling)
 
-### Beschreibung:
+**Beschreibung:**
+
 Das Frontend bildet die Benutzeroberfläche der Anwendung.  
 Die Navigation erfolgt über React Router, der Login-Zustand wird zentral über die React Context API verwaltet.  
 API-Aufrufe erfolgen über einen Service-Layer, der den JWT-Token automatisch mitsendet.
@@ -72,7 +73,8 @@ API-Aufrufe erfolgen über einen Service-Layer, der den JWT-Token automatisch mi
 - **Vitest** (Frontend Tests)
 - **React Testing Library** (Komponenten-Tests)
 
-### Beschreibung:
+**Beschreibung:**
+
 Es wurden automatisierte Tests für Backend und Frontend umgesetzt, um zentrale Business-Logik und Benutzerinteraktionen zu überprüfen.
 
 ---
