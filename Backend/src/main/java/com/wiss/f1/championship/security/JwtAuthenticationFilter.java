@@ -17,6 +17,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * JWT-Authentifizierungsfilter.
+ *
+ * Wird bei jeder Anfrage einmal ausgeführt (OncePerRequestFilter).
+ * Prüft den Authorization-Header auf ein JWT-Token und authentifiziert
+ * den Benutzer im Spring Security-Kontext, falls das Token gültig ist.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -40,33 +47,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Authorization-Header prüfen
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // JWT-Token extrahieren
         String token = authHeader.substring(7);
 
+        // Claims aus dem Token extrahieren
         Claims claims = jwtService.extractClaims(token);
         String username = claims.getSubject();
 
+        // Benutzer anhand des Usernames laden
         AppUser user = userService.getUserByUsername(username).orElse(null);
         if (user != null) {
-
+            // Spring Security Authentication Token erzeugen
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(
-                            user,
-                            null,
-                            user.getAuthorities()
+                            user,              // Principal
+                            null,              // Credentials (nicht benötigt, Token reicht)
+                            user.getAuthorities() // Rollen / Berechtigungen
                     );
 
+            // Details der Anfrage setzen
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
+            // Authentifizierung im SecurityContext speichern
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
+        // Filterkette fortsetzen
         filterChain.doFilter(request, response);
     }
 }
+
+/*
+ * Zusammenfassung:
+ * Der JwtAuthenticationFilter prüft bei jeder HTTP-Anfrage, ob ein gültiges JWT
+ * im Authorization-Header vorhanden ist. Wenn ja, wird der zugehörige AppUser
+ * geladen und im SecurityContext authentifiziert. So können Controller und Services
+ * auf den aktuell angemeldeten Benutzer zugreifen.
+ */
