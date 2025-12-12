@@ -81,7 +81,7 @@ Es wurden automatisierte Tests für Backend und Frontend umgesetzt, um zentrale 
 
 ## 👥 Nutzerrollen
 
-### 🎮 Player (Spieler)
+** 🎮 Player (Spieler)**
 
 - Registrierung und Anmeldung
 - Tipps auf offene Rennen abgeben
@@ -89,7 +89,7 @@ Es wurden automatisierte Tests für Backend und Frontend umgesetzt, um zentrale 
 - Leaderboard einsehen
 - Profil verwalten (Display Name, Lieblings-Team, Land, Bio)
 
-### 🔐 Admin (Administrator)
+** 🔐 Admin (Administrator)**
 
 - Rennen erstellen, bearbeiten und löschen
 - Fahrer verwalten (CRUD-Operationen)
@@ -100,28 +100,28 @@ Es wurden automatisierte Tests für Backend und Frontend umgesetzt, um zentrale 
 
 ## ✨ Features
 
-### Authentifizierung & Autorisierung
+** Authentifizierung & Autorisierung:**
 
 - JWT-basierte Authentifizierung
 - Rollenbasierte Zugriffskontrolle (ADMIN/PLAYER)
 - Sichere Passwort-Speicherung (BCrypt)
 
-### Rennen-Verwaltung
+** Rennen-Verwaltung: **
 
 - Rennen mit Status-System (OPEN, VOTING, CLOSED)
 - Verwaltung von Renndaten und Ergebnissen
 
-### Tipp-System
+** Tipp-System: **
 
 - Abgabe von Tipps für Top-10-Positionen
 - Validierung basierend auf dem Rennstatus
 
-### Punkteberechnung
+** Punkteberechnung: **
 
 - Automatische Punktevergabe basierend auf der Genauigkeit der abgegebenen Tipps
 - Berücksichtigung von exakten Treffern und Platzierungsabweichungen
 
-### Leaderboard
+** Leaderboard: **
 
 - Sortierung nach Gesamtpunkten
 - Anzeige von Rang, Benutzername und Punkten
