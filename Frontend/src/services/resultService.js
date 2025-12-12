@@ -1,12 +1,24 @@
-// Result-Service für Backend-Kommunikation
-// Hinweis: Die Hauptfunktionalität für Race-Results ist bereits in raceService.js
-// Dieser Service kann für zukünftige Erweiterungen verwendet werden
+/**
+ * resultService - Service für Backend-Kommunikation bezüglich offizieller Ergebnisse
+ *
+ * Stellt Funktionen zur Verfügung, um OfficialResult-Objekte zu verwalten.
+ * Diese Objekte werden verwendet, um die Punkte für Spieler zu berechnen,
+ * basierend auf dem Vergleich zwischen Tipps und offiziellen Ergebnissen.
+ *
+ * Hinweis: Die Hauptfunktionalität für Race-Results (resultsOrder) ist in
+ * raceService.js. Dieser Service fokussiert sich auf OfficialResult-Objekte.
+ */
 import api from "../utils/api.js";
 
 /**
- * Lädt die offiziellen Ergebnisse für ein Rennen
+ * getResultsForRace - Lädt die offiziellen Ergebnisse für ein Rennen
+ *
+ * Gibt alle OfficialResult-Objekte für ein bestimmtes Rennen zurück.
+ * Jedes Ergebnis enthält: raceId, driverId, finalPosition
+ *
  * @param {number|string} raceId - Die ID des Rennens
- * @returns {Promise<Array>} Liste von OfficialResult-Objekten
+ * @returns {Promise<Array<Object>>} Liste von OfficialResult-Objekten
+ *                                    Gibt leeres Array zurück bei Fehler
  */
 export async function getResultsForRace(raceId) {
   try {
@@ -57,11 +69,23 @@ export async function deleteResultsForRace(raceId) {
 }
 
 /**
- * Erstellt alle Ergebnisse für ein Rennen basierend auf der Reihenfolge
+ * createResultsForRace - Erstellt alle Ergebnisse für ein Rennen
+ *
+ * Diese Funktion wird verwendet, wenn ein Admin die offiziellen Ergebnisse
+ * einträgt. Sie:
+ * 1. Löscht alle alten OfficialResult-Objekte für das Rennen
+ * 2. Erstellt neue OfficialResult-Objekte basierend auf der Reihenfolge
+ *
+ * Wichtig: Diese Funktion sollte zusammen mit raceService.updateRaceResults()
+ * aufgerufen werden, um sowohl die resultsOrder im Race als auch die
+ * OfficialResult-Objekte zu aktualisieren.
+ *
  * @param {number|string} raceId - Die ID des Rennens
- * @param {Array<string>} resultsOrder - Array von Fahrernamen in Reihenfolge
- * @param {Object} driversByName - Map von Fahrernamen zu Fahrer-Objekten mit id
- * @returns {Promise<Array>} Array der erstellten OfficialResult-Objekte
+ * @param {Array<string>} resultsOrder - Array von Fahrernamen in Reihenfolge (Platz 1, 2, 3, ...)
+ * @param {Object<string, Object>} driversByName - Map von Fahrernamen zu Fahrer-Objekten
+ *                                                Jedes Fahrer-Objekt muss eine 'id' Eigenschaft haben
+ * @returns {Promise<Array<Object>>} Array der erstellten OfficialResult-Objekte
+ * @throws {Error} Wirft einen Fehler, wenn das Erstellen fehlschlägt
  */
 export async function createResultsForRace(
   raceId,
@@ -69,15 +93,16 @@ export async function createResultsForRace(
   driversByName
 ) {
   try {
-    // Zuerst alte Ergebnisse löschen
+    // Schritt 1: Alte Ergebnisse löschen (um Duplikate zu vermeiden)
     await deleteResultsForRace(raceId);
 
-    // Dann neue Ergebnisse erstellen
+    // Schritt 2: Neue Ergebnisse erstellen
     const results = [];
     for (let i = 0; i < resultsOrder.length; i++) {
       const driverName = resultsOrder[i];
       const driver = driversByName[driverName];
 
+      // Validierung: Fahrer muss existieren und eine ID haben
       if (!driver || !driver.id) {
         console.warn(
           `Fahrer ${driverName} nicht gefunden oder hat keine ID, überspringe...`
@@ -85,6 +110,7 @@ export async function createResultsForRace(
         continue;
       }
 
+      // Position ist 1-basiert (Platz 1, 2, 3, ...)
       const position = i + 1;
       const result = await createResult(raceId, driver.id, position);
       results.push(result);

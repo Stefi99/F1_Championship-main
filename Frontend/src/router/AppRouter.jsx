@@ -1,3 +1,14 @@
+/**
+ * AppRouter - Zentrale Router-Konfiguration der Anwendung
+ *
+ * Definiert alle Routen der Anwendung und ihre Zugriffsrechte:
+ * - Öffentliche Routen: Home, Login, Register, Rennen-Liste
+ * - Geschützte Routen (ProtectedRoute): Erfordern Login (Player + Admin)
+ * - Admin-Routen (AdminRoute): Erfordern Login + Admin-Rolle
+ *
+ * Alle Routen (außer Auth) verwenden das Layout-Komponente (Navbar + Footer).
+ * Nicht existierende Routen werden auf PageNotFound weitergeleitet.
+ */
 import { Routes, Route } from "react-router-dom";
 
 // Auth Pages
@@ -30,15 +41,20 @@ import PageNotFound from "../pages/PageNotFound.jsx";
 function AppRouter() {
   return (
     <Routes>
+      {/* Layout-Wrapper: Alle Routen innerhalb verwenden Navbar + Footer */}
       <Route element={<Layout />}>
-        {/* Home-Bereich*/}
+        {/* Öffentliche Routen - Keine Authentifizierung erforderlich */}
+
+        {/* Home-Bereich: Öffentliche Startseite */}
         <Route path="/" element={<HomePage />} />
 
-        {/* Authentifizierung */}
+        {/* Authentifizierung: Login und Registrierung */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Player-Bereich */}
+        {/* Player-Bereich: Geschützte Routen (erfordern Login) */}
+
+        {/* Player Dashboard: Übersicht für eingeloggte Spieler */}
         <Route
           path="/player"
           element={
@@ -48,6 +64,7 @@ function AppRouter() {
           }
         />
 
+        {/* Profil bearbeiten: Nur für eingeloggte Spieler */}
         <Route
           path="/player/profile"
           element={
@@ -57,8 +74,10 @@ function AppRouter() {
           }
         />
 
+        {/* Rennen-Liste: Öffentlich zugänglich (auch ohne Login) */}
         <Route path="/player/races" element={<PlayerRaceListPage />} />
 
+        {/* Rangliste: Geschützt (zeigt persönliche Statistiken) */}
         <Route
           path="/player/leaderboard"
           element={
@@ -68,6 +87,7 @@ function AppRouter() {
           }
         />
 
+        {/* Tipps abgeben/ansehen: Geschützt (erfordert Login) */}
         <Route
           path="/player/race/:raceId/tips"
           element={
@@ -77,7 +97,9 @@ function AppRouter() {
           }
         />
 
-        {/* Admin-Bereich */}
+        {/* Admin-Bereich: Nur für Administratoren zugänglich */}
+
+        {/* Admin Dashboard: Übersicht für Administratoren */}
         <Route
           path="/admin"
           element={
@@ -87,6 +109,7 @@ function AppRouter() {
           }
         />
 
+        {/* Rennen verwalten: Liste aller Rennen */}
         <Route
           path="/admin/races"
           element={
@@ -96,6 +119,7 @@ function AppRouter() {
           }
         />
 
+        {/* Fahrer verwalten: Fahrer- und Teamverwaltung */}
         <Route
           path="/admin/drivers"
           element={
@@ -105,6 +129,7 @@ function AppRouter() {
           }
         />
 
+        {/* Offizielle Ergebnisse eintragen: Ergebnisverwaltung */}
         <Route
           path="/admin/results"
           element={
@@ -114,6 +139,7 @@ function AppRouter() {
           }
         />
 
+        {/* Neues Rennen erstellen: Formular für neue Rennen */}
         <Route
           path="/admin/races/new"
           element={
@@ -123,6 +149,7 @@ function AppRouter() {
           }
         />
 
+        {/* Rennen bearbeiten: Formular zum Bearbeiten bestehender Rennen */}
         <Route
           path="/admin/races/:raceId/edit"
           element={
@@ -132,7 +159,7 @@ function AppRouter() {
           }
         />
 
-        {/* Fallback wird angezeigt, wenn Route nicht existiert */}
+        {/* Fallback-Route: Wird angezeigt, wenn keine Route übereinstimmt */}
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

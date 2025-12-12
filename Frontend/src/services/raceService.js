@@ -1,4 +1,14 @@
-// Race-Service für Backend-Kommunikation
+/**
+ * raceService - Service für Backend-Kommunikation bezüglich Rennen
+ *
+ * Stellt alle Funktionen zur Verfügung, um mit Rennen-Daten zu arbeiten:
+ * - Laden von Rennen (alle oder einzelne)
+ * - Erstellen, Aktualisieren und Löschen von Rennen
+ * - Aktualisieren von Rennergebnissen
+ *
+ * Alle Funktionen verwenden Mapper-Funktionen, um Daten zwischen
+ * Backend-Format (DTO) und Frontend-Format zu konvertieren.
+ */
 import api from "../utils/api.js";
 import {
   normalizeRacesFromBackend,
@@ -7,8 +17,13 @@ import {
 } from "../utils/raceMapper.js";
 
 /**
- * Lädt alle Rennen vom Backend
- * @returns {Promise<Array>} Liste aller Rennen (normalisiert für Frontend)
+ * getAllRaces - Lädt alle Rennen vom Backend
+ *
+ * Die Rennen werden automatisch vom Backend-Format ins Frontend-Format
+ * normalisiert (z.B. Feldnamen, Datentypen).
+ *
+ * @returns {Promise<Array<Object>>} Liste aller Rennen (normalisiert für Frontend)
+ *                                    Gibt leeres Array zurück bei Fehler
  */
 export async function getAllRaces() {
   try {
@@ -92,10 +107,20 @@ export async function deleteRace(id) {
 }
 
 /**
- * Aktualisiert die Ergebnisse eines Rennens
+ * updateRaceResults - Aktualisiert die Ergebnisse eines Rennens
+ *
+ * Speichert die offizielle Reihenfolge der Fahrer für ein Rennen.
+ * Diese Funktion wird verwendet, wenn ein Admin die offiziellen Ergebnisse
+ * einträgt. Das Rennen wird dabei automatisch auf "closed" gesetzt.
+ *
+ * Hinweis: Diese Funktion aktualisiert nur die resultsOrder im Race-Objekt.
+ * Für die Erstellung der OfficialResult-Objekte (für Punkteberechnung)
+ * siehe resultService.createResultsForRace().
+ *
  * @param {number|string} id - Die Rennen-ID
- * @param {Array<string>} resultsOrder - Array von Fahrernamen in Reihenfolge
+ * @param {Array<string>} resultsOrder - Array von Fahrernamen in Reihenfolge (Platz 1, 2, 3, ...)
  * @returns {Promise<Object>} Das aktualisierte Rennen (normalisiert für Frontend)
+ * @throws {Error} Wirft einen Fehler, wenn das Aktualisieren fehlschlägt
  */
 export async function updateRaceResults(id, resultsOrder) {
   try {

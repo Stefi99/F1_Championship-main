@@ -1,4 +1,11 @@
-/* Page Not Found Styles */
+/**
+ * PageNotFound.css - Styles für die 404-Fehlerseite
+ *
+ * Definiert das Layout und die visuelle Darstellung der PageNotFound-Komponente.
+ * Unterstützt Dark Mode und responsive Design.
+ */
+
+/* Hauptcontainer: Zentriert den Inhalt vertikal und horizontal */
 .page-not-found {
   display: flex;
   align-items: center;
@@ -7,11 +14,13 @@
   padding: 2rem;
 }
 
+/* Content-Container: Zentriert den Text und begrenzt die Breite */
 .page-not-found-content {
   text-align: center;
   max-width: 500px;
 }
 
+/* Fehlercode: Große, auffällige Zahl in F1-Rot */
 .page-not-found-title {
   font-size: 6rem;
   font-weight: bold;
@@ -20,18 +29,21 @@
   line-height: 1;
 }
 
+/* Überschrift: Zweite Überschrift unter dem Fehlercode */
 .page-not-found-subtitle {
   font-size: 2rem;
   margin: 1rem 0;
   color: var(--text-primary, #333);
 }
 
+/* Erklärungstext: Beschreibung des Fehlers */
 .page-not-found-text {
   font-size: 1.1rem;
   color: var(--text-secondary, #666);
   margin-bottom: 2rem;
 }
 
+/* Button-Container: Flexbox-Layout für die Navigations-Buttons */
 .page-not-found-actions {
   display: flex;
   gap: 1rem;
@@ -39,6 +51,7 @@
   flex-wrap: wrap;
 }
 
+/* Primärer Button: Hauptaktion (Zur Startseite) */
 .page-not-found-button {
   padding: 0.75rem 1.5rem;
   background: var(--f1-red, #e10600);
@@ -50,26 +63,30 @@
   transition: background 0.2s;
 }
 
+/* Hover-Effekt für primären Button */
 .page-not-found-button:hover {
   background: var(--f1-red-dark, #b80500);
 }
 
+/* Focus-Styling für Accessibility */
 .page-not-found-button:focus {
   outline: 2px solid var(--f1-red, #e10600);
   outline-offset: 2px;
 }
 
+/* Sekundärer Button: Alternative Aktion (Zurück) */
 .page-not-found-button-secondary {
   background: transparent;
   color: var(--f1-red, #e10600);
   border: 1px solid var(--f1-red, #e10600);
 }
 
+/* Hover-Effekt für sekundären Button */
 .page-not-found-button-secondary:hover {
   background: rgba(225, 6, 0, 0.1);
 }
 
-/* Dark mode support */
+/* Dark Mode Support: Anpassungen für dunkles Farbschema */
 @media (prefers-color-scheme: dark) {
   .page-not-found-subtitle {
     color: var(--text-primary-dark, #fff);
@@ -79,4 +96,3 @@
     color: var(--text-secondary-dark, #aaa);
   }
 }
-
