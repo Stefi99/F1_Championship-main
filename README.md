@@ -238,42 +238,42 @@ spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 
 ```
 ┌─────────────────────────────────────────┐
-│    CONTROLLER LAYER  (REST-Endpoints)  │
-│  - AuthController                      │
-│  - RaceController                      │
-│  - TipController                       │
-│  - LeaderboardController               │
-│  - UserController                      │
+│    CONTROLLER LAYER  (REST-Endpoints)   │
+│  - AuthController                       │
+│  - RaceController                       │
+│  - TipController                        │
+│  - LeaderboardController                │
+│  - UserController                       │
 └─────────────────────────────────────────┘
                   │
                   ↓
 ┌─────────────────────────────────────────┐
-│    SERVICE LAYER     (Business-Logik)  │
-│  - AppUserService                      │
-│  - RaceService                         │
-│  - TipService                          │
-│  - LeaderboardService                  │
-│  - JwtService                          │
+│    SERVICE LAYER     (Business-Logik)   │
+│  - AppUserService                       │
+│  - RaceService                          │
+│  - TipService                           │
+│  - LeaderboardService                   │
+│  - JwtService                           │
 └─────────────────────────────────────────┘
                   │
                   ↓
 ┌─────────────────────────────────────────┐
-│    REPOSITORY LAYER (Datenbankzugriff) │
-│  - AppUserRepository                   │
-│  - RaceRepository                      │
-│  - TipRepository                       │
-│  - DriverRepository                    │
+│    REPOSITORY LAYER (Datenbankzugriff)  │
+│  - AppUserRepository                    │
+│  - RaceRepository                       │
+│  - TipRepository                        │
+│  - DriverRepository                     │
 └─────────────────────────────────────────┘
                   │
                   ↓
 ┌─────────────────────────────────────────┐
-│         DATABASE           (Tabellen)  │
-│         PostgreSQL                     │
-│  - app_users                           │
-│  - races                               │
-│  - voting                              │
-│  - drivers                             │
-│  - official_results                    │
+│         DATABASE           (Tabellen)   │
+│         PostgreSQL                      │
+│  - app_users                            │
+│  - races                                │
+│  - voting                               │
+│  - drivers                              │
+│  - official_results                     │
 └─────────────────────────────────────────┘
 
 
