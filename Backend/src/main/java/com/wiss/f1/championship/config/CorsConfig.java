@@ -19,34 +19,55 @@ public class CorsConfig {
 
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
+        // Quelle für CORS-Konfiguration basierend auf URL-Pfaden
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        // Neue CORS-Konfiguration erstellen
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Erlaubte Origins
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
-        
-        // Erlaubte HTTP-Methoden
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        
-        // Erlaubte Headers
+
+        // Definiert, welche Origins (Domains) auf das Backend zugreifen dürfen
+        configuration.setAllowedOrigins(
+                Arrays.asList("http://localhost:5173", "http://localhost:3000")
+        );
+
+        // Legt fest, welche HTTP-Methoden erlaubt sind
+        configuration.setAllowedMethods(
+                Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+        );
+
+        // Erlaubt alle Header-Typen
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        
-        // Credentials erlauben (für Cookies und Authorization-Header)
+
+        // Erlaubt Cookies, Tokens und andere Credentials
         configuration.setAllowCredentials(true);
-        
-        // Exponierte Headers
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        
-        // Preflight-Cache für 1 Stunde
+
+        // Gibt an, welche Header im Response sichtbar sein dürfen
+        configuration.setExposedHeaders(
+                Arrays.asList("Authorization", "Content-Type")
+        );
+
+        // Wie lange Preflight-Requests gecachet werden dürfen (in Sekunden)
         configuration.setMaxAge(3600L);
-        
+
+        // Registriert die CORS-Konfiguration für alle Endpunkte (/**)
         source.registerCorsConfiguration("/**", configuration);
-        
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        // Wichtig: Filter muss vor Spring Security laufen (Order.HIGHEST_PRECEDENCE)
+
+        // Erstellt einen Filter, der die oben definierte CORS-Konfiguration anwendet
+        FilterRegistrationBean<CorsFilter> bean =
+                new FilterRegistrationBean<>(new CorsFilter(source));
+
+        // Legt fest, dass der Filter vor Security ausgeführt wird
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        
+
         return bean;
     }
 }
 
+/* ------------------------------------------------------------------------------------------
+   ZUSAMMENFASSUNG
+   ------------------------------------------------------------------------------------------
+   Diese Klasse stellt eine zentrale CORS-Konfiguration bereit. Sie definiert,
+   welche Domains, Header und HTTP-Methoden auf das Backend zugreifen dürfen.
+   Der Filter wird mit höchster Priorität ausgeführt, damit CORS-Anfragen
+   bereits vor der Spring-Security-Kette korrekt behandelt werden.
+------------------------------------------------------------------------------------------- */

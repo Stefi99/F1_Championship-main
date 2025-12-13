@@ -21,6 +21,18 @@ import com.wiss.f1.championship.entity.Driver;
 import com.wiss.f1.championship.repository.DriverRepository;
 import com.wiss.f1.championship.service.DriverService;
 
+/**
+ * Unit-Tests für DriverService.
+ *
+ * Testfälle:
+ * - Erstellen eines Fahrers
+ * - Aktualisieren eines Fahrers
+ * - Alle Fahrer abrufen (sortiert nach Name)
+ * - Fahrer nach ID abrufen (vorhanden und nicht vorhanden)
+ * - Fahrer löschen
+ *
+ * Mockito wird verwendet, um das DriverRepository zu mocken und die Service-Logik isoliert zu testen.
+ */
 class DriverServiceTest {
 
     private DriverRepository driverRepository;
@@ -119,3 +131,12 @@ class DriverServiceTest {
     }
 }
 
+/*
+ * Zusammenfassung:
+ * DriverServiceTest prüft die CRUD-Operationen des DriverService:
+ * - createDriver / updateDriver / deleteDriver
+ * - getDriverById (existierend und nicht existierend)
+ * - getAllDrivers (Rückgabe aller Fahrer, sortiert)
+ *
+ * Mockito sorgt für ein isoliertes Testen ohne tatsächliche Datenbankzugriffe.
+ */

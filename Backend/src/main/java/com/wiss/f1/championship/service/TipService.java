@@ -1,4 +1,5 @@
 package com.wiss.f1.championship.service;
+
 import com.wiss.f1.championship.dto.TipResponseDTO;
 import com.wiss.f1.championship.entity.*;
 import com.wiss.f1.championship.repository.TipRepository;
@@ -11,6 +12,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service für Tipps (Tip).
+ *
+ * Aufgaben:
+ * - Tipps erstellen, abrufen, löschen
+ * - Prüfen, ob ein User bereits getippt hat
+ * - Konvertierung zwischen Array-Format (Liste von Fahrernamen) und Tip-Objekten
+ * - Bereitstellung von Tipps eines Users in DTO-Form für Frontend
+ */
 @Service
 public class TipService {
 
@@ -48,8 +58,8 @@ public class TipService {
 
     /**
      * Speichert oder aktualisiert einen Tipp für einen User und ein Rennen.
-     * Konvertiert das Array-Format (List<String> order) in einzelne Tip-Objekte.
-     * 
+     * Alte Tipps werden gelöscht und neue aus der Reihenfolge von Fahrernamen erstellt.
+     *
      * @param user Der User, der den Tipp abgibt
      * @param race Das Rennen, für das getippt wird
      * @param driverNames Liste der Fahrernamen in der Reihenfolge 1-10
@@ -57,46 +67,42 @@ public class TipService {
      */
     @Transactional
     public List<Tip> saveOrUpdateTip(AppUser user, Race race, List<String> driverNames) {
-        // Alte Tipps für diesen User und dieses Rennen löschen
+        // Alte Tipps löschen
         List<Tip> existingTips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
         tipRepository.deleteAll(existingTips);
 
-        // Neue Tipps erstellen
         List<Tip> newTips = new ArrayList<>();
-        
+
         for (int i = 0; i < driverNames.size() && i < 10; i++) {
             String driverName = driverNames.get(i);
             if (driverName == null || driverName.trim().isEmpty()) {
                 continue; // Überspringe leere Einträge
             }
 
-            // Fahrer nach Namen finden
             Optional<Driver> driverOpt = driverService.getDriverByName(driverName);
             if (driverOpt.isEmpty()) {
                 throw new IllegalArgumentException("Fahrer nicht gefunden: " + driverName);
             }
 
             Driver driver = driverOpt.get();
-            int position = i + 1; // Position 1-10
 
+            int position = i + 1; // Position 1-10
             Tip tip = new Tip(user, race, driver, position, LocalDateTime.now());
             newTips.add(tip);
         }
 
-        // Alle neuen Tipps speichern
         return tipRepository.saveAll(newTips);
     }
 
     /**
      * Holt den Tipp eines Users für ein Rennen im Array-Format.
-     * 
+     *
      * @param user Der User
      * @param race Das Rennen
-     * @return Liste der Fahrernamen in der Reihenfolge 1-10, oder leere Liste wenn kein Tipp vorhanden
+     * @return Liste der Fahrernamen in der Reihenfolge 1-10, oder leere Liste
      */
     public List<String> getTipOrderForUserAndRace(AppUser user, Race race) {
         List<Tip> tips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
-        
         if (tips.isEmpty()) {
             return new ArrayList<>();
         }
@@ -109,29 +115,35 @@ public class TipService {
     }
 
     /**
-     * Holt alle Tipps eines Users im Array-Format gruppiert nach Rennen.
-     * 
+     * Holt alle Tipps eines Users in DTO-Form, gruppiert nach Rennen.
+     *
      * @param user Der User
-     * @return Map von raceId zu Liste der Fahrernamen
+     * @return Liste von TipResponseDTO mit Rennen-ID, Reihenfolge und UpdatedAt
      */
     public List<TipResponseDTO> getAllTipsForUser(AppUser user) {
         List<Tip> allTips = tipRepository.findByUser(user);
-        
-        // Gruppiere nach Rennen
-        return allTips.stream()
-                .collect(Collectors.groupingBy(Tip::getRace))
-                .entrySet().stream()
-                .map(entry -> {
-                    Race race = entry.getKey();
-                    List<String> order = entry.getValue().stream()
-                            .sorted((t1, t2) -> Integer.compare(t1.getPredictedPosition(), t2.getPredictedPosition()))
-                            .map(tip -> tip.getDriver().getName())
-                            .collect(Collectors.toList());
-                    return new TipResponseDTO(race.getId(), order, entry.getValue().getFirst().getUpdatedAt());
-                })
-                .collect(Collectors.toList());
-    }
 
+        return allTips.stream()
+            .collect(Collectors.groupingBy(Tip::getRace))
+            .entrySet().stream()
+            .map(entry -> {
+        Race race = entry.getKey();
+        List<String> order = entry.getValue().stream()
+                .sorted((t1, t2) -> Integer.compare(t1.getPredictedPosition(), t2.getPredictedPosition()))
+                .map(tip -> tip.getDriver().getName())
+                .collect(Collectors.toList());
+        return new TipResponseDTO(race.getId(), order, entry.getValue().getFirst().getUpdatedAt());
+    })
+            .collect(Collectors.toList());
+}
+
+    /**
+     * Holt das Datum der letzten Tipp-Aktualisierung für einen User und ein Rennen.
+     *
+     * @param user Der User
+     * @param race Das Rennen
+     * @return LocalDateTime der letzten Aktualisierung oder jetzt, falls kein Tipp vorhanden
+     */
     public LocalDateTime getTipUpdatedAtForUserAndRace(AppUser user, Race race) {
         List<Tip> tips = tipRepository.findByUserIdAndRaceId(user.getId(), race.getId());
         if(tips.isEmpty()) {
@@ -140,3 +152,11 @@ public class TipService {
         return tips.getFirst().getUpdatedAt();
     }
 }
+
+/*
+ * Zusammenfassung:
+ * TipService verwaltet die Tipps der Nutzer für Rennen.
+ * Es bietet Methoden zum Erstellen, Aktualisieren, Abrufen und Löschen von Tipps.
+ * Tipps werden in einzelne Tip-Objekte konvertiert, die Position und Fahrer enthalten.
+ * Zusätzlich werden die Tipps in array-freundliche DTOs umgewandelt, die für Frontend oder API-Ausgabe geeignet sind.
+ */

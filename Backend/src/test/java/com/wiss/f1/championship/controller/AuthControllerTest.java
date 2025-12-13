@@ -14,10 +14,22 @@ import org.springframework.http.ResponseEntity;
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit-Tests für AuthController.
+ *
+ * Testfälle:
+ * - Registrierung eines Players oder Admins
+ * - Registrierung mit Standardrolle
+ * - Registrierung mit doppeltem Benutzernamen
+ * - Login von Player oder Admin
+ * - Login mit falschen Anmeldedaten oder nicht vorhandenem Benutzer
+ *
+ * Mockito wird verwendet, um AppUserService und JwtService zu mocken,
+ * sodass Controller-Logik isoliert getestet werden kann.
+ */
 class AuthControllerTest {
 
     private AppUserService userService;
@@ -27,6 +39,7 @@ class AuthControllerTest {
     private AppUser testPlayer;
     private AppUser testAdmin;
 
+    // Hilfsmethode, um die private ID eines Users zu setzen
     private void setId(AppUser user, Long id) {
         try {
             Field idField = AppUser.class.getDeclaredField("id");
@@ -69,7 +82,7 @@ class AuthControllerTest {
         assertEquals("player1", response.getBody().getUsername());
         assertEquals("PLAYER", response.getBody().getRole());
         assertEquals("test-jwt-token", response.getBody().getToken());
-        
+
         verify(userService, times(1)).registerUser(anyString(), anyString(), anyString(), any(Role.class));
         verify(jwtService, times(1)).generateToken(any(AppUser.class));
     }
@@ -93,7 +106,7 @@ class AuthControllerTest {
         assertEquals("admin1", response.getBody().getUsername());
         assertEquals("ADMIN", response.getBody().getRole());
         assertEquals("test-admin-token", response.getBody().getToken());
-        
+
         verify(userService, times(1)).registerUser(anyString(), anyString(), anyString(), any(Role.class));
         verify(jwtService, times(1)).generateToken(any(AppUser.class));
     }
@@ -154,7 +167,7 @@ class AuthControllerTest {
         assertEquals("player1", response.getBody().getUsername());
         assertEquals("PLAYER", response.getBody().getRole());
         assertEquals("player-jwt-token", response.getBody().getToken());
-        
+
         verify(userService, times(1)).authenticate(anyString(), anyString());
         verify(jwtService, times(1)).generateToken(any(AppUser.class));
     }
@@ -175,7 +188,7 @@ class AuthControllerTest {
         assertEquals("admin1", response.getBody().getUsername());
         assertEquals("ADMIN", response.getBody().getRole());
         assertEquals("admin-jwt-token", response.getBody().getToken());
-        
+
         verify(userService, times(1)).authenticate(anyString(), anyString());
         verify(jwtService, times(1)).generateToken(any(AppUser.class));
     }
@@ -212,3 +225,14 @@ class AuthControllerTest {
         assertTrue(response.getBody().getToken().contains("ERROR: User not found"));
     }
 }
+
+/*
+ * Zusammenfassung:
+ * AuthControllerTest überprüft die Kernfunktionalität des AuthControllers:
+ * - Registrierung von Playern und Admins, inkl. Standardrolle
+ * - Fehlerfälle bei doppeltem Benutzernamen
+ * - Login-Prozesse mit gültigen und ungültigen Credentials
+ *
+ * Mockito wird verwendet, um AppUserService und JwtService zu mocken.
+ * So wird die Controller-Logik isoliert getestet, ohne echte Datenbank oder JWT-Generierung.
+ */

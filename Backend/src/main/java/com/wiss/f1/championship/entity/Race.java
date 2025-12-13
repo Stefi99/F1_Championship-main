@@ -1,8 +1,10 @@
 package com.wiss.f1.championship.entity;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.*;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -15,43 +17,50 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
+
+/**
+ * Entity für ein Rennen.
+ * Enthält alle relevanten Informationen wie Name, Datum, Strecke, Wetter,
+ * Reifenwahl, Status und die Reihenfolge der Fahrer-Ergebnisse.
+ */
 @Entity
 @Table(name = "races")
 public class Race {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;  // Primärschlüssel
 
     @Column(nullable = false, length = 100)
-    private String name;      // z. B. "Bahrain GP"
+    private String name;      // Name des Rennens, z.B. "Bahrain GP"
 
     @Column(nullable = false)
-    private LocalDate date;   // Renndatum
+    private LocalDate date;   // Datum des Rennens
 
     @Column(nullable = false, length = 100)
-    private String track;     // Streckenname
+    private String track;     // Name der Strecke
 
     @Column(nullable = false, length = 50)
-    private String weather;   // vorerst String, später evtl Enum
+    private String weather;   // Wetterbedingungen als String (z.B. "sunny")
 
     @Column(length = 50)
     private String tyres;     // Reifenwahl (soft, medium, hard)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private RaceStatus status;
+    private RaceStatus status;  // Status des Rennens (PLANNED, ONGOING, FINISHED)
 
+    // Speicherung der Ergebnisreihenfolge als Liste von Fahrernamen
     @ElementCollection
     @CollectionTable(name = "race_results_order", joinColumns = @JoinColumn(name = "race_id"))
     @Column(name = "driver_name", length = 100)
     private List<String> resultsOrder = new ArrayList<>();
 
-    // Leerer Konstruktor
+    // Leerer Konstruktor für JPA
     public Race() {
     }
 
-    // Komfort Konstruktor
+    // Komfort-Konstruktor für einfaches Erstellen eines Rennobjekts
     public Race(String name, LocalDate date, String track, String weather, RaceStatus status) {
         this.name = name;
         this.date = date;
@@ -64,6 +73,10 @@ public class Race {
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -122,7 +135,13 @@ public class Race {
         this.resultsOrder = resultsOrder != null ? resultsOrder : new ArrayList<>();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 }
+
+/* ============================================================
+   ZUSAMMENFASSUNG DIESES FILES (Race.java)
+   ------------------------------------------------------------
+   - Entity für ein Formel-1-Rennen
+   - Felder: id, name, date, track, weather, tyres, status, resultsOrder
+   - resultsOrder speichert die Reihenfolge der Fahrer als Liste von Strings
+   - Wird in RaceController, OfficialResultController und TipController verwendet
+   ============================================================ */

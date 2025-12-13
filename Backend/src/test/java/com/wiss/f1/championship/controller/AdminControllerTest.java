@@ -5,22 +5,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.wiss.f1.championship.entity.Race;
 import com.wiss.f1.championship.entity.RaceStatus;
 import com.wiss.f1.championship.service.RaceService;
 
+/**
+ * Unit-Tests für Admin-Controller-Komponenten (RaceController und AdminTestController).
+ *
+ * Testfälle:
+ * - Abrufen aller Rennen
+ * - Abrufen eines Rennens nach ID (inkl. Nicht gefunden)
+ * - Erstellen, Aktualisieren, Löschen von Rennen
+ * - Admin-Test-Endpunkt
+ */
 class AdminControllerTest {
 
     private RaceService raceService;
@@ -31,29 +34,35 @@ class AdminControllerTest {
 
     @BeforeEach
     void setUp() {
-        raceService = mock(RaceService.class);
-        raceController = new RaceController(raceService);
+        raceService = mock(RaceService.class); // Mock für Service
+        raceController = new RaceController(raceService); // Controller mit Mock
 
-        testRace1 = new Race("Bahrain GP", LocalDate.of(2024, 3, 2), 
+        // Beispielrennen erstellen
+        testRace1 = new Race("Bahrain GP", LocalDate.of(2024, 3, 2),
                 "Bahrain International Circuit", "Sunny", RaceStatus.OPEN);
         testRace1.setId(1L);
 
-        testRace2 = new Race("Saudi Arabian GP", LocalDate.of(2024, 3, 9), 
+        testRace2 = new Race("Saudi Arabian GP", LocalDate.of(2024, 3, 9),
                 "Jeddah Corniche Circuit", "Clear", RaceStatus.TIPPABLE);
         testRace2.setId(2L);
     }
 
     @Test
     void testGetAllRaces() {
+        // Setup Mock
         List<Race> races = Arrays.asList(testRace1, testRace2);
         when(raceService.getAllRaces()).thenReturn(races);
 
+        // Test
         List<Race> result = raceController.getAllRaces();
 
+        // Assertions
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("Bahrain GP", result.get(0).getName());
         assertEquals("Saudi Arabian GP", result.get(1).getName());
+
+        // Verify Service-Aufruf
         verify(raceService, times(1)).getAllRaces();
     }
 
@@ -69,7 +78,7 @@ class AdminControllerTest {
 
     @Test
     void testCreateRace() {
-        Race newRace = new Race("Monaco GP", LocalDate.of(2024, 5, 26), 
+        Race newRace = new Race("Monaco GP", LocalDate.of(2024, 5, 26),
                 "Circuit de Monaco", "Sunny", RaceStatus.OPEN);
         newRace.setId(3L);
 
@@ -86,7 +95,7 @@ class AdminControllerTest {
 
     @Test
     void testUpdateRace() {
-        Race updatedRace = new Race("Bahrain GP Updated", LocalDate.of(2024, 3, 2), 
+        Race updatedRace = new Race("Bahrain GP Updated", LocalDate.of(2024, 3, 2),
                 "Bahrain International Circuit", "Rainy", RaceStatus.CLOSED);
         updatedRace.setId(1L);
 
@@ -114,7 +123,16 @@ class AdminControllerTest {
     void testAdminTestEndpoint() {
         AdminTestController adminTestController = new AdminTestController();
         String result = adminTestController.adminTest();
-        
+
         assertEquals("Admin ok!", result);
     }
 }
+
+/*
+ * Zusammenfassung:
+ * AdminControllerTest testet die Kernfunktionen der Admin-Controller:
+ * - RaceController: CRUD-Operationen für Rennen, inklusive Abrufen, Erstellen, Aktualisieren und Löschen.
+ * - AdminTestController: Einfacher Test-Endpunkt für Admins.
+ *
+ * Mockito wird verwendet, um RaceService zu mocken, sodass die Controller-Logik isoliert getestet werden kann.
+ */

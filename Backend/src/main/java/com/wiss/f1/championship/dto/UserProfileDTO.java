@@ -1,22 +1,30 @@
 package com.wiss.f1.championship.dto;
 
+/**
+ * DTO für die Darstellung des vollständigen User-Profils.
+ *
+ * Wird verwendet, um Profilinformationen an den Client zu senden,
+ * z.B. über GET /api/users/me im AppUserController.
+ */
 public class UserProfileDTO {
 
-    private String username;
-    private String displayName;
-    private String email;
-    private String favoriteTeam;  // Optional: Lieblings-Team
-    private String country;        // Optional: Land
-    private String bio;            // Optional: Biografie
-    private int points;            // Gesamtpunkte des Users
-    private String role;           // Rolle des Users (PLAYER, ADMIN)
+    private String username;        // Username des Users
+    private String displayName;     // Anzeigename
+    private String email;           // E-Mail-Adresse
+    private String favoriteTeam;    // Optional: Lieblings-Team
+    private String country;         // Optional: Land
+    private String bio;             // Optional: Biografie
+    private int points;             // Gesamtpunkte des Users (berechnet aus LeaderboardService)
+    private String role;            // Rolle des Users (PLAYER oder ADMIN)
 
+    // Standardkonstruktor
     public UserProfileDTO() {
     }
 
-    public UserProfileDTO(String username, String displayName, String email, 
-                         String favoriteTeam, String country, String bio, 
-                         int points, String role) {
+    // Konstruktor mit allen Feldern
+    public UserProfileDTO(String username, String displayName, String email,
+                          String favoriteTeam, String country, String bio,
+                          int points, String role) {
         this.username = username;
         this.displayName = displayName;
         this.email = email;
@@ -92,5 +100,15 @@ public class UserProfileDTO {
     public void setRole(String role) {
         this.role = role;
     }
+
 }
 
+/* ============================================================
+   ZUSAMMENFASSUNG DIESES FILES (UserProfileDTO.java)
+   ------------------------------------------------------------
+   - DTO für das vollständige Profil eines Users
+   - Enthält Username, DisplayName, Email, FavoriteTeam, Country, Bio
+     sowie Punkte und Rolle
+   - Wird im AppUserController für GET /api/users/me zurückgegeben
+   - Punkte werden aus dem LeaderboardService berechnet
+   ============================================================ */

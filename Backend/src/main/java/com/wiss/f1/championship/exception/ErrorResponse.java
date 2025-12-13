@@ -5,10 +5,17 @@ import java.util.Map;
 
 /**
  * DTO für strukturierte Fehlerantworten.
- * Enthält alle relevanten Informationen über aufgetretene Fehler.
+ * Wird verwendet, um konsistente Fehlerinformationen an Clients zu senden.
+ *
+ * Enthält:
+ * - timestamp: Zeitpunkt des Fehlers
+ * - status: HTTP-Statuscode (z.B. 400, 404, 500)
+ * - error: Kurze Fehlerbeschreibung
+ * - message: Detaillierte Fehlermeldung
+ * - validationErrors: Optional, enthält Feld-spezifische Validierungsfehler
  */
 public class ErrorResponse {
-    
+
     private LocalDateTime timestamp;
     private int status;
     private String error;
@@ -25,14 +32,15 @@ public class ErrorResponse {
         this.message = message;
     }
 
-    public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, 
-                        Map<String, String> validationErrors) {
+    public ErrorResponse(LocalDateTime timestamp, int status, String error, String message,
+                         Map<String, String> validationErrors) {
         this.timestamp = timestamp;
         this.status = status;
         this.error = error;
         this.message = message;
         this.validationErrors = validationErrors;
     }
+
 
     public LocalDateTime getTimestamp() {
         return timestamp;
@@ -75,3 +83,10 @@ public class ErrorResponse {
     }
 }
 
+/* ============================================================
+   ZUSAMMENFASSUNG DES FILES (ErrorResponse.java)
+   ------------------------------------------------------------
+   - Standardisiertes DTO für Fehlerantworten
+   - Unterstützt sowohl generische Fehler als auch Validierungsfehler
+   - Dient zur konsistenten Kommunikation von Fehlern an Clients
+   ============================================================ */

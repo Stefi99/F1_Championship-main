@@ -5,22 +5,30 @@ import java.util.List;
 
 import com.wiss.f1.championship.entity.RaceStatus;
 
+/**
+ * DTO für die API-Antwort eines Rennens.
+ *
+ * Wird verwendet, um ein Rennen samt seiner Metadaten und Ergebnisreihenfolge
+ * an das Frontend zu senden.
+ */
 public class RaceResponseDTO {
 
-    private Long id;
-    private String name;
-    private LocalDate date;
-    private String track;
-    private String weather;
-    private String tyres;
-    private RaceStatus status;
-    private List<String> resultsOrder;
+    private Long id;                  // ID des Rennens
+    private String name;              // Name des Rennens
+    private LocalDate date;           // Datum des Rennens
+    private String track;             // Rennstrecke
+    private String weather;           // Wetterbedingungen
+    private String tyres;             // Reifeninformationen
+    private RaceStatus status;        // Status des Rennens (z.B. SCHEDULED, FINISHED)
+    private List<String> resultsOrder; // Finale Fahrerreihenfolge nach Rennen
 
+    // Standardkonstruktor
     public RaceResponseDTO() {
     }
 
-    public RaceResponseDTO(Long id, String name, LocalDate date, String track, 
-                          String weather, String tyres, RaceStatus status, List<String> resultsOrder) {
+    // Konstruktor mit allen Feldern
+    public RaceResponseDTO(Long id, String name, LocalDate date, String track,
+                           String weather, String tyres, RaceStatus status, List<String> resultsOrder) {
         this.id = id;
         this.name = name;
         this.date = date;
@@ -96,3 +104,11 @@ public class RaceResponseDTO {
     }
 }
 
+/* ============================================================
+   ZUSAMMENFASSUNG DIESES FILES (RaceResponseDTO.java)
+   ------------------------------------------------------------
+   - DTO für die API-Antwort eines Rennens
+   - Enthält Metadaten wie Name, Datum, Strecke, Wetter, Reifen, Status
+   - Enthält die finale Reihenfolge der Fahrer (resultsOrder)
+   - Wird im RaceController verwendet, um Rennen ans Frontend zu senden
+   ============================================================ */

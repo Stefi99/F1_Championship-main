@@ -1,18 +1,22 @@
-// Die Entität "Tip" verbindet User, Race und Driver miteinander.
 package com.wiss.f1.championship.entity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import org.hibernate.annotations.UpdateTimestamp;
 
+import jakarta.persistence.*;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
+/**
+ * Entität "Tip" speichert die Tipps eines Users für ein bestimmtes Rennen.
+ * Jeder Tipp verbindet:
+ * - einen User (AppUser)
+ * - ein Rennen (Race)
+ * - einen Fahrer (Driver)
+ *
+ * Zusätzliche Informationen:
+ * - predictedPosition: Vorhergesagte Platzierung des Fahrers (1–10)
+ * - updatedAt: Zeitpunkt der letzten Aktualisierung (automatisch gesetzt)
+ *
+ * Datenbanktabelle: "voting"
+ */
 @Entity
 @Table(name = "voting")
 public class Tip {
@@ -21,29 +25,30 @@ public class Tip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Viele Tipps gehören zu einem User
+    // Beziehung zu User: Viele Tipps gehören zu einem User
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private AppUser user;
 
-    // Viele Tipps gehören zu einem Rennen
+    // Beziehung zu Race: Viele Tipps gehören zu einem Rennen
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "race_id")
     private Race race;
 
-    // Viele Tipps beziehen sich auf einen Driver
+    // Beziehung zu Driver: Jeder Tipp bezieht sich auf einen Fahrer
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
+    // Vorhergesagte Platzierung des Fahrers
     @Column(nullable = false)
-    private Integer predictedPosition; // 1 bis 10
+    private Integer predictedPosition;
 
+    // Automatisch aktualisierter Zeitstempel bei Änderungen
     @UpdateTimestamp
     @Column
     private LocalDateTime updatedAt;
 
-    // Leerer Konstruktor
     public Tip() {
     }
 
@@ -101,3 +106,12 @@ public class Tip {
         this.updatedAt = updatedAt;
     }
 }
+
+/* ============================================================
+   ZUSAMMENFASSUNG DES FILES (Tip.java)
+   ------------------------------------------------------------
+   - Repräsentiert einen Tipp eines Users für einen Fahrer in einem Rennen
+   - Verknüpft AppUser, Race und Driver über ManyToOne-Beziehungen
+   - Enthält vorhergesagte Position und Update-Zeitstempel
+   - Persistiert in Tabelle "voting"
+   ============================================================ */

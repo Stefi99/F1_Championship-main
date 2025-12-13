@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+
 @RestController
 @RequestMapping("/api/tips")
 public class TipController {
@@ -39,20 +40,17 @@ public class TipController {
 
     /**
      * Gibt den Tipp des aktuell eingeloggten Users für ein bestimmtes Rennen zurück.
-     * 
-     * @param raceId Die ID des Rennens
-     * @return TipResponseDTO mit raceId und order (Array von Fahrernamen)
      */
     @GetMapping("/race/{raceId}")
     public ResponseEntity<TipResponseDTO> getTipForRace(@PathVariable Long raceId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (authentication == null || !(authentication.getPrincipal() instanceof AppUser)) {
             return ResponseEntity.status(401).build();
         }
 
         AppUser currentUser = (AppUser) authentication.getPrincipal();
-        
+
         Optional<Race> raceOpt = raceService.getRaceById(raceId);
         if (raceOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -67,22 +65,19 @@ public class TipController {
     }
 
     /**
-     * Speichert oder aktualisiert einen Tipp für den aktuell eingeloggten User.
-     * 
-     * @param request TipRequestDTO mit raceId und order (Array von Fahrernamen)
-     * @return TipResponseDTO mit dem gespeicherten Tipp
+     * Speichert oder aktualisiert einen Tipp für das aktuelle Rennen.
      */
     @PostMapping
     public ResponseEntity<TipResponseDTO> createOrUpdateTip(@RequestBody TipRequestDTO request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (authentication == null || !(authentication.getPrincipal() instanceof AppUser)) {
             return ResponseEntity.status(401).build();
         }
 
         AppUser currentUser = (AppUser) authentication.getPrincipal();
 
-        // Validiere Request
+        // Validierung des Requests
         if (request.getRaceId() == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -92,6 +87,7 @@ public class TipController {
         }
 
         // Rennen prüfen
+
         Optional<Race> raceOpt = raceService.getRaceById(request.getRaceId());
         if (raceOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -102,22 +98,19 @@ public class TipController {
         // Tipp speichern/aktualisieren
         try {
             tipService.saveOrUpdateTip(currentUser, race, request.getOrder());
-            
+
             // Aktualisierten Tipp zurückgeben
             List<String> order = tipService.getTipOrderForUserAndRace(currentUser, race);
             LocalDateTime updatedAt = tipService.getTipUpdatedAtForUserAndRace(currentUser, race);
             TipResponseDTO response = new TipResponseDTO(request.getRaceId(), order, updatedAt);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().build(); // ungültiger Tipp
         }
     }
 
     /**
      * Aktualisiert einen Tipp (Alias für POST).
-     * 
-     * @param request TipRequestDTO mit raceId und order
-     * @return TipResponseDTO mit dem aktualisierten Tipp
      */
     @PutMapping
     public ResponseEntity<TipResponseDTO> updateTip(@RequestBody TipRequestDTO request) {
@@ -125,10 +118,7 @@ public class TipController {
     }
 
     /**
-     * Gibt alle Tipps eines Users zurück.
-     * 
-     * @param userId Die ID des Users
-     * @return Liste von TipResponseDTOs, gruppiert nach Rennen
+     * Gibt alle Tipps eines bestimmten Users zurück.
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TipResponseDTO>> getAllTipsForUser(@PathVariable Long userId) {
@@ -142,3 +132,16 @@ public class TipController {
         return ResponseEntity.ok(tips);
     }
 }
+
+/* ============================================================
+   ZUSAMMENFASSUNG DIESES FILES (TipController.java)
+   ------------------------------------------------------------
+   - Verwaltet Tipps (Predictions) der User für Rennen.
+   - Endpunkte:
+       GET /api/tips/race/{raceId} → Tipp des aktuellen Users für ein Rennen
+       POST /api/tips → Tipp erstellen oder aktualisieren
+       PUT /api/tips → Tipp aktualisieren (Alias für POST)
+       GET /api/tips/user/{userId} → alle Tipps eines Users
+   - Nutzt SecurityContext, um aktuell eingeloggten User zu ermitteln.
+   - Nutzt TipService für die Business-Logik.
+   ============================================================ */

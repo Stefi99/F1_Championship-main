@@ -1,4 +1,5 @@
 package com.wiss.f1.championship.controller;
+
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
@@ -31,85 +32,102 @@ public class AppUserController {
 
     @GetMapping("/{id}")
     public Optional<AppUser> getUserById(@PathVariable Long id) {
+        // Holt einen User anhand seiner ID (nur Admins haben Zugriff)
         return userService.getUserById(id);
     }
 
     /**
      * Gibt das Profil des aktuell eingeloggten Users zurück.
-     * @return UserProfileDTO mit allen Profilinformationen inklusive Punkte
      */
     @GetMapping("/me")
     public ResponseEntity<UserProfileDTO> getCurrentUser() {
+        // Holt die aktuelle Authentication aus dem SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
+        // Prüfung, ob ein gültiger User eingeloggt ist
         if (authentication == null || !(authentication.getPrincipal() instanceof AppUser)) {
             return ResponseEntity.status(401).build();
         }
 
+        // Aktuellen User aus dem SecurityContext laden
         AppUser currentUser = (AppUser) authentication.getPrincipal();
-        
-        // Punkte für den User berechnen
+
+        // Punkte für den User über das Leaderboard berechnen
         int points = leaderboardService.calculateUserPoints(currentUser);
-        
-        // UserProfileDTO erstellen
+
+        // Profil-Daten in DTO umwandeln
         UserProfileDTO profile = new UserProfileDTO(
-            currentUser.getUsername(),
-            currentUser.getDisplayName(),
-            currentUser.getEmail(),
-            currentUser.getFavoriteTeam(),
-            currentUser.getCountry(),
-            currentUser.getBio(),
-            points,
-            currentUser.getRole().name()
+                currentUser.getUsername(),
+                currentUser.getDisplayName(),
+                currentUser.getEmail(),
+                currentUser.getFavoriteTeam(),
+                currentUser.getCountry(),
+                currentUser.getBio(),
+                points,
+                currentUser.getRole().name()
         );
-        
+
         return ResponseEntity.ok(profile);
     }
 
     /**
      * Aktualisiert das Profil des aktuell eingeloggten Users.
-     * @param updateProfileDTO DTO mit den zu aktualisierenden Profilfeldern
-     * @return Aktualisiertes UserProfileDTO
      */
     @PutMapping("/me")
     public ResponseEntity<UserProfileDTO> updateCurrentUser(@RequestBody UpdateProfileDTO updateProfileDTO) {
+        // Holt die aktuelle Authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
+        // Prüft, ob ein gültiger Benutzer eingeloggt ist
         if (authentication == null || !(authentication.getPrincipal() instanceof AppUser)) {
             return ResponseEntity.status(401).build();
         }
 
+        // Benutzer aus SecurityContext holen
         AppUser currentUser = (AppUser) authentication.getPrincipal();
-        
-        // User aus der Datenbank laden (für frische Daten)
+
+        // User aus der DB neu abrufen (falls Änderungen erfolgt sind)
         AppUser user = userService.getUserById(currentUser.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        // Profil aktualisieren
+
+        // Profil aktualisieren und speichern
         user = userService.updateUserProfile(
-            user,
-            updateProfileDTO.getDisplayName(),
-            updateProfileDTO.getFavoriteTeam(),
-            updateProfileDTO.getCountry(),
-            updateProfileDTO.getBio()
+                user,
+                updateProfileDTO.getDisplayName(),
+                updateProfileDTO.getFavoriteTeam(),
+                updateProfileDTO.getCountry(),
+                updateProfileDTO.getBio()
         );
-        
-        // Punkte für den User berechnen
+
+        // Punkte neu berechnen
         int points = leaderboardService.calculateUserPoints(user);
-        
-        // Aktualisiertes UserProfileDTO erstellen
+
+        // Aktualisiertes Profil als DTO zurückgeben
         UserProfileDTO profile = new UserProfileDTO(
-            user.getUsername(),
-            user.getDisplayName(),
-            user.getEmail(),
-            user.getFavoriteTeam(),
-            user.getCountry(),
-            user.getBio(),
-            points,
-            user.getRole().name()
+                user.getUsername(),
+                user.getDisplayName(),
+                user.getEmail(),
+                user.getFavoriteTeam(),
+                user.getCountry(),
+                user.getBio(),
+                points,
+                user.getRole().name()
         );
-        
+
         return ResponseEntity.ok(profile);
     }
 
 }
+
+/* ------------------------------------------------------------------------------------------
+   ZUSAMMENFASSUNG
+   ------------------------------------------------------------------------------------------
+   Der AppUserController bietet Endpunkte für Benutzerprofile.
+   Funktionen:
+   - User nach ID abrufen (für Admins)
+   - Eigene Profildaten abrufen (/me)
+   - Eigenes Profil aktualisieren (/me, PUT)
+
+   Eingeloggte Benutzer werden aus dem SecurityContext ausgelesen.
+   Zusätzlich werden die User-Punkte über den LeaderboardService berechnet und im Profil angezeigt.
+------------------------------------------------------------------------------------------- */
